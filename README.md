@@ -1,4 +1,4 @@
-# luftmensch 1.0
+# Luftmensch 1.0
 ![Luftmensch icon](https://raw.githubusercontent.com/lheredias/Luftmensch/main/finalicon.ico)
 
 ```
@@ -18,7 +18,7 @@ Its flexibility and capability of dealing with many scenarios means exceedingly 
 
 Althought target users are personnel from the ***Tax and Customs Office of Peru*** (hence the definitions in Spanish), the entirety or just portions of the present code can be applied to a wide range of contexts, in both work and academic environments.
 
-[Have a look at the code](https://github.com/lheredias)
+Have a look at the code [over here.](https://github.com/lheredias)
 
 As of January 2021, Luftmensch is in active development.
 
@@ -44,5 +44,6 @@ Please submit questions, comments or issues [over here](https://github.com/lhere
 ## License
 * [lheredias](https://github.com/lheredias/Luftmensch/blob/main/LICENSE)
 
-## User Manual
+## Manual del Usuario
 [Lee el manual (en Español)](https://github.com/lheredias/Luftmensch/blob/main/Manual%20del%20usuario.pdf)
+Si tienes dudas, consultas o sugerencias, abre una discusión [aquí](https://github.com/lheredias/Luftmensch/discussions). Te responderemos en breve.

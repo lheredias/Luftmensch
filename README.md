@@ -1,4 +1,5 @@
 # luftmensch 1.0
+![Luftmensch icon](https://raw.githubusercontent.com/lheredias/Luftmensch/main/finalicon.ico)
 
 ## Description
 
@@ -23,9 +24,7 @@ Currently supports Windows only but can be easily adapted to Mac OS (*this is a 
 ## Author
 
 * [lheredias](https://github.com/lheredias)
-
-
-
+***
 
 ## Table of contents
 * [General info](#general-info)

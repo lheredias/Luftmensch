@@ -18,7 +18,7 @@ Its flexibility and capability of dealing with many scenarios means exceedingly 
 
 Althought target users are personnel from the ***Tax and Customs Office of Peru*** (hence the definitions in Spanish), the entirety or just portions of the present code can be applied to a wide range of contexts, in both work and academic environments.
 
-Have a look at the code [over here.](https://github.com/lheredias)
+Have a look at the code [over here.](https://github.com/lheredias/Luftmensch/blob/main/Luftmensch%201.0.py)
 
 As of January 2021, Luftmensch is in active development.
 

@@ -42,8 +42,8 @@ Currently supports Windows only but can be easily adapted to Mac OS (*this is a 
 Please submit questions, comments or issues [over here](https://github.com/lheredias/Luftmensch/discussions).
 
 ## License
-* [lheredias](https://github.com/lheredias/Luftmensch/blob/main/LICENSE)
+* [License](https://github.com/lheredias/Luftmensch/blob/main/LICENSE)
 
 ## Manual del Usuario
-[Lee el manual (en Español)](https://github.com/lheredias/Luftmensch/blob/main/Manual%20del%20usuario.pdf)
+[Lee el manual](https://github.com/lheredias/Luftmensch/blob/main/Manual%20del%20usuario.pdf) (en Español)
 Si tienes dudas, consultas o sugerencias, abre una discusión [aquí](https://github.com/lheredias/Luftmensch/discussions). Te responderemos en breve.

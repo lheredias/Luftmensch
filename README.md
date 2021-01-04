@@ -22,6 +22,8 @@ Althought target users are personnel from the ***Tax and Customs Office of Peru*
 
 As of January 2021, Luftmensch is in active development.
 
+***
+
 ## Python modules
 Luftmensch makes intensive use of the following modules:
 * [PySimpleGUI](https://github.com/PySimpleGUI/PySimpleGUI)
@@ -43,4 +45,4 @@ Please submit questions, comments or issues [over here](https://github.com/lhere
 * [lheredias](https://github.com/lheredias/Luftmensch/blob/main/LICENSE)
 
 ## User Manual
-* [Lee el manual (en Español)](https://github.com/lheredias/Luftmensch/blob/main/Manual%20del%20usuario.pdf)
+[Lee el manual (en Español)](https://github.com/lheredias/Luftmensch/blob/main/Manual%20del%20usuario.pdf)

@@ -1,6 +1,9 @@
 # luftmensch 1.0
 ![Luftmensch icon](https://raw.githubusercontent.com/lheredias/Luftmensch/main/finalicon.ico)
 
+```
+Version 1.0 released in January 2021.
+```
 ## Description
 
 Creates a Graphical User Interface capable of:
@@ -24,21 +27,10 @@ Currently supports Windows only but can be easily adapted to Mac OS (*this is a 
 ## Author
 
 * [lheredias](https://github.com/lheredias)
-***
 
-## Table of contents
-* [General info](#general-info)
-* [Technologies](#technologies)
-* [Setup](#setup)
+## Contact
 
-## General info
-This project is simple Lorem ipsum dolor generator.
+Please submit questions, comments or issues [over here](https://github.com/lheredias/Luftmensch/discussions).
 
-	
-## Setup
-To run this project, install it locally using npm:
-
-```
-$ cd ../lorem
-$ npm install
-$ npm start
+## User manual
+* [Lee el manual (en Español)](https://github.com/lheredias/Luftmensch/blob/main/Manual%20del%20usuario.pdf)

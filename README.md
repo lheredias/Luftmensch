@@ -20,7 +20,7 @@ Althought target users are personnel from the ***Tax and Customs Office of Peru*
 
 Have a look at the code [over here.](https://github.com/lheredias/Luftmensch/blob/main/Luftmensch%201.0.py)
 
-As of January 2021, Luftmensch is in active development.
+As of January 2021, Luftmensch is under active development.
 
 ***
 
@@ -47,4 +47,4 @@ Please submit questions, comments or issues [over here](https://github.com/lhere
 ## Manual del Usuario
 [Lee el manual](https://github.com/lheredias/Luftmensch/blob/main/Manual%20del%20usuario.pdf) (en Español)
 
-Si tienes dudas, consultas o sugerencias, abre una discusión [aquí](https://github.com/lheredias/Luftmensch/discussions). Te responderemos en breve.
+Si tienes dudas, consultas o sugerencias, abre una discusión [aquí](https://github.com/lheredias/Luftmensch/discussions).

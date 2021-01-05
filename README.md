@@ -51,6 +51,6 @@ Please submit questions, comments or issues [over here](https://github.com/lhere
 * Si tienes dudas, consultas o sugerencias, abre una discusión [aquí](https://github.com/lheredias/Luftmensch/discussions).
 
 ### Descarga el Erchivo Ejecutable 
-> Descarga el archivo ejecutable y corre la aplicación en Windows.
-* El link de descarga del archivo .EXE y las instrucciones para abrirlo por primera vez se encuentran [aquí](https://github.com/lheredias/Luftmensch/blob/main/Luftmensch%20instrucciones%20de%20descarga.pdf).
+* Descarga el archivo ejecutable y corre la aplicación en Windows.
+> El link de descarga del archivo .EXE y las instrucciones para abrirlo por primera vez se encuentran [aquí](https://github.com/lheredias/Luftmensch/blob/main/Luftmensch%20instrucciones%20de%20descarga.pdf).
 

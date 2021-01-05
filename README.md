@@ -29,14 +29,14 @@ As of January 2021, Luftmensch is under active development.
 ## Releases
 * [Luftmensch v1.0](https://github.com/lheredias/Luftmensch/releases/tag/v1.0)
 
+## Platforms
+
+Currently runs on Windows only but Mac OS support is coming in the near future.
+
 ## Python modules
 Luftmensch makes intensive use of the following modules:
 * [PySimpleGUI](https://github.com/PySimpleGUI/PySimpleGUI)
 * [PyMuPDF](https://github.com/pymupdf/PyMuPDF)
-
-## Platforms
-
-Currently runs on Windows only but Mac OS support is coming in the near future.
 
 ## Contact
 

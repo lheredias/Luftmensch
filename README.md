@@ -10,7 +10,7 @@ Luftmensch is a GUI Application built on Python and capable of:
     
 * Merging PDF files
 * Converting PDF into PDF/A
-* Having all the pages of a PDF file adopt vertical A4 dimensions without messing up its content.
+* Having all the pages of a PDF adopt vertical A4 dimensions without messing up its content.
 
 Although can be used altogether, each option is independent from one another.
 
@@ -22,6 +22,10 @@ Have a look at the code [over here.](https://github.com/lheredias/Luftmensch/blo
 
 As of January 2021, Luftmensch is under active development.
 ***
+## Author
+
+* [lheredias](https://github.com/lheredias)
+
 ## Python modules
 Luftmensch makes intensive use of the following modules:
 * [PySimpleGUI](https://github.com/PySimpleGUI/PySimpleGUI)
@@ -30,10 +34,6 @@ Luftmensch makes intensive use of the following modules:
 ## Platforms
 
 Currently runs on Windows only but Mac OS support is coming in the near future.
-
-## Author
-
-* [lheredias](https://github.com/lheredias)
 
 ## Contact
 
@@ -50,7 +50,8 @@ Please submit questions, comments or issues [over here](https://github.com/lhere
 ### Consultas
 > Si tienes dudas, consultas o sugerencias, abre una discusión [aquí](https://github.com/lheredias/Luftmensch/discussions).
 
-### Descarga el Erchivo Ejecutable 
-* Descarga el archivo ejecutable y corre la aplicación en Windows.
-> El link de descarga del archivo .EXE y las instrucciones para abrirlo por primera vez se encuentran [aquí](https://github.com/lheredias/Luftmensch/blob/main/Luftmensch%20instrucciones%20de%20descarga.pdf).
+### Descarga el Erchivo Ejecutable
+Descarga el archivo ejecutable y corre la aplicación en Windows.
+
+El link de descarga del archivo .EXE y las instrucciones para abrirlo por primera vez se encuentran [aquí](https://github.com/lheredias/Luftmensch/blob/main/Luftmensch%20instrucciones%20de%20descarga.pdf).
 

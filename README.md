@@ -22,8 +22,6 @@ Have a look at the code [over here.](https://github.com/lheredias/Luftmensch/blo
 
 As of January 2021, Luftmensch is under active development.
 
-***
-
 ## Python modules
 Luftmensch makes intensive use of the following modules:
 * [PySimpleGUI](https://github.com/PySimpleGUI/PySimpleGUI)
@@ -45,13 +43,13 @@ Please submit questions, comments or issues [over here](https://github.com/lhere
 * [MIT License](https://github.com/lheredias/Luftmensch/blob/main/LICENSE)
 ***
 ## En español
-
+***
 ### Manual del Usuario
-[Lee el manual](https://github.com/lheredias/Luftmensch/blob/main/Manual%20del%20usuario.pdf) (en Español)
+* [Lee el manual](https://github.com/lheredias/Luftmensch/blob/main/Manual%20del%20usuario.pdf) (en Español)
 
 ### Consultas
-Si tienes dudas, consultas o sugerencias, abre una discusión [aquí](https://github.com/lheredias/Luftmensch/discussions).
+* Si tienes dudas, consultas o sugerencias, abre una discusión [aquí](https://github.com/lheredias/Luftmensch/discussions).
 
 ### Descarga el archivo ejecutable 
-El link de descarga del archivo .EXE y las instrucciones para abrirlo por primera vez se encuentran [aquí](https://github.com/lheredias/Luftmensch/blob/main/Luftmensch%20instrucciones%20de%20descarga.pdf)
+* El link de descarga del archivo .EXE y las instrucciones para abrirlo por primera vez se encuentran [aquí].(https://github.com/lheredias/Luftmensch/blob/main/Luftmensch%20instrucciones%20de%20descarga.pdf)
 

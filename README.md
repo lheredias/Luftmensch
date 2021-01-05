@@ -40,15 +40,15 @@ Currently runs on Windows only but Mac OS support is coming in the near future.
 Please submit questions, comments or issues [over here](https://github.com/lheredias/Luftmensch/discussions).
 
 ## License
-* [MIT License](https://github.com/lheredias/Luftmensch/blob/main/LICENSE)
+[MIT License](https://github.com/lheredias/Luftmensch/blob/main/LICENSE)
 ***
 ## En español
 
 ### Manual del Usuario
-* [Lee el manual](https://github.com/lheredias/Luftmensch/blob/main/Manual%20del%20usuario.pdf) (en Español)
+> [Lee el manual](https://github.com/lheredias/Luftmensch/blob/main/Manual%20del%20usuario.pdf) (en Español)
 
 ### Consultas
-* Si tienes dudas, consultas o sugerencias, abre una discusión [aquí](https://github.com/lheredias/Luftmensch/discussions).
+> Si tienes dudas, consultas o sugerencias, abre una discusión [aquí](https://github.com/lheredias/Luftmensch/discussions).
 
 ### Descarga el Erchivo Ejecutable 
 * Descarga el archivo ejecutable y corre la aplicación en Windows.

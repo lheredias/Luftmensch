@@ -33,8 +33,8 @@ As of January 2021, Luftmensch is under active development.
 
 Currently runs on Windows only but Mac OS support is coming in the near future.
 
-## Python modules
-Luftmensch makes intensive use of the following modules:
+## Libraries
+Luftmensch makes intensive use of the following libraries:
 * [PySimpleGUI](https://github.com/PySimpleGUI/PySimpleGUI)
 * [PyMuPDF](https://github.com/pymupdf/PyMuPDF)
 

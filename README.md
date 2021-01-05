@@ -6,17 +6,17 @@ Version 1.0 released in January 2021.
 ```
 ## Description
 
-Luftmensch is a Python based Graphical User Interface capable of:
+Luftmensch is a GUI Application built on Python and capable of:
     
 * Merging PDF files
-* Convert PDF into PDF/A
-* Have all the pages of a PDF file adopt vertical A4 dimensions without messing up its content.
+* Converting PDF into PDF/A
+* Having all the pages of a PDF file adopt vertical A4 dimensions without messing up its content.
 
 Although can be used altogether, each option is independent from one another.
 
 Its flexibility and capability of dealing with many scenarios means exceedingly simple usage instructions for end user.
 
-Althought target users are personnel from the ***Tax and Customs Office of Peru*** (hence the definitions in Spanish), the entirety or just portions of the present code can be applied to a wide range of contexts, in both work and academic environments.
+Although target users are personnel from the ***Tax and Customs Office of Peru*** (hence the definitions in Spanish), the entirety or just portions of the present code can be applied to a wide range of contexts, in both work and academic environments.
 
 Have a look at the code [over here.](https://github.com/lheredias/Luftmensch/blob/main/Luftmensch%201.0.py)
 
@@ -31,7 +31,7 @@ Luftmensch makes intensive use of the following modules:
 
 ## Platforms
 
-Currently supports Windows only but can be easily adapted to Mac OS (*this is a work in progress*).
+Currently supports Windows only but Mac OS support is coming in the near future.
 
 ## Author
 

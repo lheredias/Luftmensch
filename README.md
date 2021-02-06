@@ -53,7 +53,7 @@ Please submit questions, comments or issues [over here](https://github.com/lhere
 ***
 ## En Español
 
-### ültima versión
+### Versión más reciente
 
 La versión 1.2.1 añade la opción de convertir un documento en formato PDF/A inmediatamente después de haber logrado que todas sus páginas posean las dimensiones A4 vertical.
 

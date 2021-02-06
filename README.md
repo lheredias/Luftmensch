@@ -11,6 +11,8 @@ Luftmensch is a GUI Application built on Python and capable of:
 * Merging PDF files
 * Converting PDF into PDF/A
 * Having all the pages of a PDF adopt vertical A4 dimensions without messing up its content.
+* Merging and converting images into a single PDF file.
+* Automating work-related tasks that require .txt manipulation. 
 
 Although can be used altogether, each option is independent from one another.
 

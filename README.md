@@ -1,4 +1,4 @@
-# Luftmensch 1.2
+# Luftmensch 1.2.1
 ![Luftmensch icon](https://raw.githubusercontent.com/lheredias/Luftmensch/main/finalicon.ico)
 
 ```
@@ -24,6 +24,10 @@ Have a look at the code [over here.](https://github.com/lheredias/Luftmensch/blo
 
 As of February 2021, Luftmensch is under active development.
 ***
+## New in version 1.2.1
+
+* Added option to immediately generate PDF/A document after rendering all its pages into vertical A4 format. 
+
 ## Author
 
 * [lheredias](https://github.com/lheredias)
@@ -48,6 +52,10 @@ Please submit questions, comments or issues [over here](https://github.com/lhere
 [MIT License](https://github.com/lheredias/Luftmensch/blob/main/LICENSE)
 ***
 ## En Español
+
+### ültima versión
+
+La versión 1.2.1 añade la opción de convertir un documento en formato PDF/A inmediatamente después de haber logrado que todas sus páginas posean las dimensiones A4 vertical.
 
 ### Consultas
 Si tienes dudas, consultas o sugerencias, abre una discusión [aquí](https://github.com/lheredias/Luftmensch/discussions).

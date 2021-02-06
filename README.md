@@ -33,7 +33,7 @@ As of February 2021, Luftmensch is under active development.
 * [lheredias](https://github.com/lheredias)
 
 ## Releases (Descarga la última versión)
-* [Luftmensch v1.2](https://github.com/lheredias/Luftmensch/releases/tag/v1.2.1)
+* [Luftmensch v1.2.1](https://github.com/lheredias/Luftmensch/releases/tag/v1.2.1)
 
 ## Platforms
 

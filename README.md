@@ -1,8 +1,8 @@
-# Luftmensch 1.0
+# Luftmensch 1.2
 ![Luftmensch icon](https://raw.githubusercontent.com/lheredias/Luftmensch/main/finalicon.ico)
 
 ```
-Version 1.0 released in January 2021.
+Version 1.2 released in February 2021.
 ```
 ## Description
 
@@ -20,21 +20,21 @@ Although target users are personnel from the ***Tax and Customs Office of Peru**
 
 Have a look at the code [over here.](https://github.com/lheredias/Luftmensch/blob/main/Luftmensch%201.0.py)
 
-As of January 2021, Luftmensch is under active development.
+As of February 2021, Luftmensch is under active development.
 ***
 ## Author
 
 * [lheredias](https://github.com/lheredias)
 
-## Releases
-* [Luftmensch v1.0](https://github.com/lheredias/Luftmensch/releases/tag/v1.0)
+## Releases (Descarga la última versión)
+* [Luftmensch v1.2](https://github.com/lheredias/Luftmensch/releases/tag/v1.2)
 
 ## Platforms
 
-Currently runs on Windows only but Mac OS support is coming in the near future.
+Windows only.
 
 ## Libraries
-Luftmensch makes intensive use of the following libraries:
+Luftmensch makes most intensive use of the following libraries:
 * [PySimpleGUI](https://github.com/PySimpleGUI/PySimpleGUI)
 * [PyMuPDF](https://github.com/pymupdf/PyMuPDF)
 
@@ -46,9 +46,6 @@ Please submit questions, comments or issues [over here](https://github.com/lhere
 [MIT License](https://github.com/lheredias/Luftmensch/blob/main/LICENSE)
 ***
 ## En Español
-
-### Manual del Usuario
-[Lee el manual](https://github.com/lheredias/Luftmensch/blob/main/Manual%20del%20usuario.pdf) (en Español)
 
 ### Consultas
 Si tienes dudas, consultas o sugerencias, abre una discusión [aquí](https://github.com/lheredias/Luftmensch/discussions).

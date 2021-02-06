@@ -403,10 +403,11 @@ class work_with_documents(work_with_inputs):
 
 default_name='sehr witzig' #default output/folder name
 
-description='Versión 1.2' #Version number
+description='Versión 1.2.1' #Version number
 name='LuftMensch' #App title
 bottom_description='Una aplicación de productividad' #Short description
 note=''  #Warning-style caption
+note2='Nota: en Microsoft Word, la opción "compatible con PDF/A" debe encontrarse activada.'
 
 #Error messages
 error1='No se encontró el número de Requerimiento y/o RUC.'
@@ -441,9 +442,9 @@ Adicionalmente, si deseas unirlas en un orden específico, ordénalas dentro de 
 #===================================================================================================
 
 abouts=['','','','','','','',''] #Options
-abouts[0]='''
-Convierte un archivo PDF en formato PDF/A.
+abouts[0]='''Convierte un archivo PDF en formato PDF/A.
 
+Si dejas en blanco "Guardar como", el  resultado se guardará encima del documento seleccionado.
 '''
 abouts[1]='''Une varios archivos PDF en uno solo.
 
@@ -464,7 +465,9 @@ Si quieres unir tus archivos en ORDEN, sigue estos pasos:
   - Si deseas retirar archivos de la lista seleccionada, mantén presionado CTRL y dales click.'''
   
 abouts[2]='''Logra que todas páginas del PDF seleccionado posean las mismas dimensiones (A4 Vertical), 
-sin alterar sus proporciones, ni comprometer su correcta visualización.'''
+sin alterar sus proporciones, ni comprometer su correcta visualización.
+
+Si dejas en blanco "Guardar como", el  resultado se guardará encima del documento seleccionado.'''
 
 abouts[3]='''Genera el archivo modelo (.zip) de un Requerimiento o Resultado de 
 Requerimiento con el contenido apropiado, listo para notificar. 
@@ -490,7 +493,7 @@ previa ingresaste seis, por ejemplo), no te preocupes; puedes dejar los demás e
 
 abouts[5]='''Extrae el texto plano de un archivo PDF.'''
 
-abouts[6]='''Convierte una o varias imágenes en un solo archivo PDF.
+abouts[6]='''Convierte una o varias imágenes en un solo archivo PDF de dimensiones A4 vertical.
 
 Si quieres unir tus imágenes en orden: ordénalas, selecciona el primer archivo y dale CTRL + E.
 
@@ -547,7 +550,7 @@ size4=(750,420)
 size5=(750,600)
 first_size=(750,3)
 second_size=(750,7)
-third_size=(750,2)
+third_size=(750,4)
 fourth_size=(750,11)
 fifth_size=(750,9)
 sixth_size=(750,1)
@@ -661,6 +664,9 @@ def visual():
                           [sg.Text('='*250,text_color=line_color)],
                           [sg.Checkbox('ABRIR DE INMEDIATO EL DOCUMENTO GENERADO', 
                                default=False,text_color=bc, key='CHECK')],
+                          *[[sg.Checkbox('CONVERTIR DE INMEDIATO A PDF/A', 
+                               default=False,text_color=bc, key='PDFA')] 
+                            if values2['choice'] == choices[2] else [sg.T(note2)]],
                           [sg.Text('='*250,text_color=line_color)]]
                     window = sg.Window(name, layout, size=size3,alpha_channel=.95,
                                        disable_minimize=False,font=font_type,icon=icon)
@@ -685,37 +691,46 @@ def visual():
                                 if values['SaveAs']!='':
                                     SaveAs=values['SaveAs']     
                                     SaveAs=os.path.abspath(SaveAs)
-                                    if values2['choice']==choices[0] or values2['choice']==choices[2]: 
-                                        
-                                        if values['Browse']!='':
-                                            Origin=values['Browse']
-                                            Origin=os.path.abspath(Origin)    
-                                            Origin=copy(Origin,Origin[:-4]+' sehr witzig.pdf')
-                                            result=work_with_file(SaveAs,Origin)
-                                            if values2['choice']==choices[0]:
-                                                if result.is_file_opened()==False:
+                                elif values['SaveAs']=='':
+                                    SaveAs=values['Browse']
+                                    SaveAs=os.path.abspath(SaveAs)
+                                if values2['choice']==choices[0] or values2['choice']==choices[2]: 
+                                    
+                                    if values['Browse']!='':
+                                        Origin=values['Browse']
+                                        Origin=os.path.abspath(Origin)    
+                                        Origin=copy(Origin,Origin[:-4]+' sehr witzig.pdf')
+                                        result=work_with_file(SaveAs,Origin)
+                                        if values2['choice']==choices[0]:
+                                            
+                                            if result.is_file_opened()==False:
+                                                result.PDF_PDFA()
+                                                if values['CHECK']==True:
+                                                    Popen([SaveAs],shell=True)
+                                                else:
+                                                    notification(done_message).notif()
+                                            else:
+                                                os.remove(Origin)
+                                                popup(error9).get_error_message()   
+                                        elif values2['choice']==choices[2]:
+                                            
+                                            if result.is_file_opened()==False:
+                                                result.PDF_same_size()
+                                                if values['PDFA']==True:
+                                                    Origin=SaveAs  
+                                                    Origin=copy(Origin,Origin[:-4]+' sehr witzig.pdf')
+                                                    result=work_with_file(SaveAs,Origin)
                                                     result.PDF_PDFA()
-                                                    if values['CHECK']==True:
-                                                        Popen([SaveAs],shell=True)
-                                                    else:
-                                                        notification(done_message).notif()
+                                                if values['CHECK']==True:
+                                                    Popen([SaveAs],shell=True)
                                                 else:
-                                                    os.remove(Origin)
-                                                    popup(error9).get_error_message()   
-                                            elif values2['choice']==choices[2]:
-                                                if result.is_file_opened()==False:
-                                                    result.PDF_same_size()
-                                                    if values['CHECK']==True:
-                                                        Popen([SaveAs],shell=True)
-                                                    else:
-                                                        notification(done_message).notif()
-                                                else:
-                                                    os.remove(Origin)
-                                                    popup(error9).get_error_message()                                 
-                                        else:
-                                            popup(error8).get_error_message()      
-                                else:
-                                    popup(error7).get_error_message()
+                                                    notification(done_message).notif()
+                                            else:
+                                                os.remove(Origin)
+                                                popup(error9).get_error_message()                                 
+                                    else:
+                                        popup(error8).get_error_message()      
+                             
                                              
                             except RuntimeError: 
                                popup(error2).get_error_message()

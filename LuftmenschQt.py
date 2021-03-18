@@ -1,17 +1,16 @@
 from PyQt5.QtCore import (QThread, pyqtSignal,QThreadPool,pyqtSlot,QRunnable,QObject,Qt)
-from PyQt5.QtWidgets import (QApplication, QDialog, QMainWindow,QLabel ,QFileDialog,QAction,
+from PyQt5.QtWidgets import (QApplication, QDialog, QMainWindow,QLabel,QFileDialog,QAction,
                              QProgressBar, QPushButton,QMessageBox,QLineEdit,QMenu,
                              QErrorMessage,QGraphicsOpacityEffect,QComboBox,QHBoxLayout,
                              QGridLayout,QSpacerItem,QSizePolicy,QFrame,QStackedLayout,
                              QTextEdit,QTableView,QStyle,QCheckBox,QVBoxLayout,QWidget,
-                             QDesktopWidget,QListView)
+                             QDesktopWidget,QListView,QStyleFactory)
 
 from PyQt5.QtGui import (QIcon,QFont,QPixmap,QCursor)
 import time
 import sys
 import os
 import getpass
-import time
 import shutil
 import fitz
 from win32com import client
@@ -45,12 +44,17 @@ username=getpass.getuser()
 defaultDir='D:\\Usuarios\\'+username+'\\Documents'
 
 choices=['1. Convertir PDF en PDF/A',
-         '2. PDF con páginas del mismo tamaño',
+         '2. Obtener PDF con páginas del mismo tamaño',
                  '3. Unir varios archivos PDF',
                  '4. Convertir una o varias imágenes en un solo archivo PDF',
                  '5. Crear archivo .zip de Requerimientos y Cartas',
                  '6. Crear archivo .zip de Valores',
                  '7. Generar archivo de texto para solicitar descarga de LE'] 
+fontOne = QFont("Helvetica", 10)
+fontTwo=QFont("Helvetica", 10)
+fontThree=QFont('Gotham Bold', 12)
+fontFour=QFont('Gotham Bold', 20)
+fontFive=QFont('Gotham Bold', 11)
 # <codecell>
 class WorkerSignalsOne(QObject):
     alert=pyqtSignal(str)
@@ -148,18 +152,10 @@ class ActionsOne(QWidget):
     def initUI(self):
         
         self.style = QApplication.style()
-        self.fontOne = QFont("Helvetica", 14)
-        self.fontTwo=QFont("Helvetica", 12)
-        self.fontThree=QFont('Gotham Bold', 18)
-        self.fontFour=QFont('Gotham Bold', 30)
-        self.fontFive=QFont('Gotham Bold', 12)
         
-        self.style1=("QPushButton { background-color: rgb(155, 61, 61 ); color: rgb(255, 255, 255 );border: 3px solid}"
-                     "QPushButton:hover { background-color: rgba(155, 61, 61,230) ;color: white;border: 3px solid}"
-                      "QPushButton:pressed { background-color: rgb(69, 70, 77) ;color: rgb(255, 255, 255 );border: 3px solid}")
-        self.style2=("QPushButton { background-color: rgb(69, 70, 77); color: rgb(255, 255, 255);border: 3px solid}"
-                      "QPushButton:hover { background-color: rgba(69, 70, 77,230) ;color: white;border: 3px solid}"
-                      "QPushButton:pressed { background-color: rgb(155, 61, 61 ); color: rgb(255, 255, 255 );border: 3px solid}")             
+        
+        self.style1=("QPushButton { background-color: rgb(155, 61, 61 ); color: rgb(255, 255, 255 );}")
+        self.style2=("QPushButton { background-color: rgb(69, 70, 77); color: rgb(255, 255, 255);}")             
         self.style3 = ("QProgressBar {border: 2px solid grey;border-radius: 5px;text-align: center}"
                          "QProgressBar::chunk {background-color: rgb(155, 61, 61 );width: 10px;margin: 1px;}")
           
@@ -170,93 +166,89 @@ class ActionsOne(QWidget):
         self.v1=QVBoxLayout()
         self.v2=QVBoxLayout()
                                
-        self.setStyleSheet("background-color: rgb(255, 255, 255); color: rgb(86, 88, 110)")
+        # self.setStyleSheet("background-color: rgb(255, 255, 255); color: rgb(86, 88, 110)")
         self.setWindowIcon(QIcon(icon))
 
-        self.titleOne = QLabel(choices[0][3:], self)
-        self.titleOne.setFont(self.fontThree)
-        self.titleOne.setStyleSheet("color:	rgb(86, 88, 110)")
-        self.titleOne.setAlignment(Qt.AlignLeft)
-
+        
         self.buttonTwo = QPushButton('Cargar PDF', self)   
         self.buttonTwo.clicked.connect(self.openFileNameDialogOne)
-        self.buttonTwo.setFixedHeight(50)
-        self.buttonTwo.setMaximumWidth(200)
+        self.buttonTwo.setMinimumHeight(35)
+        # self.buttonTwo.setMaximumWidth(200)
         self.buttonTwo.setStyleSheet(self.style2)
-        self.buttonTwo.setFont(self.fontTwo)
+        self.buttonTwo.setFont(fontTwo)
         self.buttonTwo.setCursor(QCursor(Qt.PointingHandCursor))
         self.h1.addWidget(self.buttonTwo,1)
         
         self.myTextBoxOne = QLineEdit(self)
-        self.myTextBoxOne.setFixedHeight(50)  
-        self.myTextBoxOne.setMaximumWidth(600)
-        self.myTextBoxOne.setFont(self.fontTwo)
+        self.myTextBoxOne.setMinimumHeight(35)  
+        self.myTextBoxOne.setStyleSheet('background-color: rgb(69, 70, 77); color: white')
+        # self.myTextBoxOne.setMaximumWidth(600)
+        self.myTextBoxOne.setFont(fontTwo)
         self.myTextBoxOne.setReadOnly(True)
-        self.h1.addWidget(self.myTextBoxOne,3)
+        self.h1.addWidget(self.myTextBoxOne,4)
         
-        self.lineOne = QLabel('/'*250, self) 
-        self.lineOne.setMaximumWidth(800)
-        self.v1.addWidget(self.lineOne)
+        # self.lineOne = QLabel('/'*250, self) 
+        # self.lineOne.setMaximumWidth(800)
+        # self.v1.addWidget(self.lineOne)
         
         self.CheckOne = QCheckBox('Abrir de inmediato el documento generado', self)  
-        self.CheckOne.setFont(self.fontTwo)
-        self.CheckOne.setFixedHeight(50)
-        self.CheckOne.setMaximumWidth(800)
+        self.CheckOne.setFont(fontTwo)
+        self.CheckOne.setMinimumHeight(35)
+        # self.CheckOne.setMaximumWidth(800)
         self.CheckOne.setStyleSheet("QCheckBox {background-color: rgb(155, 61, 61); color: rgb(255, 255, 255);padding-left:10px;}") 
         self.CheckOne.setChecked(True)
         self.v1.addWidget(self.CheckOne)
              
-        self.lineTwo = QLabel('/'*250, self)
-        self.lineTwo.setMaximumWidth(800)
-        self.v1.addWidget(self.lineTwo)     
-        
+        # self.lineTwo = QLabel('/'*250, self)
+        # self.lineTwo.setMaximumWidth(800)
+        # self.v1.addWidget(self.lineTwo)     
+        self.h2.addStretch()
         self.start = QPushButton('Ejecutar', self)
         self.start.setStyleSheet(self.style1)
         self.start.setFocus()
-        self.start.setFont(self.fontOne)
-        self.start.setFixedHeight(50)
-        self.start.setMaximumWidth(200)
+        self.start.setFont(fontOne)
+        self.start.setMinimumHeight(35)
         self.start.setEnabled(True)
         self.start.setCursor(QCursor(Qt.PointingHandCursor))
         self.start.clicked.connect(self.started) 
         self.h2.addWidget(self.start)
-
+        # self.h2.addStretch()
         self.button = QPushButton('Limpiar', self)
         self.button.setStyleSheet(self.style1)
-        self.button.setFont(self.fontOne)
-        self.button.setFixedHeight(50)
-        self.button.setMaximumWidth(200)
+        self.button.setFont(fontOne)
+        self.button.setMinimumHeight(35)
+        # self.button.setMinimumWidth(200)
         self.button.setEnabled(True)
         self.button.setCursor(QCursor(Qt.PointingHandCursor))
         self.button.clicked.connect(self.clean) 
         self.h2.addWidget(self.button)
-        
+        # self.h2.addStretch()
         self.progress = QProgressBar(self)
         self.progress.setFormat("")
         self.progress.setStyleSheet(self.style3)    
-        self.progress.setFont(self.fontOne)
-        self.progress.setMaximumWidth(800)
+        self.progress.setFont(fontOne)
+        # self.progress.setMaximumWidth(800)
         self.progress.setAlignment(Qt.AlignCenter) 
         self.progress.setValue(0)
         self.progress.setMaximum(0)
         self.progress.hide()
              
         self.labelTwo = QLabel('', self)
-        self.labelTwo.setFont(self.fontThree)
-        self.labelTwo.setStyleSheet("color:rgb(34, 153, 84)")
+        self.labelTwo.setFont(fontThree)
+        self.labelTwo.setStyleSheet("color:LightGreen")
         self.labelTwo.setAlignment(Qt.AlignCenter)
         # self.labelTwo.hide()
         
         self.effect = QGraphicsOpacityEffect(self)
         self.pixmap = QPixmap(pic)
+        self.pixmap = self.pixmap.scaled(50, 50, Qt.KeepAspectRatio,Qt.SmoothTransformation)
         self.labelThree = QLabel('', self)
         self.labelThree.setAlignment(Qt.AlignCenter)       
         # self.info.setIcon(QIcon(self.style.standardIcon(QStyle.SP_FileDialogInfoView)))  
         
         self.mainLayout = QVBoxLayout()
-        self.mainLayout.setSpacing(30)
-        self.v1.setSpacing(0)
-        self.mainLayout.addWidget(self.titleOne)
+        # self.mainLayout.setSpacing(30)
+        # self.v1.setSpacing(0)
         self.mainLayout.addLayout(self.h1)
         self.mainLayout.addLayout(self.v1)
         self.mainLayout.addLayout(self.h2)
@@ -329,7 +321,7 @@ class ActionsOne(QWidget):
             self.start.setEnabled(True)   
             self.labelTwo.setText('¡Listo, ya puedes visualizar tus documentos!')
             self.labelThree.show()
-            self.labelThree.setGraphicsEffect(self.effect)
+            
             self.labelThree.setPixmap(self.pixmap) 
             self.labelThree.show()
             self.progress.hide()
@@ -339,7 +331,7 @@ class ActionsOne(QWidget):
         # close.setWindowTitle(self.title)
         close.setWindowTitle("¿Seguro?")
         close.setWindowIcon(QIcon(icon))
-        close.setFont(self.fontTwo)
+        close.setFont(fontTwo)
         close.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
         # close.setText("¿Estás seguro?")
         # close.setInformativeText('Se detendrá la función si se está ejecutando, pero no te preocupes ya que se guardará el avance.')
@@ -359,7 +351,10 @@ class ActionsOne(QWidget):
         msg.setWindowTitle(self.title)
         msg.setWindowIcon(QIcon(icon))
         msg.setText("Error")
-        msg.setFont(self.fontTwo)
+        msg.setFont(fontTwo)
+        msg.setStandardButtons(QMessageBox.Ok)
+        buttonOk = msg.button(QMessageBox.Ok)
+        buttonOk.setFont(fontOne)
         msg.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
         msg.setInformativeText(errorMsg)
         msg.exec_()
@@ -371,13 +366,11 @@ class ActionsOne(QWidget):
         info.setWindowTitle(choices[0][3:])
         
         info.setWindowIcon(QIcon(icon))
-        info.setText('''
-La opción "Compatible con PDF/A" debe encontrarse activa en Microsoft Word. Para activarla, dirígete a:
+        info.setText('''La opción "Compatible con PDF/A" debe encontrarse activa en Microsoft Word. Para activarla, dirígete a:
 
-Archivo -> Guardar como -> PDF -> Opciones
-''')
+Archivo -> Guardar como -> PDF -> Opciones''')
 
-        info.setFont(self.fontTwo)
+        info.setFont(fontTwo)
         info.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
         info.setWindowModality(0)
         # info.setModal(True)
@@ -385,6 +378,7 @@ Archivo -> Guardar como -> PDF -> Opciones
         info.setStandardButtons(QMessageBox.Ok)
         buttonOk = info.button(QMessageBox.Ok)
         buttonOk.setText('Entendido')
+        buttonOk.setFont(fontOne)
         info.setDefaultButton(QMessageBox.Ok)
         info.show()
         retval = info.exec_()
@@ -523,18 +517,10 @@ class ActionsTwo(QWidget):
         
     def initUI(self):
         self.style = QApplication.style()
-        self.fontOne = QFont("Helvetica", 14)
-        self.fontTwo=QFont("Helvetica", 12)
-        self.fontThree=QFont('Gotham Bold', 18)
-        self.fontFour=QFont('Gotham Bold', 30)
-        self.fontFive=QFont('Gotham Bold', 12)
+       
         
-        self.style1=("QPushButton { background-color: rgb(155, 61, 61 ); color: rgb(255, 255, 255 );border: 3px solid}"
-                     "QPushButton:hover { background-color: rgba(155, 61, 61,230) ;color: white;border: 3px solid}"
-                      "QPushButton:pressed { background-color: rgb(69, 70, 77) ;color: rgb(255, 255, 255 );border: 3px solid}")
-        self.style2=("QPushButton { background-color: rgb(69, 70, 77); color: rgb(255, 255, 255);border: 3px solid}"
-                      "QPushButton:hover { background-color: rgba(69, 70, 77,230) ;color: white;border: 3px solid}"
-                      "QPushButton:pressed { background-color: rgb(155, 61, 61 ); color: rgb(255, 255, 255 );border: 3px solid}")             
+        self.style1=("QPushButton { background-color: rgb(155, 61, 61 ); color: rgb(255, 255, 255 );}")
+        self.style2=("QPushButton { background-color: rgb(69, 70, 77); color: rgb(255, 255, 255);}")          
         self.style3 = ("QProgressBar {border: 2px solid grey;border-radius: 5px;text-align: center}"
                          "QProgressBar::chunk {background-color: rgb(155, 61, 61 );width: 10px;margin: 1px;}")
           
@@ -545,60 +531,56 @@ class ActionsTwo(QWidget):
         self.v1=QVBoxLayout()
         self.v2=QVBoxLayout()
                                
-        self.setStyleSheet("background-color: rgb(255, 255, 255); color: rgb(86, 88, 110)")
+        # self.setStyleSheet("background-color: rgb(255, 255, 255); color: rgb(86, 88, 110)")
         self.setWindowIcon(QIcon(icon))
     
-        self.titleOne = QLabel(choices[1][3:], self)
-        self.titleOne.setFont(self.fontThree)
-        self.titleOne.setStyleSheet("color:	rgb(86, 88, 110)")
-        self.titleOne.setAlignment(Qt.AlignLeft)
-    
+        
         self.buttonTwo = QPushButton('Cargar PDF', self)   
         self.buttonTwo.clicked.connect(self.openFileNameDialogOne)
-        self.buttonTwo.setFixedHeight(50)
-        self.buttonTwo.setMaximumWidth(200)
+        self.buttonTwo.setMinimumHeight(35)
+        # self.buttonTwo.setMaximumWidth(200)
         self.buttonTwo.setStyleSheet(self.style2)
-        self.buttonTwo.setFont(self.fontTwo)
+        self.buttonTwo.setFont(fontTwo)
         self.buttonTwo.setCursor(QCursor(Qt.PointingHandCursor))
         self.h1.addWidget(self.buttonTwo,1)
         
         self.myTextBoxOne = QLineEdit(self)
-        self.myTextBoxOne.setFixedHeight(50)  
-        self.myTextBoxOne.setMaximumWidth(600)
-        self.myTextBoxOne.setFont(self.fontTwo)
+        self.myTextBoxOne.setMinimumHeight(35)  
+        self.myTextBoxOne.setStyleSheet('background-color: rgb(69, 70, 77); color: white')
+        self.myTextBoxOne.setFont(fontTwo)
         self.myTextBoxOne.setReadOnly(True)
-        self.h1.addWidget(self.myTextBoxOne,3)
+        self.h1.addWidget(self.myTextBoxOne,4)
         
-        self.lineOne = QLabel('/'*250, self) 
-        self.lineOne.setMaximumWidth(800)
-        self.v1.addWidget(self.lineOne)
+        # self.lineOne = QLabel('/'*250, self) 
+        # self.lineOne.setMaximumWidth(800)
+        # self.v1.addWidget(self.lineOne)
         
         self.CheckOne = QCheckBox('Abrir de inmediato el documento generado', self)  
-        self.CheckOne.setFont(self.fontTwo)
-        self.CheckOne.setFixedHeight(50)
-        self.CheckOne.setMaximumWidth(800)
+        self.CheckOne.setFont(fontTwo)
+        self.CheckOne.setMinimumHeight(35)
+        # self.CheckOne.setMaximumWidth(800)
         self.CheckOne.setStyleSheet("QCheckBox {background-color: rgb(155, 61, 61); color: rgb(255, 255, 255);padding-left:10px;}") 
         self.CheckOne.setChecked(True)
         self.v1.addWidget(self.CheckOne)
         
         self.CheckTwo = QCheckBox('Convertir de inmediato a PDF/A', self)
-        self.CheckTwo.setFont(self.fontTwo)
-        self.CheckTwo.setFixedHeight(50)
-        self.CheckTwo.setMaximumWidth(800)
+        self.CheckTwo.setFont(fontTwo)
+        self.CheckTwo.setMinimumHeight(35)
+        # self.CheckTwo.setMaximumWidth(800)
         self.CheckTwo.setStyleSheet("QCheckBox {background-color: rgb(155, 61, 61); color: rgb(255, 255, 255);padding-left:10px;}")  
         self.CheckTwo.setChecked(True)
         self.v1.addWidget(self.CheckTwo)
              
-        self.lineTwo = QLabel('/'*250, self)
-        self.lineTwo.setMaximumWidth(800)
-        self.v1.addWidget(self.lineTwo)     
-        
+        # self.lineTwo = QLabel('/'*250, self)
+        # self.lineTwo.setMaximumWidth(800)
+        # self.v1.addWidget(self.lineTwo)     
+        self.h2.addStretch()
         self.start = QPushButton('Ejecutar', self)
         self.start.setStyleSheet(self.style1)
         self.start.setFocus()
-        self.start.setFont(self.fontOne)
-        self.start.setFixedHeight(50)
-        self.start.setMaximumWidth(200)
+        self.start.setFont(fontOne)
+        self.start.setMinimumHeight(35)
+        # self.start.setMaximumWidth(200)
         self.start.setEnabled(True)
         self.start.setCursor(QCursor(Qt.PointingHandCursor))
         self.start.clicked.connect(self.started) 
@@ -606,9 +588,9 @@ class ActionsTwo(QWidget):
     
         self.button = QPushButton('Limpiar', self)
         self.button.setStyleSheet(self.style1)
-        self.button.setFont(self.fontOne)
-        self.button.setFixedHeight(50)
-        self.button.setMaximumWidth(200)
+        self.button.setFont(fontOne)
+        self.button.setMinimumHeight(35)
+        # self.button.setMaximumWidth(200)
         self.button.setEnabled(True)
         self.button.setCursor(QCursor(Qt.PointingHandCursor))
         self.button.clicked.connect(self.clean) 
@@ -617,8 +599,8 @@ class ActionsTwo(QWidget):
         self.progress = QProgressBar(self)
         self.progress.setFormat("")
         self.progress.setStyleSheet(self.style3)    
-        self.progress.setFont(self.fontOne)
-        self.progress.setMaximumWidth(800)
+        self.progress.setFont(fontOne)
+        # self.progress.setMaximumWidth(800)
         self.progress.setAlignment(Qt.AlignCenter) 
         self.progress.setValue(0)
         self.progress.setMaximum(0)
@@ -626,13 +608,13 @@ class ActionsTwo(QWidget):
         
         
         self.labelTwo = QLabel('', self)
-        self.labelTwo.setFont(self.fontThree)
-        self.labelTwo.setStyleSheet("color:rgb(34, 153, 84)")
+        self.labelTwo.setFont(fontThree)
+        self.labelTwo.setStyleSheet("color:LightGreen")
         self.labelTwo.setAlignment(Qt.AlignCenter)
         # self.labelTwo.hide()
         
-        self.effect = QGraphicsOpacityEffect(self)
         self.pixmap = QPixmap(pic)
+        self.pixmap = self.pixmap.scaled(50, 100, Qt.KeepAspectRatio,Qt.SmoothTransformation)
         self.labelThree = QLabel('', self)
         self.labelThree.setAlignment(Qt.AlignCenter)
        
@@ -640,9 +622,8 @@ class ActionsTwo(QWidget):
         
         self.mainLayout = QVBoxLayout()
         self.mainLayout.setAlignment(Qt.AlignCenter)
-        self.mainLayout.setSpacing(30)
-        self.v1.setSpacing(0)
-        self.mainLayout.addWidget(self.titleOne)
+        # self.mainLayout.setSpacing(30)
+        # self.v1.setSpacing(0)
         self.mainLayout.addLayout(self.h1)
         self.mainLayout.addLayout(self.v1)
         self.mainLayout.addLayout(self.h2)
@@ -714,7 +695,6 @@ class ActionsTwo(QWidget):
             self.start.setEnabled(True)   
             self.labelTwo.setText('¡Listo, ya puedes visualizar tus documentos!')
             self.labelThree.show()
-            self.labelThree.setGraphicsEffect(self.effect)
             self.labelThree.setPixmap(self.pixmap) 
             self.labelThree.show()
             self.progress.hide()
@@ -724,7 +704,7 @@ class ActionsTwo(QWidget):
         # close.setWindowTitle(self.title)
         close.setWindowTitle("¿Seguro?")
         close.setWindowIcon(QIcon(icon))
-        close.setFont(self.fontTwo)
+        close.setFont(fontTwo)
         close.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
         # close.setText("¿Estás seguro?")
         # close.setInformativeText('Se detendrá la función si se está ejecutando, pero no te preocupes ya que se guardará el avance.')
@@ -744,7 +724,10 @@ class ActionsTwo(QWidget):
         msg.setWindowTitle(self.title)
         msg.setWindowIcon(QIcon(icon))
         msg.setText("Error")
-        msg.setFont(self.fontTwo)
+        msg.setFont(fontTwo)
+        msg.setStandardButtons(QMessageBox.Ok)
+        buttonOk = msg.button(QMessageBox.Ok)
+        buttonOk.setFont(fontOne)
         msg.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
         msg.setInformativeText(errorMsg)
         msg.exec_()
@@ -761,7 +744,7 @@ class ActionsTwo(QWidget):
         '''
 Estas son las instrucciones de uso.'''
         )
-        info.setFont(self.fontTwo)
+        info.setFont(fontTwo)
         info.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
         info.setWindowModality(0)
         # info.setModal(True)
@@ -882,18 +865,10 @@ class ActionsThree(QWidget):
         
     def initUI(self):
         self.style = QApplication.style()
-        self.fontOne = QFont("Helvetica", 14)
-        self.fontTwo=QFont("Helvetica", 12)
-        self.fontThree=QFont('Gotham Bold', 18)
-        self.fontFour=QFont('Gotham Bold', 30)
-        self.fontFive=QFont('Gotham Bold', 12)
         
-        self.style1=("QPushButton { background-color: rgb(155, 61, 61 ); color: rgb(255, 255, 255 );border: 3px solid}"
-                     "QPushButton:hover { background-color: rgba(155, 61, 61,230) ;color: white;border: 3px solid}"
-                      "QPushButton:pressed { background-color: rgb(69, 70, 77) ;color: rgb(255, 255, 255 );border: 3px solid}")
-        self.style2=("QPushButton { background-color: rgb(69, 70, 77); color: rgb(255, 255, 255);border: 3px solid}"
-                      "QPushButton:hover { background-color: rgba(69, 70, 77,230) ;color: white;border: 3px solid}"
-                      "QPushButton:pressed { background-color: rgb(155, 61, 61 ); color: rgb(255, 255, 255 );border: 3px solid}")             
+        
+        self.style1=("QPushButton { background-color: rgb(155, 61, 61 ); color: rgb(255, 255, 255 );}")
+        self.style2=("QPushButton { background-color: rgb(69, 70, 77); color: rgb(255, 255, 255);}") 
         self.style3 = ("QProgressBar {border: 2px solid grey;border-radius: 5px;text-align: center}"
                          "QProgressBar::chunk {background-color: rgb(155, 61, 61 );width: 10px;margin: 1px;}")
           
@@ -905,76 +880,72 @@ class ActionsThree(QWidget):
         self.v1=QVBoxLayout()
         self.v2=QVBoxLayout()
                                
-        self.setStyleSheet("background-color: rgb(255, 255, 255); color: rgb(86, 88, 110)")
+        # self.setStyleSheet("background-color: rgb(255, 255, 255); color: rgb(86, 88, 110)")
         self.setWindowIcon(QIcon(icon))
     
-        self.titleOne = QLabel(choices[2][3:], self)
-        self.titleOne.setFont(self.fontThree)
-        self.titleOne.setStyleSheet("color:	rgb(86, 88, 110)")
-        self.titleOne.setAlignment(Qt.AlignLeft)
-    
+       
         self.buttonTwo = QPushButton('Cargar PDF', self)   
         self.buttonTwo.clicked.connect(self.openFileNameDialogOne)
-        self.buttonTwo.setFixedHeight(50)
-        self.buttonTwo.setMaximumWidth(200)
+        self.buttonTwo.setMinimumHeight(35)
+        # self.buttonTwo.setMaximumWidth(200)
         self.buttonTwo.setStyleSheet(self.style2)
-        self.buttonTwo.setFont(self.fontTwo)
+        self.buttonTwo.setFont(fontTwo)
         self.buttonTwo.setCursor(QCursor(Qt.PointingHandCursor))
         self.h1.addWidget(self.buttonTwo,1)
         
         self.myTextBoxOne = QLineEdit(self)
-        self.myTextBoxOne.setFixedHeight(50)  
-        self.myTextBoxOne.setMaximumWidth(600)
-        self.myTextBoxOne.setFont(self.fontTwo)
+        self.myTextBoxOne.setMinimumHeight(35)  
+        self.myTextBoxOne.setStyleSheet('background-color: rgb(69, 70, 77); color: white')
+        self.myTextBoxOne.setFont(fontTwo)
         self.myTextBoxOne.setReadOnly(True)
-        self.h1.addWidget(self.myTextBoxOne,3)
+        self.h1.addWidget(self.myTextBoxOne,4)
         
         self.buttonThree = QPushButton('Guardar como', self)      
         self.buttonThree.clicked.connect(self.openFileNameDialogTwo)
-        self.buttonThree.setFixedHeight(50)
-        self.buttonThree.setMaximumWidth(200)
+        self.buttonThree.setMinimumHeight(35)
+        # self.buttonThree.setMaximumWidth(200)
         self.buttonThree.setStyleSheet(self.style2)
-        self.buttonThree.setFont(self.fontTwo)
+        self.buttonThree.setFont(fontTwo)
         self.buttonThree.setCursor(QCursor(Qt.PointingHandCursor))
         self.h3.addWidget(self.buttonThree,1)
         
         self.myTextBoxTwo = QLineEdit(self)
-        self.myTextBoxTwo.setFixedHeight(50)  
-        self.myTextBoxTwo.setMaximumWidth(600)   
-        self.myTextBoxTwo.setFont(self.fontTwo)
+        self.myTextBoxTwo.setMinimumHeight(35)  
+        self.myTextBoxTwo.setStyleSheet('background-color: rgb(69, 70, 77); color: white')  
+        self.myTextBoxTwo.setFont(fontTwo)
         self.myTextBoxTwo.setReadOnly(True)
-        self.h3.addWidget(self.myTextBoxTwo,3)
+        self.h3.addWidget(self.myTextBoxTwo,4)
         
-        self.lineOne = QLabel('/'*250, self) 
-        self.lineOne.setMaximumWidth(800)
-        self.v1.addWidget(self.lineOne)
+        # self.lineOne = QLabel('/'*250, self) 
+        # self.lineOne.setMaximumWidth(800)
+        # self.v1.addWidget(self.lineOne)
         
         self.CheckOne = QCheckBox('Abrir de inmediato el documento generado', self)  
-        self.CheckOne.setFont(self.fontTwo)
-        self.CheckOne.setFixedHeight(50)
-        self.CheckOne.setMaximumWidth(800)
+        self.CheckOne.setFont(fontTwo)
+        self.CheckOne.setMinimumHeight(35)
+        # self.CheckOne.setMaximumWidth(800)
         self.CheckOne.setStyleSheet("QCheckBox {background-color: rgb(155, 61, 61); color: rgb(255, 255, 255);padding-left:10px;}") 
         self.CheckOne.setChecked(True)
         self.v1.addWidget(self.CheckOne)
         
         self.CheckTwo = QCheckBox('Convertir de inmediato a PDF/A', self)
-        self.CheckTwo.setFont(self.fontTwo)
-        self.CheckTwo.setFixedHeight(50)
-        self.CheckTwo.setMaximumWidth(800)
+        self.CheckTwo.setFont(fontTwo)
+        self.CheckTwo.setMinimumHeight(35)
+        # self.CheckTwo.setMaximumWidth(800)
         self.CheckTwo.setStyleSheet("QCheckBox {background-color: rgb(155, 61, 61); color: rgb(255, 255, 255);padding-left:10px;}")  
         self.CheckTwo.setChecked(False)
         self.v1.addWidget(self.CheckTwo)
              
-        self.lineTwo = QLabel('/'*250, self)
-        self.lineTwo.setMaximumWidth(800)
-        self.v1.addWidget(self.lineTwo)     
-        
+        # self.lineTwo = QLabel('/'*250, self)
+        # self.lineTwo.setMaximumWidth(800)
+        # self.v1.addWidget(self.lineTwo)     
+        self.h2.addStretch()
         self.start = QPushButton('Ejecutar', self)
         self.start.setStyleSheet(self.style1)
         self.start.setFocus()
-        self.start.setFont(self.fontOne)
-        self.start.setFixedHeight(50)
-        self.start.setMaximumWidth(200)
+        self.start.setFont(fontOne)
+        self.start.setMinimumHeight(35)
+        # self.start.setMaximumWidth(200)
         self.start.setEnabled(True)
         self.start.setCursor(QCursor(Qt.PointingHandCursor))
         self.start.clicked.connect(self.started) 
@@ -982,9 +953,9 @@ class ActionsThree(QWidget):
     
         self.button = QPushButton('Limpiar', self)
         self.button.setStyleSheet(self.style1)
-        self.button.setFont(self.fontOne)
-        self.button.setFixedHeight(50)
-        self.button.setMaximumWidth(200)
+        self.button.setFont(fontOne)
+        self.button.setMinimumHeight(35)
+        # self.button.setMaximumWidth(200)
         self.button.setEnabled(True)
         self.button.setCursor(QCursor(Qt.PointingHandCursor))
         self.button.clicked.connect(self.clean) 
@@ -993,30 +964,29 @@ class ActionsThree(QWidget):
         self.progress = QProgressBar(self)
         self.progress.setFormat("")
         self.progress.setStyleSheet(self.style3)    
-        self.progress.setFont(self.fontOne)
-        self.progress.setMaximumWidth(800)
+        self.progress.setFont(fontOne)
+        # self.progress.setMaximumWidth(800)
         self.progress.setAlignment(Qt.AlignCenter) 
         self.progress.setValue(0)
         self.progress.setMaximum(0)
         self.progress.hide()
                 
         self.labelTwo = QLabel('', self)
-        self.labelTwo.setFont(self.fontThree)
-        self.labelTwo.setStyleSheet("color:rgb(34, 153, 84)")
+        self.labelTwo.setFont(fontThree)
+        self.labelTwo.setStyleSheet("color:LightGreen")
         self.labelTwo.setAlignment(Qt.AlignCenter)
         # self.labelTwo.hide()
         
-        self.effect = QGraphicsOpacityEffect(self)
         self.pixmap = QPixmap(pic)
+        self.pixmap = self.pixmap.scaled(50, 50, Qt.KeepAspectRatio,Qt.SmoothTransformation)
         self.labelThree = QLabel('', self)
         self.labelThree.setAlignment(Qt.AlignCenter)      
         # self.info.setIcon(QIcon(self.style.standardIcon(QStyle.SP_FileDialogInfoView)))  
         
         self.mainLayout = QVBoxLayout()
         self.mainLayout.setAlignment(Qt.AlignCenter)
-        self.mainLayout.setSpacing(30)
-        self.v1.setSpacing(0)
-        self.mainLayout.addWidget(self.titleOne)
+        # self.mainLayout.setSpacing(30)
+        # self.v1.setSpacing(0)
         self.mainLayout.addLayout(self.h1)
         self.mainLayout.addLayout(self.h3)
         self.mainLayout.addLayout(self.v1)
@@ -1111,7 +1081,7 @@ class ActionsThree(QWidget):
             self.var2=None
             self.start.setEnabled(True)   
             self.labelTwo.setText('¡Listo, ya puedes visualizar tus documentos!')
-            self.labelThree.setGraphicsEffect(self.effect)
+            
             self.labelThree.setPixmap(self.pixmap) 
             self.labelThree.show()
             self.progress.hide()
@@ -1121,7 +1091,7 @@ class ActionsThree(QWidget):
         # close.setWindowTitle(self.title)
         close.setWindowTitle("¿Seguro?")
         close.setWindowIcon(QIcon(icon))
-        close.setFont(self.fontTwo)
+        close.setFont(fontTwo)
         close.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
         # close.setText("¿Estás seguro?")
         # close.setInformativeText('Se detendrá la función si se está ejecutando, pero no te preocupes ya que se guardará el avance.')
@@ -1141,7 +1111,10 @@ class ActionsThree(QWidget):
         msg.setWindowTitle(self.title)
         msg.setWindowIcon(QIcon(icon))
         msg.setText("File Error")
-        msg.setFont(self.fontTwo)
+        msg.setFont(fontTwo)
+        msg.setStandardButtons(QMessageBox.Ok)
+        buttonOk = msg.button(QMessageBox.Ok)
+        buttonOk.setFont(fontOne)
         msg.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
         msg.setInformativeText(errorMsg)
         msg.exec_()
@@ -1158,7 +1131,7 @@ class ActionsThree(QWidget):
         '''
 Estas son las instrucciones de uso.'''
         )
-        info.setFont(self.fontTwo)
+        info.setFont(fontTwo)
         info.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
         info.setWindowModality(0)
         # info.setModal(True)
@@ -1258,18 +1231,10 @@ class ActionsFour(QWidget):
         
     def initUI(self):
         self.style = QApplication.style()
-        self.fontOne = QFont("Helvetica", 14)
-        self.fontTwo=QFont("Helvetica", 12)
-        self.fontThree=QFont('Gotham Bold', 18)
-        self.fontFour=QFont('Gotham Bold', 30)
-        self.fontFive=QFont('Gotham Bold', 12)
+       
         
-        self.style1=("QPushButton { background-color: rgb(155, 61, 61 ); color: rgb(255, 255, 255 );border: 3px solid}"
-                     "QPushButton:hover { background-color: rgba(155, 61, 61,230) ;color: white;border: 3px solid}"
-                      "QPushButton:pressed { background-color: rgb(69, 70, 77) ;color: rgb(255, 255, 255 );border: 3px solid}")
-        self.style2=("QPushButton { background-color: rgb(69, 70, 77); color: rgb(255, 255, 255);border: 3px solid}"
-                      "QPushButton:hover { background-color: rgba(69, 70, 77,230) ;color: white;border: 3px solid}"
-                      "QPushButton:pressed { background-color: rgb(155, 61, 61 ); color: rgb(255, 255, 255 );border: 3px solid}")             
+        self.style1=("QPushButton { background-color: rgb(155, 61, 61 ); color: rgb(255, 255, 255 );}")
+        self.style2=("QPushButton { background-color: rgb(69, 70, 77); color: rgb(255, 255, 255);}") 
         self.style3 = ("QProgressBar {border: 2px solid grey;border-radius: 5px;text-align: center}"
                          "QProgressBar::chunk {background-color: rgb(155, 61, 61 );width: 10px;margin: 1px;}")
           
@@ -1281,68 +1246,64 @@ class ActionsFour(QWidget):
         self.v1=QVBoxLayout()
         self.v2=QVBoxLayout()
                                
-        self.setStyleSheet("background-color: rgb(255, 255, 255); color: rgb(86, 88, 110)")
+        # self.setStyleSheet("background-color: rgb(255, 255, 255); color: rgb(86, 88, 110)")
         self.setWindowIcon(QIcon(icon))
     
-        self.titleOne = QLabel(choices[3][3:], self)
-        self.titleOne.setFont(self.fontThree)
-        self.titleOne.setStyleSheet("color:	rgb(86, 88, 110)")
-        self.titleOne.setAlignment(Qt.AlignLeft)
-    
+      
         self.buttonTwo = QPushButton('Cargar imágenes', self)   
         self.buttonTwo.clicked.connect(self.openFileNameDialogOne)
-        self.buttonTwo.setFixedHeight(50)
-        self.buttonTwo.setMaximumWidth(200)
+        self.buttonTwo.setMinimumHeight(35)
+        # self.buttonTwo.setMaximumWidth(200)
         self.buttonTwo.setStyleSheet(self.style2)
-        self.buttonTwo.setFont(self.fontTwo)
+        self.buttonTwo.setFont(fontTwo)
         self.buttonTwo.setCursor(QCursor(Qt.PointingHandCursor))
         self.h1.addWidget(self.buttonTwo,1)
         
         self.myTextBoxOne = QLineEdit(self)
-        self.myTextBoxOne.setFixedHeight(50)  
-        self.myTextBoxOne.setMaximumWidth(600)
-        self.myTextBoxOne.setFont(self.fontTwo)
+        self.myTextBoxOne.setMinimumHeight(35)  
+        self.myTextBoxOne.setStyleSheet('background-color: rgb(69, 70, 77); color: white')
+        self.myTextBoxOne.setFont(fontTwo)
         self.myTextBoxOne.setReadOnly(True)
-        self.h1.addWidget(self.myTextBoxOne,3)
+        self.h1.addWidget(self.myTextBoxOne,4)
         
         self.buttonThree = QPushButton('Guardar como', self)      
         self.buttonThree.clicked.connect(self.openFileNameDialogTwo)
-        self.buttonThree.setFixedHeight(50)
-        self.buttonThree.setMaximumWidth(200)
+        self.buttonThree.setMinimumHeight(35)
+        # self.buttonThree.setMaximumWidth(200)
         self.buttonThree.setStyleSheet(self.style2)
-        self.buttonThree.setFont(self.fontTwo)
+        self.buttonThree.setFont(fontTwo)
         self.buttonThree.setCursor(QCursor(Qt.PointingHandCursor))
         self.h3.addWidget(self.buttonThree,1)
         
         self.myTextBoxTwo = QLineEdit(self)
-        self.myTextBoxTwo.setFixedHeight(50)  
-        self.myTextBoxTwo.setMaximumWidth(600)   
-        self.myTextBoxTwo.setFont(self.fontTwo)
+        self.myTextBoxTwo.setMinimumHeight(35)  
+        self.myTextBoxTwo.setStyleSheet('background-color: rgb(69, 70, 77); color: white')   
+        self.myTextBoxTwo.setFont(fontTwo)
         self.myTextBoxTwo.setReadOnly(True)
-        self.h3.addWidget(self.myTextBoxTwo,3)
+        self.h3.addWidget(self.myTextBoxTwo,4)
         
-        self.lineOne = QLabel('/'*250, self) 
-        self.lineOne.setMaximumWidth(800)
-        self.v1.addWidget(self.lineOne)
+        # self.lineOne = QLabel('/'*250, self) 
+        # self.lineOne.setMaximumWidth(800)
+        # self.v1.addWidget(self.lineOne)
         
         self.CheckOne = QCheckBox('Abrir de inmediato el documento generado', self)  
-        self.CheckOne.setFont(self.fontTwo)
-        self.CheckOne.setFixedHeight(50)
-        self.CheckOne.setMaximumWidth(800)
+        self.CheckOne.setFont(fontTwo)
+        self.CheckOne.setMinimumHeight(35)
+        # self.CheckOne.setMaximumWidth(800)
         self.CheckOne.setStyleSheet("QCheckBox {background-color: rgb(155, 61, 61); color: rgb(255, 255, 255);padding-left:10px;}") 
         self.CheckOne.setChecked(True)
         self.v1.addWidget(self.CheckOne)
              
-        self.lineTwo = QLabel('/'*250, self)
-        self.lineTwo.setMaximumWidth(800)
-        self.v1.addWidget(self.lineTwo)     
-        
+        # self.lineTwo = QLabel('/'*250, self)
+        # self.lineTwo.setMaximumWidth(800)
+        # self.v1.addWidget(self.lineTwo)     
+        self.h2.addStretch()
         self.start = QPushButton('Ejecutar', self)
         self.start.setStyleSheet(self.style1)
         self.start.setFocus()
-        self.start.setFont(self.fontOne)
-        self.start.setFixedHeight(50)
-        self.start.setMaximumWidth(200)
+        self.start.setFont(fontOne)
+        self.start.setMinimumHeight(35)
+        # self.start.setMaximumWidth(200)
         self.start.setEnabled(True)
         self.start.setCursor(QCursor(Qt.PointingHandCursor))
         self.start.clicked.connect(self.started) 
@@ -1350,9 +1311,9 @@ class ActionsFour(QWidget):
     
         self.button = QPushButton('Limpiar', self)
         self.button.setStyleSheet(self.style1)
-        self.button.setFont(self.fontOne)
-        self.button.setFixedHeight(50)
-        self.button.setMaximumWidth(200)
+        self.button.setFont(fontOne)
+        self.button.setMinimumHeight(35)
+        # self.button.setMaximumWidth(200)
         self.button.setEnabled(True)
         self.button.setCursor(QCursor(Qt.PointingHandCursor))
         self.button.clicked.connect(self.clean) 
@@ -1361,8 +1322,8 @@ class ActionsFour(QWidget):
         self.progress = QProgressBar(self)
         self.progress.setFormat("")
         self.progress.setStyleSheet(self.style3)    
-        self.progress.setFont(self.fontOne)
-        self.progress.setMaximumWidth(800)
+        self.progress.setFont(fontOne)
+        # self.progress.setMaximumWidth(800)
         self.progress.setAlignment(Qt.AlignCenter) 
         self.progress.setValue(0)
         self.progress.setMaximum(0)
@@ -1370,22 +1331,22 @@ class ActionsFour(QWidget):
         
         
         self.labelTwo = QLabel('', self)
-        self.labelTwo.setFont(self.fontThree)
-        self.labelTwo.setStyleSheet("color:rgb(34, 153, 84)")
+        self.labelTwo.setFont(fontThree)
+        self.labelTwo.setStyleSheet("color:LightGreen")
         self.labelTwo.setAlignment(Qt.AlignCenter)
         # self.labelTwo.hide()
         
         self.effect = QGraphicsOpacityEffect(self)
         self.pixmap = QPixmap(pic)
+        self.pixmap = self.pixmap.scaled(50, 50, Qt.KeepAspectRatio,Qt.SmoothTransformation)
         self.labelThree = QLabel('', self)
         self.labelThree.setAlignment(Qt.AlignCenter)       
         # self.info.setIcon(QIcon(self.style.standardIcon(QStyle.SP_FileDialogInfoView)))  
         
         self.mainLayout = QVBoxLayout()
         self.mainLayout.setAlignment(Qt.AlignCenter)
-        self.mainLayout.setSpacing(30)
-        self.v1.setSpacing(0)
-        self.mainLayout.addWidget(self.titleOne)
+        # self.mainLayout.setSpacing(30)
+        # self.v1.setSpacing(0)
         self.mainLayout.addLayout(self.h1)
         self.mainLayout.addLayout(self.h3)
         self.mainLayout.addLayout(self.v1)
@@ -1478,7 +1439,7 @@ class ActionsFour(QWidget):
             self.start.setEnabled(True)   
             self.labelTwo.setText('¡Listo, ya puedes visualizar tus documentos!')
             self.labelThree.show()
-            self.labelThree.setGraphicsEffect(self.effect)
+            
             self.labelThree.setPixmap(self.pixmap) 
             self.labelThree.show()
             self.progress.hide()
@@ -1488,7 +1449,7 @@ class ActionsFour(QWidget):
         # close.setWindowTitle(self.title)
         close.setWindowTitle("¿Estás seguro?")
         close.setWindowIcon(QIcon(icon))
-        close.setFont(self.fontTwo)
+        close.setFont(fontTwo)
         close.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
         # close.setText("¿Estás seguro?")
         # close.setInformativeText('Se detendrá la función si se está ejecutando, pero no te preocupes ya que se guardará el avance.')
@@ -1508,7 +1469,10 @@ class ActionsFour(QWidget):
         msg.setWindowTitle(self.title)
         msg.setWindowIcon(QIcon(icon))
         msg.setText("Error")
-        msg.setFont(self.fontTwo)
+        msg.setFont(fontTwo)
+        msg.setStandardButtons(QMessageBox.Ok)
+        buttonOk = msg.button(QMessageBox.Ok)
+        buttonOk.setFont(fontOne)
         msg.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
         msg.setInformativeText(errorMsg)
         msg.exec_()
@@ -1522,7 +1486,7 @@ class ActionsFour(QWidget):
         info.setWindowIcon(QIcon(icon))
         info.setText('work in progress')
 
-        info.setFont(self.fontTwo)
+        info.setFont(fontTwo)
         info.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
         info.setWindowModality(0)
         # info.setModal(True)
@@ -1678,24 +1642,16 @@ class ActionsFive(QWidget):
         
     def initUI(self):
         self.style = QApplication.style()
-        self.fontOne = QFont("Helvetica", 14)
-        self.fontTwo=QFont("Helvetica", 12)
-        self.fontThree=QFont('Gotham Bold', 18)
-        self.fontFour=QFont('Gotham Bold', 30)
-        self.fontFive=QFont('Gotham Bold', 12)
-        
-        self.style1=("QPushButton { background-color: rgb(155, 61, 61 ); color: rgb(255, 255, 255 );border: 3px solid}"
-                     "QPushButton:hover { background-color: rgba(155, 61, 61,230) ;color: white;border: 3px solid}"
-                      "QPushButton:pressed { background-color: rgb(69, 70, 77) ;color: rgb(255, 255, 255 );border: 3px solid}")
-        self.style2=("QPushButton { background-color: rgb(69, 70, 77); color: rgb(255, 255, 255);border: 3px solid}"
-                      "QPushButton:hover { background-color: rgba(69, 70, 77,230) ;color: white;border: 3px solid}"
-                      "QPushButton:pressed { background-color: rgb(155, 61, 61 ); color: rgb(255, 255, 255 );border: 3px solid}")             
+       
+        self.style1=("QPushButton { background-color: rgb(155, 61, 61 ); color: rgb(255, 255, 255 );}")
+        self.style2=("QPushButton { background-color: rgb(69, 70, 77); color: rgb(255, 255, 255);}") 
         self.style3 = ("QProgressBar {border: 2px solid grey;border-radius: 5px;text-align: center}"
                          "QProgressBar::chunk {background-color: rgb(155, 61, 61 );width: 10px;margin: 1px;}")
         self.style4=("QComboBox {selection-background-color: rgb(69, 70, 77);background-color: rgb(69, 70, 77); color: rgb(255, 255, 255);padding-left:10px}"
                      "QComboBox QAbstractItemView::item { min-height: 35px; min-width: 50px;}"
-                     "QListView::item:selected { color: black; background-color: lightgray}") 
-        self.style5=("QPushButton { background-color: rgb(69, 70, 77); color: rgb(255, 255, 255);border: 3px solid}")                     
+                     "QListView::item { color: white; background-color: rgb(69, 70, 77)}"
+                     "QListView::item:selected { color: white; background-color: IndianRed}") 
+        self.style5=("QPushButton { background-color: rgb(69, 70, 77); color: rgb(255, 255, 255);}")                     
          
         self.setWindowTitle(self.title)
              
@@ -1705,50 +1661,46 @@ class ActionsFive(QWidget):
         self.h4=QHBoxLayout()
         self.v2=QVBoxLayout()
                                
-        self.setStyleSheet("background-color: rgb(255, 255, 255); color: rgb(86, 88, 110)")
+        # self.setStyleSheet("background-color: rgb(255, 255, 255); color: rgb(86, 88, 110)")
         self.setWindowIcon(QIcon(icon))
     
-        self.titleOne = QLabel(choices[4][3:], self)
-        self.titleOne.setFont(self.fontThree)
-        self.titleOne.setStyleSheet("color:	rgb(86, 88, 110)")
-        self.titleOne.setAlignment(Qt.AlignLeft)
-    
+      
         self.buttonTwo = QPushButton('Cargar PDF', self)   
         self.buttonTwo.clicked.connect(self.openFileNameDialogOne)
-        self.buttonTwo.setFixedHeight(50)
-        self.buttonTwo.setMaximumWidth(200)
+        self.buttonTwo.setMinimumHeight(35)
+        # self.buttonTwo.setMaximumWidth(200)
         self.buttonTwo.setStyleSheet(self.style2)
-        self.buttonTwo.setFont(self.fontTwo)
+        self.buttonTwo.setFont(fontTwo)
         self.buttonTwo.setCursor(QCursor(Qt.PointingHandCursor))
         self.h1.addWidget(self.buttonTwo,1)
         
         self.myTextBoxOne = QLineEdit(self)
-        self.myTextBoxOne.setFixedHeight(50)  
-        self.myTextBoxOne.setMaximumWidth(600)
-        self.myTextBoxOne.setFont(self.fontTwo)
+        self.myTextBoxOne.setMinimumHeight(35)  
+        self.myTextBoxOne.setStyleSheet('background-color: rgb(69, 70, 77); color: white')
+        self.myTextBoxOne.setFont(fontTwo)
         self.myTextBoxOne.setReadOnly(True)
-        self.h1.addWidget(self.myTextBoxOne,3)
+        self.h1.addWidget(self.myTextBoxOne,4)
         
         self.buttonThree = QPushButton('Nombre', self)  
-        self.buttonThree.setFixedHeight(50)
-        self.buttonThree.setMaximumWidth(200)
+        self.buttonThree.setMinimumHeight(35)
+        # self.buttonThree.setMaximumWidth(200)
         self.buttonThree.setStyleSheet(self.style5)
-        self.buttonThree.setFont(self.fontTwo)
+        self.buttonThree.setFont(fontTwo)
         self.buttonThree.setEnabled(False)
         self.h3.addWidget(self.buttonThree,1)
         
         self.myTextBoxTwo = QLineEdit(self)
-        self.myTextBoxTwo.setFixedHeight(50)  
-        self.myTextBoxTwo.setMaximumWidth(600)   
-        self.myTextBoxTwo.setFont(self.fontTwo)
-        self.myTextBoxTwo.setText('documento')
+        self.myTextBoxTwo.setMinimumHeight(35)  
+        self.myTextBoxTwo.setStyleSheet('background-color: rgb(69, 70, 77); color: white')  
+        self.myTextBoxTwo.setFont(fontTwo)
+        self.myTextBoxTwo.setPlaceholderText('Ingresa un nombre para el archivo .zip')
         self.myTextBoxTwo.setToolTip('Escribe un nombre para la carpeta que contendrá el documento')
-        self.h3.addWidget(self.myTextBoxTwo,3)
+        self.h3.addWidget(self.myTextBoxTwo,4)
                                   
         self.buttonFour = QPushButton('Opciones', self)  
-        self.buttonFour.setFixedHeight(50)  
-        self.buttonFour.setMaximumWidth(200)
-        self.buttonFour.setFont(self.fontTwo)
+        self.buttonFour.setMinimumHeight(35)  
+        # self.buttonFour.setMaximumWidth(200)
+        self.buttonFour.setFont(fontTwo)
         self.buttonFour.setStyleSheet(self.style5)
         self.buttonFour.setEnabled(False)
         self.h4.addWidget(self.buttonFour,1)
@@ -1756,23 +1708,24 @@ class ActionsFive(QWidget):
         self.combo=QComboBox(self)
         self.combo.addItems(['Requerimiento y resultado',
                              'Cartas'])
-        self.combo.setFixedHeight(50)  
-        self.combo.setMaximumWidth(600)
-        self.combo.setFont(self.fontTwo)
+        self.combo.setMinimumHeight(35)  
+        # self.combo.setMaximumWidth(600)
+        self.combo.setFont(fontTwo)
         self.combo.setStyleSheet(self.style4)
         self.listview=QListView()
-        self.listview.setFont(self.fontTwo)
+        self.listview.setFont(fontTwo)
         self.listview.setCursor(QCursor(Qt.PointingHandCursor))
         self.combo.setView(self.listview)
         self.combo.setCursor(QCursor(Qt.PointingHandCursor))
-        self.h4.addWidget(self.combo,3)
-                      
+        self.h4.addWidget(self.combo,4)
+        
+        self.h2.addStretch()             
         self.start = QPushButton('Ejecutar', self)
         self.start.setStyleSheet(self.style1)
         self.start.setFocus()
-        self.start.setFont(self.fontOne)
-        self.start.setFixedHeight(50)
-        self.start.setMaximumWidth(200)
+        self.start.setFont(fontOne)
+        self.start.setMinimumHeight(35)
+        # self.start.setMaximumWidth(200)
         self.start.setEnabled(True)
         self.start.setCursor(QCursor(Qt.PointingHandCursor))
         self.start.clicked.connect(self.started) 
@@ -1780,9 +1733,9 @@ class ActionsFive(QWidget):
     
         self.button = QPushButton('Limpiar', self)
         self.button.setStyleSheet(self.style1)
-        self.button.setFont(self.fontOne)
-        self.button.setFixedHeight(50)
-        self.button.setMaximumWidth(200)
+        self.button.setFont(fontOne)
+        self.button.setMinimumHeight(35)
+        # self.button.setMaximumWidth(200)
         self.button.setEnabled(True)
         self.button.setCursor(QCursor(Qt.PointingHandCursor))
         self.button.clicked.connect(self.clean) 
@@ -1791,29 +1744,29 @@ class ActionsFive(QWidget):
         self.progress = QProgressBar(self)
         self.progress.setFormat("")
         self.progress.setStyleSheet(self.style3)    
-        self.progress.setFont(self.fontOne)
-        self.progress.setMaximumWidth(800)
+        self.progress.setFont(fontOne)
+        # self.progress.setMaximumWidth(800)
         self.progress.setAlignment(Qt.AlignCenter) 
         self.progress.setValue(0)
         self.progress.setMaximum(0)
         self.progress.hide()       
         
         self.labelTwo = QLabel('', self)
-        self.labelTwo.setFont(self.fontThree)
-        self.labelTwo.setStyleSheet("color:rgb(34, 153, 84)")
+        self.labelTwo.setFont(fontThree)
+        self.labelTwo.setStyleSheet("color:LightGreen")
         self.labelTwo.setAlignment(Qt.AlignCenter)
         # self.labelTwo.hide()
         
         self.effect = QGraphicsOpacityEffect(self)
         self.pixmap = QPixmap(pic)
+        self.pixmap = self.pixmap.scaled(50, 50, Qt.KeepAspectRatio,Qt.SmoothTransformation)
         self.labelThree = QLabel('', self)
         self.labelThree.setAlignment(Qt.AlignCenter)       
         # self.info.setIcon(QIcon(self.style.standardIcon(QStyle.SP_FileDialogInfoView)))  
         
         self.mainLayout = QVBoxLayout()
         self.mainLayout.setAlignment(Qt.AlignCenter)
-        self.mainLayout.setSpacing(30)
-        self.mainLayout.addWidget(self.titleOne)
+        # self.mainLayout.setSpacing(30)
         self.mainLayout.addLayout(self.h1)
         self.mainLayout.addLayout(self.h3)
         self.mainLayout.addLayout(self.h4)
@@ -1896,7 +1849,7 @@ class ActionsFive(QWidget):
             self.start.setEnabled(True)   
             self.labelTwo.setText('¡Listo, ya puedes visualizar tus documentos!')
             self.labelThree.show()
-            self.labelThree.setGraphicsEffect(self.effect)
+            
             self.labelThree.setPixmap(self.pixmap) 
             self.labelThree.show()
             self.progress.hide()
@@ -1906,7 +1859,7 @@ class ActionsFive(QWidget):
         # close.setWindowTitle(self.title)
         close.setWindowTitle("¿Estás seguro?")
         close.setWindowIcon(QIcon(icon))
-        close.setFont(self.fontTwo)
+        close.setFont(fontTwo)
         close.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
         # close.setText("¿Estás seguro?")
         # close.setInformativeText('Se detendrá la función si se está ejecutando, pero no te preocupes ya que se guardará el avance.')
@@ -1927,7 +1880,10 @@ class ActionsFive(QWidget):
         msg.setWindowTitle(self.title)
         msg.setWindowIcon(QIcon(icon))
         msg.setText("Error")
-        msg.setFont(self.fontTwo)
+        msg.setFont(fontTwo)
+        msg.setStandardButtons(QMessageBox.Ok)
+        buttonOk = msg.button(QMessageBox.Ok)
+        buttonOk.setFont(fontOne)
         msg.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
         msg.setInformativeText(errorMsg)
         msg.exec_()
@@ -1943,7 +1899,7 @@ class ActionsFive(QWidget):
         '''
 Estas son las instrucciones de uso.'''
         )
-        info.setFont(self.fontTwo)
+        info.setFont(fontTwo)
         info.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
         info.setWindowModality(0)
         # info.setModal(True)
@@ -2047,18 +2003,10 @@ class ActionsSix(QWidget):
         
     def initUI(self):
         self.style = QApplication.style()
-        self.fontOne = QFont("Helvetica", 14)
-        self.fontTwo=QFont("Helvetica", 12)
-        self.fontThree=QFont('Gotham Bold', 18)
-        self.fontFour=QFont('Gotham Bold', 30)
-        self.fontFive=QFont('Gotham Bold', 12)
+       
         
-        self.style1=("QPushButton { background-color: rgb(155, 61, 61 ); color: rgb(255, 255, 255 );border: 3px solid}"
-                     "QPushButton:hover { background-color: rgba(155, 61, 61,230) ;color: white;border: 3px solid}"
-                      "QPushButton:pressed { background-color: rgb(69, 70, 77) ;color: rgb(255, 255, 255 );border: 3px solid}")
-        self.style2=("QPushButton { background-color: rgb(69, 70, 77); color: rgb(255, 255, 255);border: 3px solid}"
-                      "QPushButton:hover { background-color: rgba(69, 70, 77,230) ;color: white;border: 3px solid}"
-                      "QPushButton:pressed { background-color: rgb(155, 61, 61 ); color: rgb(255, 255, 255 );border: 3px solid}")             
+        self.style1=("QPushButton { background-color: rgb(155, 61, 61 ); color: rgb(255, 255, 255 );}")
+        self.style2=("QPushButton { background-color: rgb(69, 70, 77); color: rgb(255, 255, 255);}") 
         self.style3 = ("QProgressBar {border: 2px solid grey;border-radius: 5px;text-align: center}"
                          "QProgressBar::chunk {background-color: rgb(155, 61, 61 );width: 10px;margin: 1px;}")
         
@@ -2070,68 +2018,66 @@ class ActionsSix(QWidget):
         self.h4=QHBoxLayout()
         self.v2=QVBoxLayout()
                                
-        self.setStyleSheet("background-color: rgb(255, 255, 255); color: rgb(86, 88, 110)")
+        # self.setStyleSheet("background-color: rgb(255, 255, 255); color: rgb(86, 88, 110)")
         self.setWindowIcon(QIcon(icon))
     
-        self.titleOne = QLabel(choices[5][3:], self)
-        self.titleOne.setFont(self.fontThree)
-        self.titleOne.setStyleSheet("color:	rgb(86, 88, 110)")
-        self.titleOne.setAlignment(Qt.AlignLeft)
     
         self.buttonTwo = QPushButton('RD', self)   
         self.buttonTwo.clicked.connect(self.openFileNameDialogOne)
-        self.buttonTwo.setFixedHeight(50)
-        self.buttonTwo.setMaximumWidth(200)
+        self.buttonTwo.setMinimumHeight(35)
+        # self.buttonTwo.setMaximumWidth(200)
         self.buttonTwo.setStyleSheet(self.style2)
-        self.buttonTwo.setFont(self.fontTwo)
+        self.buttonTwo.setFont(fontTwo)
         self.buttonTwo.setCursor(QCursor(Qt.PointingHandCursor))
         self.h1.addWidget(self.buttonTwo,1)
         
         self.buttonThree = QPushButton('RM', self)      
         self.buttonThree.clicked.connect(self.openFileNameDialogTwo)
-        self.buttonThree.setFixedHeight(50)
-        self.buttonThree.setMaximumWidth(200)
+        self.buttonThree.setMinimumHeight(35)
+        # self.buttonThree.setMaximumWidth(200)
         self.buttonThree.setStyleSheet(self.style2)
-        self.buttonThree.setFont(self.fontTwo)
+        self.buttonThree.setFont(fontTwo)
         self.buttonThree.setCursor(QCursor(Qt.PointingHandCursor)) 
         self.h3.addWidget(self.buttonThree,1)
         
         self.buttonFour = QPushButton('RPV', self)      
         self.buttonFour.clicked.connect(self.openFileNameDialogThree)
-        self.buttonFour.setFixedHeight(50)
-        self.buttonFour.setMaximumWidth(200)
+        self.buttonFour.setMinimumHeight(35)
+        # self.buttonFour.setMaximumWidth(200)
         self.buttonFour.setStyleSheet(self.style2)
-        self.buttonFour.setFont(self.fontTwo)
+        self.buttonFour.setFont(fontTwo)
         self.buttonFour.setCursor(QCursor(Qt.PointingHandCursor))
         self.h4.addWidget(self.buttonFour,1)
         
         self.myTextBoxOne = QLineEdit(self)
-        self.myTextBoxOne.setFixedHeight(50)  
-        self.myTextBoxOne.setMaximumWidth(600)
-        self.myTextBoxOne.setFont(self.fontTwo)
+        self.myTextBoxOne.setMinimumHeight(35)  
+        self.myTextBoxOne.setStyleSheet('background-color: rgb(69, 70, 77); color: white')
+        self.myTextBoxOne.setFont(fontTwo)
         self.myTextBoxOne.setReadOnly(True)
-        self.h1.addWidget(self.myTextBoxOne,3)
+        self.h1.addWidget(self.myTextBoxOne,4)
         
         self.myTextBoxTwo = QLineEdit(self)
-        self.myTextBoxTwo.setFixedHeight(50)  
-        self.myTextBoxTwo.setMaximumWidth(600)    
-        self.myTextBoxTwo.setFont(self.fontTwo)
+        self.myTextBoxTwo.setMinimumHeight(35)  
+        self.myTextBoxTwo.setStyleSheet('background-color: rgb(69, 70, 77); color: white')  
+        self.myTextBoxTwo.setFont(fontTwo)
         self.myTextBoxTwo.setReadOnly(True)
-        self.h3.addWidget(self.myTextBoxTwo,3)
+        self.myTextBoxTwo.setPlaceholderText('Déjalo en blanco si no tienes RMs')
+        self.h3.addWidget(self.myTextBoxTwo,4)
         
         self.myTextBoxThree = QLineEdit(self)
-        self.myTextBoxThree.setFixedHeight(50)  
-        self.myTextBoxThree.setMaximumWidth(600)    
-        self.myTextBoxThree.setFont(self.fontTwo)
+        self.myTextBoxThree.setMinimumHeight(35)  
+        self.myTextBoxThree.setStyleSheet('background-color: rgb(69, 70, 77); color: white')    
+        self.myTextBoxThree.setFont(fontTwo)
         self.myTextBoxThree.setReadOnly(True)
-        self.h4.addWidget(self.myTextBoxThree,3)
-                            
+        self.h4.addWidget(self.myTextBoxThree,4)
+         
+        self.h2.addStretch()                   
         self.start = QPushButton('Ejecutar', self)
         self.start.setStyleSheet(self.style1)
         self.start.setFocus()
-        self.start.setFont(self.fontOne)
-        self.start.setFixedHeight(50)
-        self.start.setMaximumWidth(200)
+        self.start.setFont(fontOne)
+        self.start.setMinimumHeight(35)
+        # self.start.setMaximumWidth(200)
         self.start.setEnabled(True)
         self.start.setCursor(QCursor(Qt.PointingHandCursor))
         self.start.clicked.connect(self.started) 
@@ -2139,9 +2085,9 @@ class ActionsSix(QWidget):
     
         self.button = QPushButton('Limpiar', self)
         self.button.setStyleSheet(self.style1)
-        self.button.setFont(self.fontOne)
-        self.button.setFixedHeight(50)
-        self.button.setMaximumWidth(200)
+        self.button.setFont(fontOne)
+        self.button.setMinimumHeight(35)
+        # self.button.setMaximumWidth(200)
         self.button.setEnabled(True)
         self.button.setCursor(QCursor(Qt.PointingHandCursor))
         self.button.clicked.connect(self.clean) 
@@ -2150,26 +2096,27 @@ class ActionsSix(QWidget):
         self.progress = QProgressBar(self)
         self.progress.setFormat("")
         self.progress.setStyleSheet(self.style3)    
-        self.progress.setFont(self.fontOne)
-        self.progress.setMaximumWidth(800)
+        self.progress.setFont(fontOne)
+        # self.progress.setMaximumWidth(800)
         self.progress.setAlignment(Qt.AlignCenter) 
         self.progress.setValue(0)
         self.progress.setMaximum(0)
         self.progress.hide()
         
         self.labelOne = QLabel('', self)
-        self.labelOne.setFont(self.fontThree)
+        self.labelOne.setFont(fontThree)
         self.labelOne.setAlignment(Qt.AlignCenter)
         self.labelOne.hide()
         
         self.labelTwo = QLabel('', self)
-        self.labelTwo.setFont(self.fontThree)
-        self.labelTwo.setStyleSheet("color:rgb(34, 153, 84)")
+        self.labelTwo.setFont(fontThree)
+        self.labelTwo.setStyleSheet("color:LightGreen")
         self.labelTwo.setAlignment(Qt.AlignCenter)
         # self.labelTwo.hide()      
 
         self.effect = QGraphicsOpacityEffect(self)
         self.pixmap = QPixmap(pic)
+        self.pixmap = self.pixmap.scaled(50, 50, Qt.KeepAspectRatio,Qt.SmoothTransformation)
         self.labelThree = QLabel('', self)
         self.labelThree.setAlignment(Qt.AlignCenter)
        
@@ -2177,8 +2124,7 @@ class ActionsSix(QWidget):
         
         self.mainLayout = QVBoxLayout()
         self.mainLayout.setAlignment(Qt.AlignCenter)
-        self.mainLayout.setSpacing(30)
-        self.mainLayout.addWidget(self.titleOne)
+        # self.mainLayout.setSpacing(30)
         self.mainLayout.addLayout(self.h1)
         self.mainLayout.addLayout(self.h3)
         self.mainLayout.addLayout(self.h4)
@@ -2296,7 +2242,7 @@ class ActionsSix(QWidget):
         # close.setWindowTitle(self.title)
         close.setWindowTitle("Seguro?")
         close.setWindowIcon(QIcon(icon))
-        close.setFont(self.fontTwo)
+        close.setFont(fontTwo)
         close.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
         # close.setText("¿Estás seguro?")
         # close.setInformativeText('Se detendrá la función si se está ejecutando, pero no te preocupes ya que se guardará el avance.')
@@ -2316,7 +2262,10 @@ class ActionsSix(QWidget):
         msg.setWindowTitle(self.title)
         msg.setWindowIcon(QIcon(icon))
         msg.setText("Error")
-        msg.setFont(self.fontTwo)
+        msg.setFont(fontTwo)
+        msg.setStandardButtons(QMessageBox.Ok)
+        buttonOk = msg.button(QMessageBox.Ok)
+        buttonOk.setFont(fontOne)
         msg.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
         msg.setInformativeText(errorMsg)
         msg.exec_()
@@ -2328,10 +2277,8 @@ class ActionsSix(QWidget):
         info.setWindowTitle(choices[5][3:])
         
         info.setWindowIcon(QIcon(icon))
-        info.setText('''
-El documento resultante se guardará en la carpeta que contiene tu RD, bajo un nombre de la forma "Valores+RUC".
-''')
-        info.setFont(self.fontTwo)
+        info.setText('''El documento resultante se guardará en la carpeta que contiene tu RD, bajo un nombre de la forma "Valores+RUC".''')
+        info.setFont(fontTwo)
         info.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
         info.setWindowModality(0)
         # info.setModal(True)
@@ -2339,6 +2286,7 @@ El documento resultante se guardará en la carpeta que contiene tu RD, bajo un n
         info.setStandardButtons(QMessageBox.Ok)
         buttonOk = info.button(QMessageBox.Ok)
         buttonOk.setText('Entendido')
+        buttonOk.setFont(fontOne)
         info.setDefaultButton(QMessageBox.Ok)
         info.show()
         retval = info.exec_()
@@ -2398,24 +2346,17 @@ class ActionsSeven(QWidget):
         self.initUI()
     def initUI(self):
         self.style = QApplication.style()
-        self.fontOne = QFont("Helvetica", 14)
-        self.fontTwo=QFont("Helvetica", 12)
-        self.fontThree=QFont('Gotham Bold', 18)
-        self.fontFour=QFont('Gotham Bold', 30)
-        self.fontFive=QFont('Gotham Bold', 12)
         
-        self.style1=("QPushButton { background-color: rgb(155, 61, 61 ); color: rgb(255, 255, 255 );border: 3px solid}"
-                     "QPushButton:hover { background-color: rgba(155, 61, 61,230) ;color: white;border: 3px solid}"
-                      "QPushButton:pressed { background-color: rgb(69, 70, 77) ;color: rgb(255, 255, 255 );border: 3px solid}")
-        self.style2=("QPushButton { background-color: rgb(69, 70, 77); color: rgb(255, 255, 255);border: 3px solid}"
-                      "QPushButton:hover { background-color: rgba(69, 70, 77,230) ;color: white;border: 3px solid}"
-                      "QPushButton:pressed { background-color: rgb(155, 61, 61 ); color: rgb(255, 255, 255 );border: 3px solid}")             
+        
+        self.style1=("QPushButton { background-color: rgb(155, 61, 61 ); color: rgb(255, 255, 255 );}")
+        self.style2=("QPushButton { background-color: rgb(69, 70, 77); color: rgb(255, 255, 255);}")        
         self.style3 = ("QProgressBar {border: 2px solid grey;border-radius: 5px;text-align: center}"
                          "QProgressBar::chunk {background-color: rgb(155, 61, 61 );width: 10px;margin: 1px;}")
         self.style4=("QComboBox {selection-background-color: rgb(69, 70, 77);background-color: rgb(69, 70, 77); color: rgb(255, 255, 255);padding-left:10px}"
                      "QComboBox QAbstractItemView::item { min-height: 35px; min-width: 50px;}"
-                     "QListView::item:selected { color: black; background-color: lightgray}") 
-        self.style5=("QPushButton { background-color: rgb(69, 70, 77); color: rgb(255, 255, 255);border: 3px solid}")                     
+                     "QListView::item { color: white; background-color: rgb(69, 70, 77)}"
+                     "QListView::item:selected { color: white; background-color: IndianRed}") 
+        self.style5=("QPushButton { background-color: rgb(69, 70, 77); color: rgb(255, 255, 255);}")                     
          
         self.setWindowTitle(self.title)
              
@@ -2426,62 +2367,59 @@ class ActionsSeven(QWidget):
         self.h5=QHBoxLayout()
         self.v2=QVBoxLayout()
                                
-        self.setStyleSheet("background-color: rgb(255, 255, 255); color: rgb(86, 88, 110)")
+        # self.setStyleSheet("background-color: rgb(255, 255, 255); color: rgb(86, 88, 110)")
         self.setWindowIcon(QIcon(icon))
     
-        self.titleOne = QLabel(choices[6][3:], self)
-        self.titleOne.setFont(self.fontThree)
-        self.titleOne.setStyleSheet("color:	rgb(86, 88, 110)")
-        self.titleOne.setAlignment(Qt.AlignLeft)
-    
         self.buttonOne = QPushButton('RUC', self) 
-        self.buttonOne.setFixedHeight(50)
-        self.buttonOne.setMaximumWidth(200)
+        self.buttonOne.setMinimumHeight(35)
+        # self.buttonOne.setMaximumWidth(200)
         self.buttonOne.setStyleSheet(self.style5)
-        self.buttonOne.setFont(self.fontTwo)
+        self.buttonOne.setFont(fontTwo)
         self.buttonOne.setEnabled(False)
         self.h1.addWidget(self.buttonOne,1)
         
         self.myTextBoxZero = QLineEdit(self)
-        self.myTextBoxZero.setFixedHeight(50)  
-        self.myTextBoxZero.setMaximumWidth(600)
-        self.myTextBoxZero.setFont(self.fontTwo)
-        self.h1.addWidget(self.myTextBoxZero,3)
+        self.myTextBoxZero.setMinimumHeight(35)  
+        self.myTextBoxZero.setStyleSheet('background-color: rgb(69, 70, 77); color: white')
+        self.myTextBoxZero.setFont(fontTwo)
+        self.myTextBoxZero.setPlaceholderText('Ingresa el número de RUC')
+        self.h1.addWidget(self.myTextBoxZero,4)
         
         self.buttonThree = QPushButton('Doc. Sustento', self)  
-        self.buttonThree.setFixedHeight(50)
-        self.buttonThree.setMaximumWidth(200)
+        self.buttonThree.setMinimumHeight(35)
+        # self.buttonThree.setMaximumWidth(200)
         self.buttonThree.setStyleSheet(self.style5)
-        self.buttonThree.setFont(self.fontTwo)
+        self.buttonThree.setFont(fontTwo)
         self.buttonThree.setEnabled(False)
         self.h3.addWidget(self.buttonThree,1)
         
         self.buttonTwo = QPushButton('Guardar como', self)      
         self.buttonTwo.clicked.connect(self.openFileNameDialogTwo)
-        self.buttonTwo.setFixedHeight(50)
-        self.buttonTwo.setMaximumWidth(200)
+        self.buttonTwo.setMinimumHeight(35)
+        # self.buttonTwo.setMaximumWidth(200)
         self.buttonTwo.setStyleSheet(self.style2)
-        self.buttonTwo.setFont(self.fontTwo)
+        self.buttonTwo.setFont(fontTwo)
         self.buttonTwo.setCursor(QCursor(Qt.PointingHandCursor))
         self.h5.addWidget(self.buttonTwo,1)
         
         self.myTextBoxTwo = QLineEdit(self)
-        self.myTextBoxTwo.setFixedHeight(50)  
-        self.myTextBoxTwo.setMaximumWidth(600)   
-        self.myTextBoxTwo.setFont(self.fontTwo)
-        self.h3.addWidget(self.myTextBoxTwo,3)
+        self.myTextBoxTwo.setMinimumHeight(35)  
+        self.myTextBoxTwo.setStyleSheet('background-color: rgb(69, 70, 77); color: white')  
+        self.myTextBoxTwo.setFont(fontTwo)
+        self.myTextBoxTwo.setPlaceholderText('Ingresa el número de OF o equivalente')
+        self.h3.addWidget(self.myTextBoxTwo,4)
         
         self.myTextBoxOne = QLineEdit(self)
-        self.myTextBoxOne.setFixedHeight(50)  
-        self.myTextBoxOne.setMaximumWidth(600)   
-        self.myTextBoxOne.setFont(self.fontTwo)
+        self.myTextBoxOne.setMinimumHeight(35)  
+        self.myTextBoxOne.setStyleSheet('background-color: rgb(69, 70, 77); color: white') 
+        self.myTextBoxOne.setFont(fontTwo)
         self.myTextBoxOne.setReadOnly(True)
-        self.h5.addWidget(self.myTextBoxOne,3)
+        self.h5.addWidget(self.myTextBoxOne,4)
                                   
         self.buttonFour = QPushButton('Perfiles', self)  
-        self.buttonFour.setFixedHeight(50)  
-        self.buttonFour.setMaximumWidth(200)
-        self.buttonFour.setFont(self.fontTwo)
+        self.buttonFour.setMinimumHeight(35)  
+        # self.buttonFour.setMaximumWidth(200)
+        self.buttonFour.setFont(fontTwo)
         self.buttonFour.setStyleSheet(self.style5)
         self.buttonFour.setEnabled(False)
         self.h4.addWidget(self.buttonFour,1)
@@ -2491,23 +2429,24 @@ class ActionsSeven(QWidget):
        'F02 - Acción Inductiva - Esquela',
        'F03 - Programa de Fiscalización - Aduanas',
        'F04 - Acción Inductiva - Carta Inductiva'])
-        self.combo.setFixedHeight(50)  
-        self.combo.setMaximumWidth(600)
-        self.combo.setFont(self.fontTwo)
+        self.combo.setMinimumHeight(35)  
+        # self.combo.setMaximumWidth(600)
+        self.combo.setFont(fontTwo)
         self.combo.setStyleSheet(self.style4)
         self.listview=QListView()
-        self.listview.setFont(self.fontTwo)
+        self.listview.setFont(fontTwo)
         self.listview.setCursor(QCursor(Qt.PointingHandCursor))
         self.combo.setView(self.listview)
         self.combo.setCursor(QCursor(Qt.PointingHandCursor))
-        self.h4.addWidget(self.combo,3)
-                      
+        self.h4.addWidget(self.combo,4)
+        
+        self.h2.addStretch()              
         self.start = QPushButton('Ejecutar', self)
         self.start.setStyleSheet(self.style1)
         self.start.setFocus()
-        self.start.setFont(self.fontOne)
-        self.start.setFixedHeight(50)
-        self.start.setMaximumWidth(200)
+        self.start.setFont(fontOne)
+        self.start.setMinimumHeight(35)
+        # self.start.setMaximumWidth(200)
         self.start.setEnabled(True)
         self.start.setCursor(QCursor(Qt.PointingHandCursor))
         self.start.clicked.connect(self.started) 
@@ -2515,9 +2454,9 @@ class ActionsSeven(QWidget):
     
         self.button = QPushButton('Limpiar', self)
         self.button.setStyleSheet(self.style1)
-        self.button.setFont(self.fontOne)
-        self.button.setFixedHeight(50)
-        self.button.setMaximumWidth(200)
+        self.button.setFont(fontOne)
+        self.button.setMinimumHeight(35)
+        # self.button.setMaximumWidth(200)
         self.button.setEnabled(True)
         self.button.setCursor(QCursor(Qt.PointingHandCursor))
         self.button.clicked.connect(self.clean) 
@@ -2526,8 +2465,8 @@ class ActionsSeven(QWidget):
         self.progress = QProgressBar(self)
         self.progress.setFormat("")
         self.progress.setStyleSheet(self.style3)    
-        self.progress.setFont(self.fontOne)
-        self.progress.setMaximumWidth(800)
+        self.progress.setFont(fontOne)
+        # self.progress.setMaximumWidth(800)
         self.progress.setAlignment(Qt.AlignCenter) 
         self.progress.setValue(0)
         self.progress.setMaximum(0)
@@ -2535,21 +2474,21 @@ class ActionsSeven(QWidget):
         
         
         self.labelTwo = QLabel('', self)
-        self.labelTwo.setFont(self.fontThree)
-        self.labelTwo.setStyleSheet("color:rgb(34, 153, 84)")
+        self.labelTwo.setFont(fontThree)
+        self.labelTwo.setStyleSheet("color:LightGreen")
         self.labelTwo.setAlignment(Qt.AlignCenter)
         # self.labelTwo.hide()
         
         self.effect = QGraphicsOpacityEffect(self)
         self.pixmap = QPixmap(pic)
+        self.pixmap = self.pixmap.scaled(50, 50, Qt.KeepAspectRatio,Qt.SmoothTransformation)
         self.labelThree = QLabel('', self)
         self.labelThree.setAlignment(Qt.AlignCenter)       
         # self.info.setIcon(QIcon(self.style.standardIcon(QStyle.SP_FileDialogInfoView)))  
         
         self.mainLayout = QVBoxLayout()
         self.mainLayout.setAlignment(Qt.AlignCenter)
-        self.mainLayout.setSpacing(30)
-        self.mainLayout.addWidget(self.titleOne)
+        # self.mainLayout.setSpacing(30)
         self.mainLayout.addLayout(self.h1)
         self.mainLayout.addLayout(self.h3)
         self.mainLayout.addLayout(self.h4)
@@ -2623,7 +2562,7 @@ class ActionsSeven(QWidget):
             self.start.setEnabled(True)   
             self.labelTwo.setText('¡Listo, ya puedes visualizar tus documentos!')
             self.labelThree.show()
-            self.labelThree.setGraphicsEffect(self.effect)
+            
             self.labelThree.setPixmap(self.pixmap) 
             self.labelThree.show()
             self.progress.hide()
@@ -2633,7 +2572,7 @@ class ActionsSeven(QWidget):
         # close.setWindowTitle(self.title)
         close.setWindowTitle("¿Seguro?")
         close.setWindowIcon(QIcon(icon))
-        close.setFont(self.fontTwo)
+        close.setFont(fontTwo)
         close.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
         # close.setText("¿Estás seguro?")
         # close.setInformativeText('Se detendrá la función si se está ejecutando, pero no te preocupes ya que se guardará el avance.')
@@ -2653,7 +2592,10 @@ class ActionsSeven(QWidget):
         msg.setWindowTitle(self.title)
         msg.setWindowIcon(QIcon(icon))
         msg.setText("Verifica los datos ingresados")
-        msg.setFont(self.fontTwo)
+        msg.setFont(fontTwo)
+        msg.setStandardButtons(QMessageBox.Ok)
+        buttonOk = msg.button(QMessageBox.Ok)
+        buttonOk.setFont(fontOne)
         msg.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
         msg.setInformativeText(errorMsg)
         msg.exec_()
@@ -2670,7 +2612,7 @@ class ActionsSeven(QWidget):
         '''
 Estas son las instrucciones de uso de la opción 1.'''
         )
-        info.setFont(self.fontTwo)
+        info.setFont(fontTwo)
         info.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
         info.setWindowModality(0)
         # info.setModal(True)
@@ -2700,28 +2642,26 @@ class MainWindow(QMainWindow):
         
     def initUI(self):  
 
-        self.style1=("QPushButton { background-color: rgb(155, 61, 61 ); color: rgb(255, 255, 255 );border: 3px solid}"
-                     "QPushButton:hover { background-color: rgba(155, 61, 61,230) ;color: white;border: 3px solid}"
-                      "QPushButton:pressed { background-color: rgb(69, 70, 77) ;color: rgb(255, 255, 255 );border: 3px solid}")
-        self.style2=("QPushButton { background-color: rgb(69, 70, 77); color: rgb(255, 255, 255);border: 3px solid}"
-                      "QPushButton:hover { background-color: rgba(69, 70, 77,230) ;color: white;border: 3px solid}"
-                      "QPushButton:pressed { background-color: rgb(155, 61, 61 ); color: rgb(255, 255, 255 );border: 3px solid}")
+        self.style1=("QPushButton { background-color: rgb(155, 61, 61 ); color: rgb(255, 255, 255 );}"
+                     "QPushButton:hover { background-color: rgba(155, 61, 61,230) ;color: white;}"
+                      "QPushButton:pressed { background-color: rgb(69, 70, 77) ;color: rgb(255, 255, 255 );}")
+        self.style2=("QPushButton { background-color: rgb(69, 70, 77); color: rgb(255, 255, 255);}"
+                      "QPushButton:hover { background-color: rgba(69, 70, 77,230) ;color: white;}"
+                      "QPushButton:pressed { background-color: rgb(155, 61, 61 ); color: rgb(255, 255, 255 );}")
         self.style4=("QComboBox {selection-background-color: rgb(69, 70, 77);background-color: rgb(69, 70, 77); color: rgb(255, 255, 255);padding-left:10px}"
                      "QComboBox QAbstractItemView::item { min-height: 35px; min-width: 50px;}"
-                     "QListView::item:selected { color: black; background-color: lightgray}") 
+                     "QListView::item { color: white; background-color: rgb(69, 70, 77)}"
+                     "QListView::item:selected { color: white; background-color: IndianRed}") 
         
         self.style = QApplication.style()
-        self.fontOne = QFont("Helvetica", 14)
-        self.fontTwo=QFont("Helvetica", 12)
-        self.fontThree=QFont('Gotham Bold', 18)
-        self.fontFour=QFont('Gotham Bold', 30)
-        self.fontFive=QFont('Gotham Bold', 12)
-        
+       
         self.setWindowTitle(self.title)       
-        # self.setMinimumSize(700,950)
-        self.move(500, 2)
+        # self.setMinimumSize(750,500)
+        self.setMinimumSize(600,600)
+        # self.resize(500,600)
+        # self.move(500, 2)
         # self.setWindowState(Qt.WindowMaximized)
-        self.setStyleSheet("background-color: rgb(255, 255, 255); color: rgb(86, 88, 110)")
+        self.setStyleSheet("background-color: rgb(22, 23, 24); color:CornflowerBlue")
         self.setWindowIcon(QIcon(icon))
         
         self.menuBar = self.menuBar()
@@ -2754,9 +2694,9 @@ class MainWindow(QMainWindow):
         self.v1=QVBoxLayout()
         self.v2=QVBoxLayout()
         self.h3=QHBoxLayout()
-        self.h4=QHBoxLayout()
+        self.h4=QHBoxLayout()       
         self.h5=QHBoxLayout()
-
+        
         windows=[self.window1,
                  self.window2,
                  self.window3,
@@ -2770,72 +2710,77 @@ class MainWindow(QMainWindow):
             
         self.pageCombo = QComboBox()   
         self.pageCombo.addItems(choices)
-        self.pageCombo.setFixedHeight(35)
+        self.pageCombo.setMinimumHeight(35)
         self.pageCombo.setStyleSheet(self.style4)
         self.listview=QListView()
-        self.listview.setFont(self.fontTwo)
+        self.listview.setFont(fontTwo)
         self.listview.setCursor(QCursor(Qt.PointingHandCursor))
         self.pageCombo.setView(self.listview)
         self.pageCombo.setCursor(QCursor(Qt.PointingHandCursor))
-        self.pageCombo.setFont(self.fontTwo)
+        self.pageCombo.setFont(fontTwo)
         self.pageCombo.activated.connect(self.toggle_window)
 
         self.v0.addWidget(self.pageCombo)
         self.v2.addLayout(self.h3,2)
         self.v2.addLayout(self.h4,0)
         self.v2.addLayout(self.h5,2)
+        self.h.addStretch(3)
         self.h.addLayout(self.v1)
-        self.h.addLayout(self.v2)       
-       
-        self.h.setSpacing(10)
+        # self.h.addStretch()
+        self.h.addLayout(self.v)
+        self.h.addStretch(1)
+        self.h.addLayout(self.v2)   
+        self.h.addStretch(3)
+        
+        # self.h.setSpacing(10)
         self.stackedLayout.setAlignment(Qt.AlignCenter)
         self.h.setAlignment(Qt.AlignCenter)
                
         self.mainLayout.addLayout(self.h,1)   
-        self.mainLayout.addLayout(self.v0,1)       
+        self.mainLayout.addLayout(self.v0,0)       
         self.mainLayout.addLayout(self.stackedLayout,2)      
-                   
-        self.mainLayout.addStretch()
+       
         self.w = QWidget(self)
         self.w.setLayout(self.mainLayout)
         self.setCentralWidget(self.w)
       
         self.pixmap = QPixmap(icon)
-        # self.pixmap = self.pixmap.scaled(250, 250, Qt.KeepAspectRatio,Qt.SmoothTransformation)
+        self.pixmap = self.pixmap.scaled(150, 150, Qt.KeepAspectRatio,Qt.SmoothTransformation)
         self.labelThree = QLabel('', self)
         self.labelThree.setPixmap(self.pixmap) 
         self.labelThree.setAlignment(Qt.AlignCenter) 
-        self.labelThree.setFixedSize(260,260)
+        # self.labelThree.setFixedSize(260,260)
         self.v1.addWidget(self.labelThree)
         
         self.titleOne = QLabel('Luft', self)
-        self.titleOne.setFont(self.fontFour)
-        self.titleOne.setStyleSheet("color: rgb(132, 49, 46)")
+        self.titleOne.setFont(fontFour)
+        self.titleOne.setStyleSheet("color: CornflowerBlue")
         self.titleOne.setAlignment(Qt.AlignBottom) 
         self.h3.addWidget(self.titleOne)
 
         self.titleOne = QLabel('Mensch', self)
-        self.titleOne.setFont(self.fontFour)
-        self.titleOne.setStyleSheet("color:	rgb(57, 86, 157)")
+        self.titleOne.setFont(fontFour)
+        self.titleOne.setStyleSheet("color:	IndianRed")
         self.titleOne.setAlignment(Qt.AlignBottom) 
         self.h3.addWidget(self.titleOne)
         
-        self.titleOne = QLabel('Versión 1.3', self)
-        self.titleOne.setFont(self.fontFive)
-        self.titleOne.setStyleSheet("color:	rgb(86, 88, 110)")
+        self.titleOne = QLabel('Versión 1.3.1', self)
+        self.titleOne.setFont(fontFive)
+        self.titleOne.setStyleSheet("color:	IndianRed")
         self.titleOne.setAlignment(Qt.AlignTop)  
         self.h4.addWidget(self.titleOne)
         
         self.labelOne = QLabel('Hola, '+username, self)
-        self.labelOne.setFont(self.fontThree)
+        self.labelOne.setFont(fontThree)
         self.labelOne.setAlignment(Qt.AlignRight)    
         self.h5.addWidget(self.labelOne)        
+        
         
         # self.statusBar().showMessage('Estás usando la versión 1.3, lanzada en marzo del 2021.')
         self.status_label = QLabel()
         self.statusBar().addPermanentWidget(self.status_label)
-        self.status_label.setText('Estás usando la versión 1.3, lanzada en marzo del 2021.')
-        
+        self.status_label.setText('Estás usando la versión 1.3.1, lanzada en marzo del 2021.')
+
         quit = QAction("Quit", self)
         quit.triggered.connect(self.closeEvent)
         
@@ -2847,7 +2792,10 @@ class MainWindow(QMainWindow):
         msg.setWindowTitle(self.title)
         msg.setWindowIcon(QIcon(icon))
         msg.setText("Error")
-        msg.setFont(self.fontTwo)
+        msg.setFont(fontTwo)
+        msg.setStandardButtons(QMessageBox.Ok)
+        buttonOk = msg.button(QMessageBox.Ok)
+        buttonOk.setFont(fontOne)
         msg.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
         msg.setInformativeText(errorMsg)
         msg.exec_()
@@ -2856,10 +2804,14 @@ class MainWindow(QMainWindow):
         close = QMessageBox()
         close.setWindowTitle("¿Estás seguro?")
         close.setWindowIcon(QIcon(icon))
-        close.setFont(self.fontTwo)
+        close.setFont(fontTwo)
         close.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
         close.setText("Se abandonará por completo la aplicación.")
         close.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
+        buttonYes = close.button(QMessageBox.Yes)
+        buttonYes.setFont(fontOne)
+        buttonCancel = close.button(QMessageBox.Cancel)
+        buttonCancel.setFont(fontOne)
         close = close.exec()
 
         if close == QMessageBox.Yes:  
@@ -2875,13 +2827,11 @@ class MainWindow(QMainWindow):
         info.setWindowTitle("Acerca de LuftMensch")
         
         info.setWindowIcon(QIcon(icon))
-        info.setText('''
-Luftmensch es una aplicación de productividad y de código abierto pensada en automatizar ciertas tareas administrativas.
+        info.setText('''Luftmensch es una aplicación de productividad y de código abierto pensada en automatizar ciertas tareas administrativas.
 
-Si deseas revisar el historial de versiones, realizar consultas, dejar un comentario o hacer una sugerencia, visita el repositorio.
-''')
+Si deseas revisar el historial de versiones, realizar consultas, dejar un comentario o hacer una sugerencia, visita el repositorio.''')
 
-        info.setFont(self.fontTwo)
+        info.setFont(fontTwo)
         info.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
         info.setWindowModality(0)
         # info.setModal(True)
@@ -2889,6 +2839,7 @@ Si deseas revisar el historial de versiones, realizar consultas, dejar un coment
         info.setStandardButtons(QMessageBox.Ok)
         buttonOk = info.button(QMessageBox.Ok)
         buttonOk.setText('Entendido')
+        buttonOk.setFont(fontOne)
         info.setDefaultButton(QMessageBox.Ok)
         info.show()
         retval = info.exec_()    
@@ -2899,14 +2850,15 @@ Si deseas revisar el historial de versiones, realizar consultas, dejar un coment
         info.setWindowIcon(QIcon(icon))
         info.setText('rerfsdgd')
  
-        info.setFont(self.fontTwo)
+        info.setFont(fontTwo)
         info.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
         info.setWindowModality(0)
         # info.setModal(True)
         info.activateWindow()
         info.setStandardButtons(QMessageBox.Ok)
         buttonOk = info.button(QMessageBox.Ok)
-        buttonOk.setText('Entendido')
+        buttonOk.setFont(fontOne)    
+        buttonOk.setText('Releases')
         info.setDefaultButton(QMessageBox.Ok)
         info.show()
         info.exec_()       
@@ -2915,19 +2867,19 @@ Si deseas revisar el historial de versiones, realizar consultas, dejar un coment
         info.setWindowTitle("¿Cómo actualizar LuftMensch?")
         
         info.setWindowIcon(QIcon(icon))
-        info.setText('''
-Para actualizar la aplicación, dale click en Releases y, una vez que termine de cargar la página, descarga la versión más reciente y guárdala encima de la actual.
-''')
+        info.setText('''Para actualizar la aplicación, dale click en Releases y, una vez que termine de cargar la página, descarga la versión más reciente y guárdala encima de la actual.''')
 
-        info.setFont(self.fontTwo)
+        info.setFont(fontTwo)
         info.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
         info.setWindowModality(0)
         info.activateWindow()
         info.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
         buttonYes = info.button(QMessageBox.Yes)
         buttonYes.setText('Releases')
+        buttonYes.setFont(fontOne)
         buttonCancel = info.button(QMessageBox.Cancel)
         buttonCancel.setText('Entendido')
+        buttonCancel.setFont(fontOne)
         info.setDefaultButton(QMessageBox.Cancel)
         info.show()
         retval = info.exec_()
@@ -2939,9 +2891,10 @@ Para actualizar la aplicación, dale click en Releases y, una vez que termine de
 if __name__ == '__main__':
     os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
     app = QApplication(sys.argv)
-    app.setAttribute(Qt.AA_EnableHighDpiScaling)
+    app.setStyle('Fusion')
+    app.setAttribute(Qt.AA_EnableHighDpiScaling,True)
+    app.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
     app.setWindowIcon(QIcon(icon))
     w = MainWindow()
     w.show()
     sys.exit(app.exec_())
-    

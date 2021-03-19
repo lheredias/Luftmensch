@@ -4,7 +4,7 @@
 ```
 Version 1.3.2 released in March 2021.
 ```
-## Description
+## :izakaya_lantern: Description
 
 Luftmensch is a GUI Application built on Python and capable of:
     
@@ -18,7 +18,7 @@ Its flexibility and capability of dealing with many scenarios means exceedingly 
 
 Although target users are personnel from the ***Tax and Customs Office of Peru*** (hence the definitions in Spanish), the entirety or just portions of the present code can be applied to a wide range of contexts, in both work and academic environments.
 
-Have a look at the code [over here.](https://github.com/lheredias/Luftmensch/blob/main/Luftmensch%201.0.py)
+Have a look at the code [over here.](https://github.com/lheredias/Luftmensch/blob/main/LuftmenschQt.py)
 
 As of March 2021, Luftmensch is under active development.
 ***
@@ -28,7 +28,7 @@ As of March 2021, Luftmensch is under active development.
 
 ## Author
 
-* [lheredias](https://github.com/lheredias)
+* [lheredias](https://github.com/lheredias) 
 
 ## Releases (Descarga la última versión)
 * [Luftmensch v1.3.2](https://github.com/lheredias/Luftmensch/releases/tag/v1.3.2)
@@ -42,14 +42,14 @@ Luftmensch makes most intensive use of the following libraries:
 * PyQt5
 * [PyMuPDF](https://github.com/pymupdf/PyMuPDF)
 
-## Contact
+## :speech_balloon: Contact
 
 Please submit questions and report issues [over here](https://github.com/lheredias/Luftmensch/discussions).
 
 ## License
 [MIT License](https://github.com/lheredias/Luftmensch/blob/main/LICENSE)
 ***
-## En Español
+## :scroll: En Español
 
 ### Versión más reciente
 

@@ -26,7 +26,11 @@ from re import findall
 # import pandas as pd
 # import openpyxl
 # from PIL import Image, ImageOps 
+if hasattr(Qt, 'AA_EnableHighDpiScaling'):
+    QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
 
+if hasattr(Qt, 'AA_UseHighDpiPixmaps'):
+    QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
 def resource_path(relative_path):
     """ Get absolute path to resource, works for dev and for PyInstaller """
     try:
@@ -39,7 +43,7 @@ def resource_path(relative_path):
 
 icon=resource_path('finalicon.ico')
 pic=resource_path('check small.png')
-
+logo=resource_path('app name.png')
 username=getpass.getuser()
 defaultDir='D:\\Usuarios\\'+username+'\\Documents'
 
@@ -50,11 +54,10 @@ choices=['1. Convertir PDF en PDF/A',
                  '5. Crear archivo .zip de Requerimientos y Cartas',
                  '6. Crear archivo .zip de Valores',
                  '7. Generar archivo de texto para solicitar descarga de LE'] 
-fontOne = QFont("Helvetica", 10)
-fontTwo=QFont("Helvetica", 10)
-fontThree=QFont('Gotham Bold', 12)
-fontFour=QFont('Gotham Bold', 20)
-fontFive=QFont('Gotham Bold', 11)
+fontOne = QFont("Helvetica", 9)
+fontTwo=QFont("Helvetica", 9)
+fontThree=QFont('Consolas', 11)  #Done message font
+fontFive=QFont('Consolas', 11) #Version font
 # <codecell>
 class WorkerSignalsOne(QObject):
     alert=pyqtSignal(str)
@@ -157,7 +160,7 @@ class ActionsOne(QWidget):
         self.style1=("QPushButton { background-color: rgb(155, 61, 61 ); color: rgb(255, 255, 255 );}")
         self.style2=("QPushButton { background-color: rgb(69, 70, 77); color: rgb(255, 255, 255);}")             
         self.style3 = ("QProgressBar {border: 2px solid grey;border-radius: 5px;text-align: center}"
-                         "QProgressBar::chunk {background-color: rgb(155, 61, 61 );width: 10px;margin: 1px;}")
+                         "QProgressBar::chunk {background-color: IndianRed;width: 10px;margin: 1px;}")
           
         self.setWindowTitle(self.title)
              
@@ -354,6 +357,7 @@ class ActionsOne(QWidget):
         msg.setFont(fontTwo)
         msg.setStandardButtons(QMessageBox.Ok)
         buttonOk = msg.button(QMessageBox.Ok)
+        buttonOk.setCursor(QCursor(Qt.PointingHandCursor))
         buttonOk.setFont(fontOne)
         msg.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
         msg.setInformativeText(errorMsg)
@@ -377,6 +381,7 @@ Archivo -> Guardar como -> PDF -> Opciones''')
         info.activateWindow()
         info.setStandardButtons(QMessageBox.Ok)
         buttonOk = info.button(QMessageBox.Ok)
+        buttonOk.setCursor(QCursor(Qt.PointingHandCursor))
         buttonOk.setText('Entendido')
         buttonOk.setFont(fontOne)
         info.setDefaultButton(QMessageBox.Ok)
@@ -522,7 +527,7 @@ class ActionsTwo(QWidget):
         self.style1=("QPushButton { background-color: rgb(155, 61, 61 ); color: rgb(255, 255, 255 );}")
         self.style2=("QPushButton { background-color: rgb(69, 70, 77); color: rgb(255, 255, 255);}")          
         self.style3 = ("QProgressBar {border: 2px solid grey;border-radius: 5px;text-align: center}"
-                         "QProgressBar::chunk {background-color: rgb(155, 61, 61 );width: 10px;margin: 1px;}")
+                         "QProgressBar::chunk {background-color: IndianRed;width: 10px;margin: 1px;}")
           
         self.setWindowTitle(self.title)
              
@@ -727,6 +732,7 @@ class ActionsTwo(QWidget):
         msg.setFont(fontTwo)
         msg.setStandardButtons(QMessageBox.Ok)
         buttonOk = msg.button(QMessageBox.Ok)
+        buttonOk.setCursor(QCursor(Qt.PointingHandCursor))
         buttonOk.setFont(fontOne)
         msg.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
         msg.setInformativeText(errorMsg)
@@ -870,7 +876,7 @@ class ActionsThree(QWidget):
         self.style1=("QPushButton { background-color: rgb(155, 61, 61 ); color: rgb(255, 255, 255 );}")
         self.style2=("QPushButton { background-color: rgb(69, 70, 77); color: rgb(255, 255, 255);}") 
         self.style3 = ("QProgressBar {border: 2px solid grey;border-radius: 5px;text-align: center}"
-                         "QProgressBar::chunk {background-color: rgb(155, 61, 61 );width: 10px;margin: 1px;}")
+                         "QProgressBar::chunk {background-color: IndianRed;width: 10px;margin: 1px;}")
           
         self.setWindowTitle(self.title)
              
@@ -1051,9 +1057,8 @@ class ActionsThree(QWidget):
             
         return files
     def openFileNameDialogTwo(self):
-        options = QFileDialog.Options()
-        options |= QFileDialog.DontUseNativeDialog
-        fileName, _ = QFileDialog.getSaveFileName(self,"Guardar como",'',filter="PDF (*.pdf)",options=options)
+        
+        fileName, _ = QFileDialog.getSaveFileName(self,"Guardar como",'',filter="PDF (*.pdf)")
         
         if fileName:        
             if '.pdf' not in fileName:
@@ -1114,6 +1119,7 @@ class ActionsThree(QWidget):
         msg.setFont(fontTwo)
         msg.setStandardButtons(QMessageBox.Ok)
         buttonOk = msg.button(QMessageBox.Ok)
+        buttonOk.setCursor(QCursor(Qt.PointingHandCursor))
         buttonOk.setFont(fontOne)
         msg.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
         msg.setInformativeText(errorMsg)
@@ -1236,7 +1242,7 @@ class ActionsFour(QWidget):
         self.style1=("QPushButton { background-color: rgb(155, 61, 61 ); color: rgb(255, 255, 255 );}")
         self.style2=("QPushButton { background-color: rgb(69, 70, 77); color: rgb(255, 255, 255);}") 
         self.style3 = ("QProgressBar {border: 2px solid grey;border-radius: 5px;text-align: center}"
-                         "QProgressBar::chunk {background-color: rgb(155, 61, 61 );width: 10px;margin: 1px;}")
+                         "QProgressBar::chunk {background-color: IndianRed;width: 10px;margin: 1px;}")
           
         self.setWindowTitle(self.title)
              
@@ -1410,9 +1416,8 @@ class ActionsFour(QWidget):
             
         return files
     def openFileNameDialogTwo(self):
-        options = QFileDialog.Options()
-        options |= QFileDialog.DontUseNativeDialog
-        fileName, _ = QFileDialog.getSaveFileName(self,"Guardar como",'',filter="PDF (*.pdf)",options=options)
+    
+        fileName, _ = QFileDialog.getSaveFileName(self,"Guardar como",'',filter="PDF (*.pdf)")
         
         if fileName:        
             if '.pdf' not in fileName:
@@ -1472,6 +1477,7 @@ class ActionsFour(QWidget):
         msg.setFont(fontTwo)
         msg.setStandardButtons(QMessageBox.Ok)
         buttonOk = msg.button(QMessageBox.Ok)
+        buttonOk.setCursor(QCursor(Qt.PointingHandCursor))
         buttonOk.setFont(fontOne)
         msg.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
         msg.setInformativeText(errorMsg)
@@ -1646,7 +1652,7 @@ class ActionsFive(QWidget):
         self.style1=("QPushButton { background-color: rgb(155, 61, 61 ); color: rgb(255, 255, 255 );}")
         self.style2=("QPushButton { background-color: rgb(69, 70, 77); color: rgb(255, 255, 255);}") 
         self.style3 = ("QProgressBar {border: 2px solid grey;border-radius: 5px;text-align: center}"
-                         "QProgressBar::chunk {background-color: rgb(155, 61, 61 );width: 10px;margin: 1px;}")
+                         "QProgressBar::chunk {background-color: IndianRed;width: 10px;margin: 1px;}")
         self.style4=("QComboBox {selection-background-color: rgb(69, 70, 77);background-color: rgb(69, 70, 77); color: rgb(255, 255, 255);padding-left:10px}"
                      "QComboBox QAbstractItemView::item { min-height: 35px; min-width: 50px;}"
                      "QListView::item { color: white; background-color: rgb(69, 70, 77)}"
@@ -1883,6 +1889,7 @@ class ActionsFive(QWidget):
         msg.setFont(fontTwo)
         msg.setStandardButtons(QMessageBox.Ok)
         buttonOk = msg.button(QMessageBox.Ok)
+        buttonOk.setCursor(QCursor(Qt.PointingHandCursor))
         buttonOk.setFont(fontOne)
         msg.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
         msg.setInformativeText(errorMsg)
@@ -1891,14 +1898,10 @@ class ActionsFive(QWidget):
     
     def instructions(self):
         info = QMessageBox()
-        info.setWindowTitle(self.title)
+        info.setWindowTitle(choices[4][3:])
         
         info.setWindowIcon(QIcon(icon))
-        info.setText("Intrucciones de uso.")
-        info.setInformativeText(
-        '''
-Estas son las instrucciones de uso.'''
-        )
+        info.setText('''El documento resultante se guardará en la carpeta que contiene tu Requerimiento/Carta''')
         info.setFont(fontTwo)
         info.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
         info.setWindowModality(0)
@@ -1906,7 +1909,9 @@ Estas son las instrucciones de uso.'''
         info.activateWindow()
         info.setStandardButtons(QMessageBox.Ok)
         buttonOk = info.button(QMessageBox.Ok)
+        buttonOk.setCursor(QCursor(Qt.PointingHandCursor))
         buttonOk.setText('Entendido')
+        buttonOk.setFont(fontOne)
         info.setDefaultButton(QMessageBox.Ok)
         info.show()
         retval = info.exec_()
@@ -1950,6 +1955,8 @@ class JobRunnerSix(QRunnable):
         
         if 'RM' in tipo and self.rm is None:
             self.signals.alert.emit('rm')
+        elif 'RD' in tipo and self.rd is None:
+            self.signals.alert.emit('rd') 
         else:
         
             RDDir=os.path.abspath(os.path.dirname(self.rd))
@@ -2008,7 +2015,7 @@ class ActionsSix(QWidget):
         self.style1=("QPushButton { background-color: rgb(155, 61, 61 ); color: rgb(255, 255, 255 );}")
         self.style2=("QPushButton { background-color: rgb(69, 70, 77); color: rgb(255, 255, 255);}") 
         self.style3 = ("QProgressBar {border: 2px solid grey;border-radius: 5px;text-align: center}"
-                         "QProgressBar::chunk {background-color: rgb(155, 61, 61 );width: 10px;margin: 1px;}")
+                         "QProgressBar::chunk {background-color: IndianRed;width: 10px;margin: 1px;}")
         
         self.setWindowTitle(self.title)
              
@@ -2054,6 +2061,7 @@ class ActionsSix(QWidget):
         self.myTextBoxOne.setStyleSheet('background-color: rgb(69, 70, 77); color: white')
         self.myTextBoxOne.setFont(fontTwo)
         self.myTextBoxOne.setReadOnly(True)
+        self.myTextBoxOne.setPlaceholderText('Déjalo en blanco si no tienes RDs')
         self.h1.addWidget(self.myTextBoxOne,4)
         
         self.myTextBoxTwo = QLineEdit(self)
@@ -2142,7 +2150,7 @@ class ActionsSix(QWidget):
         
         if self.runner is None:
             self.start.setEnabled(False)
-            if self.var1 is not None and self.var3 is not None:
+            if self.var3 is not None:
                 self.labelTwo.setText('')
                 self.labelThree.hide()
                 self.progress.show()
@@ -2194,7 +2202,7 @@ class ActionsSix(QWidget):
         return fileName
     def openFileNameDialogTwo(self):
 
-        fileName, _ = QFileDialog.getOpenFileName(self,"Carga tu RD",'',"PDF (*.pdf)")
+        fileName, _ = QFileDialog.getOpenFileName(self,"Carga tu RM",'',"PDF (*.pdf)")
         
         if fileName:        
             fileName=os.path.abspath(fileName)
@@ -2217,7 +2225,9 @@ class ActionsSix(QWidget):
         if msg=='Error':
             self.error('Ya existe un folder con ese nombre')
         elif msg=='rm':
-            self.error('No has cargado las RM')
+            self.error('No has cargado las RMs')
+        elif msg=='rd':
+            self.error('No has cargado las RDs')
         self.clean()
     def report(self,msg):
         self.labelOne.setText(msg)
@@ -2265,6 +2275,7 @@ class ActionsSix(QWidget):
         msg.setFont(fontTwo)
         msg.setStandardButtons(QMessageBox.Ok)
         buttonOk = msg.button(QMessageBox.Ok)
+        buttonOk.setCursor(QCursor(Qt.PointingHandCursor))
         buttonOk.setFont(fontOne)
         msg.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
         msg.setInformativeText(errorMsg)
@@ -2277,7 +2288,7 @@ class ActionsSix(QWidget):
         info.setWindowTitle(choices[5][3:])
         
         info.setWindowIcon(QIcon(icon))
-        info.setText('''El documento resultante se guardará en la carpeta que contiene tu RD, bajo un nombre de la forma "Valores+RUC".''')
+        info.setText('''El documento resultante se guardará en la carpeta que contiene tu RD, bajo un nombre de la forma "Valores + RUC".''')
         info.setFont(fontTwo)
         info.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
         info.setWindowModality(0)
@@ -2285,6 +2296,7 @@ class ActionsSix(QWidget):
         info.activateWindow()
         info.setStandardButtons(QMessageBox.Ok)
         buttonOk = info.button(QMessageBox.Ok)
+        buttonOk.setCursor(QCursor(Qt.PointingHandCursor))
         buttonOk.setText('Entendido')
         buttonOk.setFont(fontOne)
         info.setDefaultButton(QMessageBox.Ok)
@@ -2351,7 +2363,7 @@ class ActionsSeven(QWidget):
         self.style1=("QPushButton { background-color: rgb(155, 61, 61 ); color: rgb(255, 255, 255 );}")
         self.style2=("QPushButton { background-color: rgb(69, 70, 77); color: rgb(255, 255, 255);}")        
         self.style3 = ("QProgressBar {border: 2px solid grey;border-radius: 5px;text-align: center}"
-                         "QProgressBar::chunk {background-color: rgb(155, 61, 61 );width: 10px;margin: 1px;}")
+                         "QProgressBar::chunk {background-color: IndianRed;width: 10px;margin: 1px;}")
         self.style4=("QComboBox {selection-background-color: rgb(69, 70, 77);background-color: rgb(69, 70, 77); color: rgb(255, 255, 255);padding-left:10px}"
                      "QComboBox QAbstractItemView::item { min-height: 35px; min-width: 50px;}"
                      "QListView::item { color: white; background-color: rgb(69, 70, 77)}"
@@ -2595,6 +2607,7 @@ class ActionsSeven(QWidget):
         msg.setFont(fontTwo)
         msg.setStandardButtons(QMessageBox.Ok)
         buttonOk = msg.button(QMessageBox.Ok)
+        buttonOk.setCursor(QCursor(Qt.PointingHandCursor))
         buttonOk.setFont(fontOne)
         msg.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
         msg.setInformativeText(errorMsg)
@@ -2657,7 +2670,7 @@ class MainWindow(QMainWindow):
        
         self.setWindowTitle(self.title)       
         # self.setMinimumSize(750,500)
-        self.setMinimumSize(600,600)
+        self.setMinimumSize(520,520)
         # self.resize(500,600)
         # self.move(500, 2)
         # self.setWindowState(Qt.WindowMaximized)
@@ -2679,9 +2692,8 @@ class MainWindow(QMainWindow):
         self.menuBar.addMenu(self.help)
         self.help.setCursor(QCursor(Qt.PointingHandCursor))
         self.help.addAction(choices[0], self.window1.instructions)
-        self.help.addAction(choices[5], self.window6.instructions)      
-        # self.help.addAction(choices[5], self.window6.instructions)
-        # self.help.addAction(choices[6], self.window7.instructions)      
+        self.help.addAction(choices[4], self.window5.instructions) 
+        self.help.addAction(choices[5], self.window6.instructions)       
         self.stackedLayout = QStackedLayout()
               
         self.mainLayout = QVBoxLayout()
@@ -2693,6 +2705,7 @@ class MainWindow(QMainWindow):
         self.v0=QVBoxLayout()
         self.v1=QVBoxLayout()
         self.v2=QVBoxLayout()
+        self.v3=QVBoxLayout()
         self.h3=QHBoxLayout()
         self.h4=QHBoxLayout()       
         self.h5=QHBoxLayout()
@@ -2721,66 +2734,51 @@ class MainWindow(QMainWindow):
         self.pageCombo.activated.connect(self.toggle_window)
 
         self.v0.addWidget(self.pageCombo)
-        self.v2.addLayout(self.h3,2)
-        self.v2.addLayout(self.h4,0)
-        self.v2.addLayout(self.h5,2)
-        self.h.addStretch(3)
+
         self.h.addLayout(self.v1)
-        # self.h.addStretch()
         self.h.addLayout(self.v)
-        self.h.addStretch(1)
         self.h.addLayout(self.v2)   
-        self.h.addStretch(3)
-        
-        # self.h.setSpacing(10)
+
         self.stackedLayout.setAlignment(Qt.AlignCenter)
         self.h.setAlignment(Qt.AlignCenter)
                
         self.mainLayout.addLayout(self.h,1)   
         self.mainLayout.addLayout(self.v0,0)       
-        self.mainLayout.addLayout(self.stackedLayout,2)      
-       
-        self.w = QWidget(self)
-        self.w.setLayout(self.mainLayout)
-        self.setCentralWidget(self.w)
+        self.mainLayout.addLayout(self.stackedLayout,4)        
       
         self.pixmap = QPixmap(icon)
-        self.pixmap = self.pixmap.scaled(150, 150, Qt.KeepAspectRatio,Qt.SmoothTransformation)
+        self.pixmap = self.pixmap.scaled(70, 70, Qt.KeepAspectRatio,Qt.SmoothTransformation)
         self.labelThree = QLabel('', self)
         self.labelThree.setPixmap(self.pixmap) 
         self.labelThree.setAlignment(Qt.AlignCenter) 
-        # self.labelThree.setFixedSize(260,260)
         self.v1.addWidget(self.labelThree)
         
-        self.titleOne = QLabel('Luft', self)
-        self.titleOne.setFont(fontFour)
-        self.titleOne.setStyleSheet("color: CornflowerBlue")
-        self.titleOne.setAlignment(Qt.AlignBottom) 
-        self.h3.addWidget(self.titleOne)
-
-        self.titleOne = QLabel('Mensch', self)
-        self.titleOne.setFont(fontFour)
-        self.titleOne.setStyleSheet("color:	IndianRed")
-        self.titleOne.setAlignment(Qt.AlignBottom) 
-        self.h3.addWidget(self.titleOne)
+        self.logo = QPixmap(logo)
+        self.logo = self.logo.scaled(110, 110, Qt.KeepAspectRatio,Qt.SmoothTransformation)
+        self.labelFour = QLabel('', self)
+        self.labelFour.setPixmap(self.logo) 
+        self.labelFour.setAlignment(Qt.AlignCenter) 
+        self.v.addWidget(self.labelFour)
         
-        self.titleOne = QLabel('Versión 1.3.1', self)
+        self.titleOne = QLabel('Versión 1.3.2', self)
         self.titleOne.setFont(fontFive)
         self.titleOne.setStyleSheet("color:	IndianRed")
-        self.titleOne.setAlignment(Qt.AlignTop)  
-        self.h4.addWidget(self.titleOne)
+        self.titleOne.setAlignment(Qt.AlignRight | Qt.AlignBottom)  
+        self.v2.addWidget(self.titleOne)
         
         self.labelOne = QLabel('Hola, '+username, self)
-        self.labelOne.setFont(fontThree)
-        self.labelOne.setAlignment(Qt.AlignRight)    
-        self.h5.addWidget(self.labelOne)        
+        self.labelOne.setFont(fontFive)
+        self.labelOne.setAlignment(Qt.AlignRight)  
+        self.v2.addWidget(self.labelOne)        
         
-        
-        # self.statusBar().showMessage('Estás usando la versión 1.3, lanzada en marzo del 2021.')
         self.status_label = QLabel()
         self.statusBar().addPermanentWidget(self.status_label)
-        self.status_label.setText('Estás usando la versión 1.3.1, lanzada en marzo del 2021.')
+        self.status_label.setText('Estás usando la versión 1.3.2, lanzada en marzo del 2021.')
 
+        self.w = QWidget(self)
+        self.w.setLayout(self.mainLayout)
+        self.setCentralWidget(self.w)
+        
         quit = QAction("Quit", self)
         quit.triggered.connect(self.closeEvent)
         
@@ -2795,6 +2793,7 @@ class MainWindow(QMainWindow):
         msg.setFont(fontTwo)
         msg.setStandardButtons(QMessageBox.Ok)
         buttonOk = msg.button(QMessageBox.Ok)
+        buttonOk.setCursor(QCursor(Qt.PointingHandCursor))
         buttonOk.setFont(fontOne)
         msg.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
         msg.setInformativeText(errorMsg)
@@ -2809,8 +2808,12 @@ class MainWindow(QMainWindow):
         close.setText("Se abandonará por completo la aplicación.")
         close.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
         buttonYes = close.button(QMessageBox.Yes)
+        buttonYes.setCursor(QCursor(Qt.PointingHandCursor))
         buttonYes.setFont(fontOne)
+        buttonYes.setText('Sí')
         buttonCancel = close.button(QMessageBox.Cancel)
+        buttonCancel.setText('No')
+        buttonCancel.setCursor(QCursor(Qt.PointingHandCursor))
         buttonCancel.setFont(fontOne)
         close = close.exec()
 
@@ -2839,6 +2842,7 @@ Si deseas revisar el historial de versiones, realizar consultas, dejar un coment
         info.setStandardButtons(QMessageBox.Ok)
         buttonOk = info.button(QMessageBox.Ok)
         buttonOk.setText('Entendido')
+        buttonOk.setCursor(QCursor(Qt.PointingHandCursor))
         buttonOk.setFont(fontOne)
         info.setDefaultButton(QMessageBox.Ok)
         info.show()
@@ -2875,9 +2879,11 @@ Si deseas revisar el historial de versiones, realizar consultas, dejar un coment
         info.activateWindow()
         info.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
         buttonYes = info.button(QMessageBox.Yes)
+        buttonYes.setCursor(QCursor(Qt.PointingHandCursor))
         buttonYes.setText('Releases')
         buttonYes.setFont(fontOne)
         buttonCancel = info.button(QMessageBox.Cancel)
+        buttonCancel.setCursor(QCursor(Qt.PointingHandCursor))
         buttonCancel.setText('Entendido')
         buttonCancel.setFont(fontOne)
         info.setDefaultButton(QMessageBox.Cancel)
@@ -2887,7 +2893,7 @@ Si deseas revisar el historial de versiones, realizar consultas, dejar un coment
         if retval==16384:
             from webbrowser import open as op
             op('https://github.com/lheredias/Luftmensch/releases')
-        
+    
 if __name__ == '__main__':
     os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
     app = QApplication(sys.argv)
@@ -2896,5 +2902,5 @@ if __name__ == '__main__':
     app.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
     app.setWindowIcon(QIcon(icon))
     w = MainWindow()
-    w.show()
+    w.show() 
     sys.exit(app.exec_())

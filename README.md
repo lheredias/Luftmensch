@@ -59,3 +59,7 @@ Please submit questions and report issues [over here](https://github.com/lheredi
 
 ### Consultas
 Si tienes dudas, consultas o sugerencias, abre una discusión [aquí](https://github.com/lheredias/Luftmensch/discussions).
+
+## Screenshots
+
+<img src="https://github.com/lheredias/Luftmensch/blob/main/screenshots/ss04.png" width="500" />

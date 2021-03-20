@@ -1,4 +1,4 @@
-# Luftmensch 1.2.1
+# Luftmensch 1.3.3
 ![Luftmensch icon](https://raw.githubusercontent.com/lheredias/Luftmensch/main/finalicon.ico) ![Luftmensch logo](https://github.com/lheredias/Luftmensch/blob/main/app%20name.png)
 
 ```

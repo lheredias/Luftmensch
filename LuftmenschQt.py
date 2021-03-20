@@ -890,7 +890,7 @@ class ActionsThree(QWidget):
         self.setWindowIcon(QIcon(icon))
     
        
-        self.buttonTwo = QPushButton('Cargar PDF', self)   
+        self.buttonTwo = QPushButton('Cargar PDFs', self)   
         self.buttonTwo.clicked.connect(self.openFileNameDialogOne)
         self.buttonTwo.setMinimumHeight(35)
         # self.buttonTwo.setMaximumWidth(200)
@@ -1924,12 +1924,12 @@ class WorkerSignalsSix(QObject):
 class JobRunnerSix(QRunnable):    
     signals = WorkerSignalsSix()
     
-    def __init__(self,rd,rm,rpv):
+    def __init__(self,rd,rms,rpv):
         super().__init__()
 
         self.is_killed = False 
         self.rd=rd
-        self.rm=rm
+        self.rms=rms
         self.rpv=rpv
         
     @pyqtSlot()
@@ -1937,6 +1937,7 @@ class JobRunnerSix(QRunnable):
     def run(self):
         
 
+        fatal=False
         text=''
         doc = fitz.open(self.rpv)
         for i in range(len(doc)):
@@ -1944,48 +1945,89 @@ class JobRunnerSix(QRunnable):
             text += page.getText() 
         doc.close()
         
-        ruc=findall('\\b2\d{10}\\b', text)
-        ruc=ruc[0]
-        pre=findall('\d{15}', text)
-        tipo=findall('RD|RM', text)
-        targetName='Valores '+ruc
-        names=[]
-        for p in pre:
-            names.append(ruc+'_'+p+'_'+'01')
-        
-        if 'RM' in tipo and self.rm is None:
-            self.signals.alert.emit('rm')
-        elif 'RD' in tipo and self.rd is None:
-            self.signals.alert.emit('rd') 
+        ruc=findall('[0-9]+', text)
+        for i in ruc:
+            if len(i)==11:
+                ruc=i
+                break
+        if len(ruc)!=11:
+            self.signals.alert.emit('ruc')
         else:
-        
-            RDDir=os.path.abspath(os.path.dirname(self.rd))
-            if targetName in os.listdir(RDDir):
-                self.signals.alert.emit('Error')
+            pre=findall('\d{15}', text)
+            tipo=findall('RD|RM', text)
+            targetName='Valores '+ruc
+            names=[]
+            for p in pre:
+                names.append(ruc+'_'+p+'_'+'01')
+              
+            if 'RM' in tipo and self.rms is None:
+                print('error1')
+                self.signals.alert.emit('rm')
+            elif 'RD' in tipo and self.rd is None:
+                print('error2')
+                self.signals.alert.emit('rd') 
             else:
-                os.mkdir(RDDir+'\\'+targetName)          
-                targetOne=RDDir+'\\'+targetName
-                os.mkdir(targetOne+'\\'+targetName)
-                targetTwo=RDDir+'\\'+targetName+'\\'+targetName
                 
-                for i in range(len(names)):
-                    if tipo[i]=='RD':
-                        shutil.copy(self.rd,targetTwo+'\\'+names[i]+'.pdf')
-                    elif tipo[i]=='RM':
-                        shutil.copy(self.rm,targetTwo+'\\'+names[i]+'.pdf')
+                lines=[]
+                text=text.replace('\n',' ').split(pre[0])[1]
+                for p in pre[1:]:  
+                    lines.append(text.replace('\n',' ').split(p)[0])
+                    text=text.replace('\n',' ').split(p)[1]
+                lines.append(text)   
                 
-                self.signals.reportMsg.emit('Se encontraron '+str(tipo.count('RD'))+' RDs y '+str(tipo.count('RD'))+' RMs')
-                
-                text_RD_path=targetTwo+'\\files.txt'
-                with open(text_RD_path, 'w') as text_RD:
+                codes=[]
+                for rm in self.rms:
+                    doc = fitz.open(rm)
+                    page = doc.loadPage(0) 
+                    foo = page.getText() 
+                    doc.close()
+                    code=foo.split('\n')[3]
+                    if code=='6091' or code=='60901':
+                        code='060901'
+                    else:
+                        code='0'+code
+                    codes.append(code)
+            
+                RDDir=os.path.abspath(os.path.dirname(self.rd))
+                if targetName in os.listdir(RDDir):
+                    self.signals.alert.emit('Error')
+                else:
+                    os.mkdir(RDDir+'\\'+targetName)          
+                    targetOne=RDDir+'\\'+targetName
+                    os.mkdir(targetOne+'\\'+targetName)
+                    targetTwo=RDDir+'\\'+targetName+'\\'+targetName
+                        
                     for i in range(len(names)):
-                        text_RD.write(ruc+'|'+pre[i]+'|'+'01\n')
-             
-                shutil.make_archive(targetTwo, 'zip',root_dir=targetOne , base_dir=targetName)
-                time.sleep(3)
-                self.signals.reportMsg.emit('Se encontraron '+str(tipo.count('RD'))+' RDs y '+str(tipo.count('RD'))+' RMs')
-
-                self.signals.finished.emit('Done')
+                        if tipo[i]=='RD':
+                            shutil.copy(self.rd,targetTwo+'\\'+names[i]+'.pdf')
+                        elif tipo[i]=='RM':
+                            idx=None
+                            for code in codes:                   
+                                if code in lines[i]:
+                                    idx=codes.index(code)
+                                    break
+                            if idx is None:
+                                fatal=True
+                                break
+                            else:                   
+                                shutil.copy(self.rms[idx],targetTwo+'\\'+names[i]+'.pdf')
+                    
+                    if fatal==False:
+                        
+                        text_RD_path=targetTwo+'\\files.txt'
+                        with open(text_RD_path, 'w') as text_RD:
+                            for i in range(len(names)):
+                                text_RD.write(ruc+'|'+pre[i]+'|'+'01\n')
+                     
+                        shutil.make_archive(targetTwo, 'zip',root_dir=targetOne , base_dir=targetName)
+                        time.sleep(3)
+                        self.signals.reportMsg.emit('Se encontraron '+str(tipo.count('RD'))+' RDs y '+str(tipo.count('RM'))+' RMs')
+                
+                        self.signals.finished.emit('Done')
+                    else:
+                        self.signals.alert.emit('rm2')              
+                        shutil.rmtree(targetOne)
+                        time.sleep(3)
               
                 
     def kill(self):
@@ -2029,7 +2071,7 @@ class ActionsSix(QWidget):
         self.setWindowIcon(QIcon(icon))
     
     
-        self.buttonTwo = QPushButton('RD', self)   
+        self.buttonTwo = QPushButton('RDs', self)   
         self.buttonTwo.clicked.connect(self.openFileNameDialogOne)
         self.buttonTwo.setMinimumHeight(35)
         # self.buttonTwo.setMaximumWidth(200)
@@ -2038,7 +2080,7 @@ class ActionsSix(QWidget):
         self.buttonTwo.setCursor(QCursor(Qt.PointingHandCursor))
         self.h1.addWidget(self.buttonTwo,1)
         
-        self.buttonThree = QPushButton('RM', self)      
+        self.buttonThree = QPushButton('RMs', self)      
         self.buttonThree.clicked.connect(self.openFileNameDialogTwo)
         self.buttonThree.setMinimumHeight(35)
         # self.buttonThree.setMaximumWidth(200)
@@ -2202,14 +2244,16 @@ class ActionsSix(QWidget):
         return fileName
     def openFileNameDialogTwo(self):
 
-        fileName, _ = QFileDialog.getOpenFileName(self,"Carga tu RM",'',"PDF (*.pdf)")
-        
-        if fileName:        
-            fileName=os.path.abspath(fileName)
-            # print(fileName)
-            self.myTextBoxTwo.setText(fileName)
-            self.var2=self.myTextBoxTwo.text()
-        return fileName
+        fileNames, _ = QFileDialog.getOpenFileNames(self,"Carga tus RMs",'',"PDF (*.pdf)")
+        files=[]
+        if fileNames:        
+            for fileName in fileNames:
+                fileName=os.path.abspath(fileName)
+                files.append(fileName)
+            self.myTextBoxTwo.setText(str(files).strip('[').strip(']'))
+            self.var2=files
+        return files
+
     def openFileNameDialogThree(self):
 
         fileName, _ = QFileDialog.getOpenFileName(self,"Carga tu RPV",'',"PDF (*.pdf)")
@@ -2228,6 +2272,10 @@ class ActionsSix(QWidget):
             self.error('No has cargado las RMs')
         elif msg=='rd':
             self.error('No has cargado las RDs')
+        elif msg=='ruc':
+            self.error('No se encontró el número de RUC')
+        elif msg=='rm2':
+            self.error('No has cargado todas las RMs')
         self.clean()
     def report(self,msg):
         self.labelOne.setText(msg)
@@ -2288,7 +2336,15 @@ class ActionsSix(QWidget):
         info.setWindowTitle(choices[5][3:])
         
         info.setWindowIcon(QIcon(icon))
-        info.setText('''El documento resultante se guardará en la carpeta que contiene tu RD, bajo un nombre de la forma "Valores + RUC".''')
+        info.setText('''El documento resultante se guardará en la carpeta que contenga tu RD, bajo un nombre de la forma "Valores + RUC".
+
+Es importante que, de tenerlas, incluyas las RMs por infracciones formales y que se consigne en ellas el código de tributo correcto, como por ejemplo:
+
+60801 para la sanción del Art. 177° numeral 5, 60307 para la sanción del Art. 175° numeral 10 y 60305 para la sanción del Art. 175° numeral 5.
+
+En la columna "Tributo" del RPV se muestran los códigos de cada valor generado precedidos del número "0", los cuales deben corresponderse con los consignados en las RMs por infracciones formales.
+
+Para visualizar la lista completa de códigos, activa la hoja "Tabla Sanciones" en los PPTT.''')
         info.setFont(fontTwo)
         info.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
         info.setWindowModality(0)
@@ -2760,7 +2816,7 @@ class MainWindow(QMainWindow):
         self.labelFour.setAlignment(Qt.AlignCenter) 
         self.v.addWidget(self.labelFour)
         
-        self.titleOne = QLabel('Versión 1.3.2', self)
+        self.titleOne = QLabel('Versión 1.3.3', self)
         self.titleOne.setFont(fontFive)
         self.titleOne.setStyleSheet("color:	IndianRed")
         self.titleOne.setAlignment(Qt.AlignRight | Qt.AlignBottom)  
@@ -2773,7 +2829,7 @@ class MainWindow(QMainWindow):
         
         self.status_label = QLabel()
         self.statusBar().addPermanentWidget(self.status_label)
-        self.status_label.setText('Estás usando la versión 1.3.2, lanzada en marzo del 2021.')
+        self.status_label.setText('Estás usando la versión 1.3.3, lanzada en marzo del 2021.')
 
         self.w = QWidget(self)
         self.w.setLayout(self.mainLayout)

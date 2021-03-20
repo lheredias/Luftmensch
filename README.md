@@ -62,4 +62,4 @@ Si tienes dudas, consultas o sugerencias, abre una discusión [aquí](https://gi
 
 ## Screenshots
 
-<img src="https://github.com/lheredias/Luftmensch/blob/main/screenshots/ss04.png" width="400" /> <img src="https://github.com/lheredias/Luftmensch/blob/main/screenshots/ss01.png" width="400" />
+<img src="https://github.com/lheredias/Luftmensch/blob/main/screenshots/ss01.png" width="400" /> <img src="https://github.com/lheredias/Luftmensch/blob/main/screenshots/ss04.png" width="400" />

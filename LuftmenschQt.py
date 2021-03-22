@@ -1967,28 +1967,31 @@ class JobRunnerSix(QRunnable):
                 print('error2')
                 self.signals.alert.emit('rd') 
             else:
-                
-                lines=[]
-                text=text.replace('\n',' ').split(pre[0])[1]
-                for p in pre[1:]:  
-                    lines.append(text.replace('\n',' ').split(p)[0])
-                    text=text.replace('\n',' ').split(p)[1]
-                lines.append(text)   
-                
-                codes=[]
-                for rm in self.rms:
-                    doc = fitz.open(rm)
-                    page = doc.loadPage(0) 
-                    foo = page.getText() 
-                    doc.close()
-                    code=foo.split('\n')[3]
-                    if code=='6091' or code=='60901':
-                        code='060901'
-                    else:
-                        code='0'+code
-                    codes.append(code)
-            
-                RDDir=os.path.abspath(os.path.dirname(self.rd))
+                if 'RM' in tipo:
+                    lines=[]
+                    text=text.replace('\n',' ').split(pre[0])[1]
+                    for p in pre[1:]:  
+                        lines.append(text.replace('\n',' ').split(p)[0])
+                        text=text.replace('\n',' ').split(p)[1]
+                    lines.append(text)   
+                    
+                    codes=[]
+                    for rm in self.rms:
+                        doc = fitz.open(rm)
+                        page = doc.loadPage(0) 
+                        foo = page.getText() 
+                        doc.close()
+                        code=foo.split('\n')[3]
+                        if code=='6091' or code=='60901':
+                            code='060901'
+                        else:
+                            code='0'+code
+                        codes.append(code)
+               
+                try:
+                    RDDir=os.path.abspath(os.path.dirname(self.rd))
+                except TypeError:
+                    RDDir=os.path.abspath(os.path.dirname(self.rms[0]))
                 if targetName in os.listdir(RDDir):
                     self.signals.alert.emit('Error')
                 else:
@@ -2336,7 +2339,7 @@ class ActionsSix(QWidget):
         info.setWindowTitle(choices[5][3:])
         
         info.setWindowIcon(QIcon(icon))
-        info.setText('''El documento resultante se guardará en la carpeta que contenga tu RD, bajo un nombre de la forma "Valores + RUC".
+        info.setText('''El documento resultante se guardará en la carpeta que contenga tu RD o RM de no existir la primera, bajo un nombre de la forma "Valores + RUC".
 
 Es importante que, de tenerlas, incluyas las RMs por infracciones formales y que se consigne en ellas el código de tributo correcto, como por ejemplo:
 
@@ -2344,7 +2347,9 @@ Es importante que, de tenerlas, incluyas las RMs por infracciones formales y que
 
 En la columna "Tributo" del RPV se muestran los códigos de cada valor generado precedidos del número "0", los cuales deben corresponderse con los consignados en las RMs por infracciones formales.
 
-Para visualizar la lista completa de códigos, activa la hoja "Tabla Sanciones" en los PPTT.''')
+Para visualizar la lista completa de códigos, activa la hoja "Tabla Sanciones" en los PPTT.
+
+Para seleccionar más de una RM, mantén presionado la tecla CTRL.''')
         info.setFont(fontTwo)
         info.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
         info.setWindowModality(0)
@@ -2816,7 +2821,7 @@ class MainWindow(QMainWindow):
         self.labelFour.setAlignment(Qt.AlignCenter) 
         self.v.addWidget(self.labelFour)
         
-        self.titleOne = QLabel('Versión 1.3.3', self)
+        self.titleOne = QLabel('Versión 1.3.4', self)
         self.titleOne.setFont(fontFive)
         self.titleOne.setStyleSheet("color:	IndianRed")
         self.titleOne.setAlignment(Qt.AlignRight | Qt.AlignBottom)  
@@ -2829,7 +2834,7 @@ class MainWindow(QMainWindow):
         
         self.status_label = QLabel()
         self.statusBar().addPermanentWidget(self.status_label)
-        self.status_label.setText('Estás usando la versión 1.3.3, lanzada en marzo del 2021.')
+        self.status_label.setText('Estás usando la versión 1.3.4, lanzada en marzo del 2021.')
 
         self.w = QWidget(self)
         self.w.setLayout(self.mainLayout)

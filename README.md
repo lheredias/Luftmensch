@@ -1,8 +1,8 @@
-# Luftmensch 1.3.4
+# Luftmensch 1.3.5
 ![Luftmensch icon](https://raw.githubusercontent.com/lheredias/Luftmensch/main/finalicon.ico) ![Luftmensch logo](https://github.com/lheredias/Luftmensch/blob/main/app%20name.png)
 
 ```
-Version 1.3.4 released in March 2021.
+Version 1.3.5 released in April 2021.
 ```
 ## :izakaya_lantern: Description
 
@@ -22,7 +22,7 @@ Have a look at the code [over here.](https://github.com/lheredias/Luftmensch/blo
 
 As of March 2021, Luftmensch is under active development.
 ***
-## New in version 1.3.4
+## New in version 1.3.5
 
 * Took a big leap forward migrating from PySimpleGUI (Tkinter) to PyQt5.
 
@@ -31,7 +31,7 @@ As of March 2021, Luftmensch is under active development.
 * [lheredias](https://github.com/lheredias) 
 
 ## Releases (Descarga la última versión)
-* [Luftmensch v1.3.4](https://github.com/lheredias/Luftmensch/releases/tag/v1.3.4)
+* [Luftmensch v1.3.5](https://github.com/lheredias/Luftmensch/releases/tag/v1.3.5)
 
 ## Platforms
 
@@ -56,7 +56,7 @@ Please submit questions and report issues [over here](https://github.com/lheredi
 * A partir de la versión 1.3 se da un enorme salto en la interfaz gráfica de la aplicación.
 * Esto implica que a la hora de juntar PDFs o imágenes, el orden de unión lo determina el orden en que se seleccionen los archivos, lo cual es mucho más intuitivo y amigable con el usuario.
 * Se añadieron funciones específicas para agilizar tareas administrativas.
-* IMPORTANTE: La versión 1.3.4 corrige varios errores detectados en la opción 6, que permite crear archivos .zip de valores.
+* En la versión 1.3.5 se optimizan las funciones que permiten generar valores y cartas.
 
 ### Consultas
 Si tienes dudas, consultas o sugerencias, abre una discusión [aquí](https://github.com/lheredias/Luftmensch/discussions).

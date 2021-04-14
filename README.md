@@ -19,17 +19,19 @@ Its flexibility and capability of dealing with many scenarios means exceedingly 
 
 The entirety or just portions of the present code can be applied to a wide range of contexts, in both work and academic environments.
 
+As of April 2021, Luftmensch is under active development.
+
 ## Target users:
 
-Spanish: personnel from the ***Tax and Customs Office of Peru***.
-English: General Public.
+* English: General Public.
+* Spanish: personnel from the ***Tax and Customs Office of Peru***.
 
-Source code:
 
-Español: [código](https://github.com/lheredias/Luftmensch/blob/main/LuftmenschQt.py)
-English: [Code](https://github.com/lheredias/Luftmensch/blob/main/LuftmenschQt.py)
+### Source code:
 
-As of April 2021, Luftmensch is under active development.
+* Español: [código](https://github.com/lheredias/Luftmensch/blob/main/LuftmenschQt.py)
+* English: [Code](https://github.com/lheredias/Luftmensch/blob/main/LuftmenschQt.py)
+
 ***
 ## New in version 1.4
 

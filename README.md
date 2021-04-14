@@ -1,36 +1,52 @@
-# Luftmensch 1.3.6
+# Luftmensch 1.3.6 (Español) | 1.4 (English)
 ![Luftmensch icon](https://raw.githubusercontent.com/lheredias/Luftmensch/main/finalicon.ico) ![Luftmensch logo](https://github.com/lheredias/Luftmensch/blob/main/app%20name.png)
 
 ```
 Version 1.3.6 released in April 2021.
+Version 1.4 (English) released in April 2021.
 ```
 ## :izakaya_lantern: Description
 
-Luftmensch is a GUI Application built on Python and capable of:
+LuftMensch is a free, open source GUI Application built entirely on Python and capable of:
     
 * Merging PDF files
 * Converting PDF into PDF/A
 * Having all the pages of a PDF adopt vertical A4 dimensions without messing up its content.
 * Merging and converting images into a single PDF file.
-* Automating work-related tasks that require .txt manipulation. 
+* Automating work-related tasks that require .txt manipulation (Spanish target users only).
 
 Its flexibility and capability of dealing with many scenarios means exceedingly simple usage instructions for end user.
 
-Although target users are personnel from the ***Tax and Customs Office of Peru*** (hence the definitions in Spanish), the entirety or just portions of the present code can be applied to a wide range of contexts, in both work and academic environments.
+The entirety or just portions of the present code can be applied to a wide range of contexts, in both work and academic environments.
 
-Have a look at the code [over here.](https://github.com/lheredias/Luftmensch/blob/main/LuftmenschQt.py)
+## Target users:
 
-As of March 2021, Luftmensch is under active development.
+Spanish: personnel from the ***Tax and Customs Office of Peru***.
+English: General Public.
+
+Source code:
+
+Español: [código](https://github.com/lheredias/Luftmensch/blob/main/LuftmenschQt.py)
+English: [Code](https://github.com/lheredias/Luftmensch/blob/main/LuftmenschQt.py)
+
+As of April 2021, Luftmensch is under active development.
 ***
-## New in version 1.3.6
+## New in version 1.4
 
-* Took a big leap forward migrating from PySimpleGUI (Tkinter) to PyQt5.
+* Released an English or "General Public" version of LuftMensch.
+
+## Lo nuevo en la versión 1.3.6
+
+* Las herramientas que crean los archivos .zip de valores y cartas ya se encuentran estables (optimizadas).
 
 ## Author
 
 * [lheredias](https://github.com/lheredias) 
 
-## Releases (Descarga la última versión)
+## Download the latest "General Public" version
+* [Luftmensch v1.4](https://github.com/lheredias/Luftmensch/releases/tag/v1.4)
+
+## Descarga la última versión en Español
 * [Luftmensch v1.3.6](https://github.com/lheredias/Luftmensch/releases/tag/v1.3.6)
 
 ## Platforms
@@ -48,18 +64,6 @@ Please submit questions and report issues [over here](https://github.com/lheredi
 
 ## License
 [MIT License](https://github.com/lheredias/Luftmensch/blob/main/LICENSE)
-***
-## :scroll: En Español
-
-### Versión más reciente
-
-* A partir de la versión 1.3 se da un enorme salto en la interfaz gráfica de la aplicación.
-* Esto implica que a la hora de juntar PDFs o imágenes, el orden de unión lo determina el orden en que se seleccionen los archivos, lo cual es mucho más intuitivo y amigable con el usuario.
-* Se añadieron funciones específicas para agilizar tareas administrativas.
-* En la versión 1.3.6 se añaden pequeñas mejoras a la funcionalidad número seis.
-
-### Consultas
-Si tienes dudas, consultas o sugerencias, abre una discusión [aquí](https://github.com/lheredias/Luftmensch/discussions).
 
 ## Screenshots
 

@@ -9,8 +9,8 @@ Version 1.4 (English) released in April 2021.
 
 LuftMensch is a free, open source GUI Application built entirely on Python and capable of:
     
-* Merging PDF files
-* Converting PDF into PDF/A
+* Merging PDF files.
+* Converting PDF into PDF/A (requires MS Word installed).
 * Having all the pages of a PDF adopt vertical A4 dimensions without messing up its content.
 * Merging and converting images into a single PDF file.
 * Automating work-related tasks that require .txt manipulation (Spanish target users only).

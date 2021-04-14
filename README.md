@@ -29,9 +29,11 @@ As of April 2021, Luftmensch is under active development.
 
 ### Source code:
 
-* Español: [código](https://github.com/lheredias/Luftmensch/blob/main/LuftmenschQt.py)
-* English: [Code](https://github.com/lheredias/Luftmensch/blob/main/LuftmenschQt.py)
-
+* Español: [código](https://github.com/lheredias/Luftmensch/blob/main/code/Luftmensch_ESP.py)
+* English: [code](https://github.com/lheredias/Luftmensch/blob/main/code/Luftmensch_ENG.py)
+```
+You may find the ESP version code more compelling than its ENG counterpart for it is far deeper and almost twice as big.
+```
 ***
 ## New in version 1.4
 

@@ -2,7 +2,7 @@
 ![Luftmensch icon](https://raw.githubusercontent.com/lheredias/Luftmensch/main/finalicon.ico) ![Luftmensch logo](https://github.com/lheredias/Luftmensch/blob/main/app%20name.png)
 
 ```
-Version 1.3.6 released in April 2021.
+Version 1.4.1 released in September 2021.
 Version 1.4 (English) released in April 2021.
 ```
 ## :izakaya_lantern: Description

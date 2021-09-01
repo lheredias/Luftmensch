@@ -16,6 +16,7 @@ from docx import Document
 from re import findall
 from webbrowser import open as op
 
+        
 if hasattr(Qt, 'AA_EnableHighDpiScaling'):
     QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
 
@@ -505,7 +506,7 @@ class JobRunnerTwo(QRunnable):
                 time.sleep(1)
                 self.signals.finished.emit('Done')
         except Exception as e:      
-               self.signals.alert.emit(str(type(e)))                
+            self.signals.alert.emit(str(e))               
     def kill(self):
         self.is_killed = True
            
@@ -855,7 +856,7 @@ class JobRunnerThree(QRunnable):
                 time.sleep(1)
                 self.signals.finished.emit('Done')
         except Exception as e:      
-               self.signals.alert.emit(str(type(e)))                      
+            self.signals.alert.emit(str(e))                      
     def kill(self):
         self.is_killed = True
                      
@@ -1219,7 +1220,7 @@ class JobRunnerFour(QRunnable):
                 time.sleep(1)
                 self.signals.finished.emit('Done')
         except Exception as e:      
-               self.signals.alert.emit(str(type(e))) 
+            self.signals.alert.emit(str(e)) 
     def kill(self):
         self.is_killed = True
                     
@@ -1646,7 +1647,7 @@ class JobRunnerFive(QRunnable):
                             time.sleep(1)
                             self.signals.finished.emit('Done')
         except Exception as e:      
-               self.signals.alert.emit(str(type(e)))         
+            self.signals.alert.emit(str(e))       
     def kill(self):
         self.is_killed = True
            
@@ -1738,7 +1739,7 @@ class ActionsFive(QWidget):
         self.myTextBoxThree.setMinimumHeight(35)  
         self.myTextBoxThree.setStyleSheet('background-color: rgb(69, 70, 77); color: white')  
         self.myTextBoxThree.setFont(fontTwo)
-        self.myTextBoxThree.setPlaceholderText('SOLO PARA CARTAS CIRCULARES')
+        self.myTextBoxThree.setPlaceholderText('SOLO SI LA OF NO HA SIDO CONSIGNADA EN LA CARTA.')
         self.h5.addWidget(self.myTextBoxThree,4)
         
         self.combo=QComboBox(self)
@@ -1948,7 +1949,7 @@ class ActionsFive(QWidget):
                      
 Dicha carpeta se guardará en el directorio de tu Requerimiento/Carta.
  
-Solo si se trata de una Carta Circular, debes ingresar el número de OF ya que éste no se suele consignar en el documento.''')
+Digita el número de OF si no ha sido consignado en la CARTA, como en el caso de las circulares.''')
         info.setFont(fontTwo)
         info.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
         info.setWindowModality(0)
@@ -2037,7 +2038,11 @@ class JobRunnerSix(QRunnable):
                             page = doc.loadPage(0) 
                             foo = page.getText() 
                             doc.close()
-                            code=foo.split('\n')[3]
+                            i=3
+                            code=foo.split('\n')[i]
+                            while len(code)<4 or len(code)>6 or ('a' or 'e' or 'i' or 'o' or 'u') in code:           
+                               code=foo.split('\n')[i+1]
+                               i+=1
                             if len(code.strip())==4:
                                 code='0'+code[:-1]+'0'+code[-1]                                 
                             else:
@@ -2055,7 +2060,11 @@ class JobRunnerSix(QRunnable):
                            page = doc.loadPage(0) 
                            foo = page.getText() 
                            doc.close()
-                           code=foo.split('\n')[3]
+                           i=3
+                           code=foo.split('\n')[i]
+                           while len(code)<4 or len(code)>6 or ('a' or 'e' or 'i' or 'o' or 'u') in code:           
+                              code=foo.split('\n')[i+1]
+                              i+=1
                            print(code)
                            if len(code.strip())==4:
                                code='0'+code[:-1]+'0'+code[-1]                                 
@@ -2124,7 +2133,7 @@ class JobRunnerSix(QRunnable):
                     else:
                         self.signals.alert.emit('ruc2') 
         except Exception as e:      
-               self.signals.alert.emit(str(type(e)))          
+            self.signals.alert.emit(str(e))         
                 
     def kill(self):
         self.is_killed = True
@@ -2820,7 +2829,7 @@ class MainWindow(QMainWindow):
         # self.setMinimumSize(750,500)
         self.setMinimumSize(530,530)
         # self.resize(500,600)
-        # self.move(500, 2)
+        self.move(0, 0)
         # self.setWindowState(Qt.WindowMaximized)
         self.setStyleSheet("background-color: rgb(22, 23, 24); color:CornflowerBlue")
         self.setWindowIcon(QIcon(icon))
@@ -2916,7 +2925,7 @@ class MainWindow(QMainWindow):
         self.labelFour.setAlignment(Qt.AlignCenter) 
         self.v.addWidget(self.labelFour)
         
-        self.titleOne = QLabel('Versión 1.3.6', self)
+        self.titleOne = QLabel('Versión 1.4.1', self)
         self.titleOne.setFont(fontFive)
         self.titleOne.setStyleSheet("color:	IndianRed")
         self.titleOne.setAlignment(Qt.AlignRight | Qt.AlignBottom)  
@@ -2929,7 +2938,7 @@ class MainWindow(QMainWindow):
         
         self.status_label = QLabel()
         self.statusBar().addPermanentWidget(self.status_label)
-        self.status_label.setText('Estás usando la versión 1.3.6 de LuftMensch.')
+        self.status_label.setText('Versión 1.4.1 lanzada en Septiembre del 2021.')
 
         self.w = QWidget(self)
         self.w.setLayout(self.mainLayout)
@@ -2984,11 +2993,7 @@ class MainWindow(QMainWindow):
         info.setWindowTitle("Acerca de LuftMensch")
         
         info.setWindowIcon(QIcon(icon))
-        info.setText('''LuftMensch es una aplicación de productividad y de código abierto pensada en automatizar ciertas tareas administrativas.
-
-En estos momentos te encuentras utilizando la versión portable de LuftMensch, la cual se puede tratar como cualquier otro archivo. 
-
-Si deseas conocer conocer más sobre LuftMensh, revisar el historial de versiones, realizar consultas, dejar un comentario o hacer una sugerencia, visita el repositorio.''')
+        info.setText('''LuftMensch es una aplicación de código abierto pensada en automatizar ciertas tareas administrativas.''')
 
         info.setFont(fontTwo)
         info.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
@@ -3027,8 +3032,7 @@ Si deseas conocer conocer más sobre LuftMensh, revisar el historial de versione
         info.setWindowTitle("¿Cómo actualizar LuftMensch?")
         
         info.setWindowIcon(QIcon(icon))
-        info.setText('''Para actualizar la aplicación dale click en Releases y, una vez que termine de cargar la página, descarga la versión (portable) más reciente y guárdala encima de la actual.''')
-
+        info.setText('''Para actualizar la aplicación descarga la versión más reciente y guárdala encima de la actual.''')
         info.setFont(fontTwo)
         info.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
         info.setWindowModality(0)
@@ -3036,7 +3040,7 @@ Si deseas conocer conocer más sobre LuftMensh, revisar el historial de versione
         info.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
         buttonYes = info.button(QMessageBox.Yes)
         buttonYes.setCursor(QCursor(Qt.PointingHandCursor))
-        buttonYes.setText('Releases')
+        buttonYes.setText('Buscar')
         buttonYes.setFont(fontOne)
         buttonCancel = info.button(QMessageBox.Cancel)
         buttonCancel.setCursor(QCursor(Qt.PointingHandCursor))
@@ -3059,3 +3063,4 @@ if __name__ == '__main__':
     w = MainWindow()
     w.show() 
     sys.exit(app.exec_())
+    

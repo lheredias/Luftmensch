@@ -1,4 +1,4 @@
-# Luftmensch 1.3.6 (Español) | 1.4 (English)
+# Luftmensch 1.4.1 (Español) | 1.4 (English)
 ![Luftmensch icon](https://raw.githubusercontent.com/lheredias/Luftmensch/main/finalicon.ico) ![Luftmensch logo](https://github.com/lheredias/Luftmensch/blob/main/app%20name.png)
 
 ```
@@ -39,9 +39,9 @@ You may find the ESP version code more compelling than its ENG counterpart for i
 
 * Released an English or "General Public" version of LuftMensch.
 
-## Lo nuevo en la versión 1.3.6
+## Lo nuevo en la versión 1.4.1
 
-* Las herramientas que crean los archivos .zip de valores y cartas ya se encuentran estables (optimizadas).
+* Se mejoró la funcionalidad de la opción 6 (creación de archivos .zip de valores.
 
 ## Author
 
@@ -51,16 +51,18 @@ You may find the ESP version code more compelling than its ENG counterpart for i
 * [Luftmensch v1.4](https://github.com/lheredias/Luftmensch/releases/tag/v1.4)
 
 ## Descarga la última versión en Español
-* [Luftmensch v1.3.6](https://github.com/lheredias/Luftmensch/releases/tag/v1.3.6)
+* [Luftmensch v1.4.1](https://github.com/lheredias/Luftmensch/releases/tag/v1.4.1)
 
 ## Platforms
 
 Windows only.
 
-## Libraries
-Luftmensch makes most intensive use of the following libraries:
+## Requirements
 * PyQt5
 * [PyMuPDF](https://github.com/pymupdf/PyMuPDF)
+* Microsoft Word 
+* win32com
+* python-docx
 
 ## :speech_balloon: Contact
 

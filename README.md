@@ -1,8 +1,9 @@
-# Luftmensch 1.4.1 (Español) | 1.4 (English)
+# Luftmensch 1.4.2 (Instalable) | 1.4.1 (Portable) | 1.4 (English)
 ![Luftmensch icon](https://raw.githubusercontent.com/lheredias/Luftmensch/main/finalicon.ico) ![Luftmensch logo](https://github.com/lheredias/Luftmensch/blob/main/app%20name.png)
 
 ```
-Version 1.4.1 released in September 2021.
+Version 1.4.2 (Instalable) released in September 2021.
+Version 1.4.1 (Portable) released in September 2021.
 Version 1.4 (English) released in April 2021.
 ```
 ## :izakaya_lantern: Description
@@ -19,7 +20,7 @@ Its flexibility and capability of dealing with many scenarios means exceedingly 
 
 The entirety or just portions of the present code can be applied to a wide range of contexts, in both work and academic environments.
 
-As of April 2021, Luftmensch is under active development.
+As of September 2021, LuftMensch is under active development.
 
 ## Target users:
 
@@ -29,28 +30,36 @@ As of April 2021, Luftmensch is under active development.
 
 ### Source code:
 
-* Español: [código](https://github.com/lheredias/Luftmensch/blob/main/code/Luftmensch_ESP.py)
+* Portable: [código](https://github.com/lheredias/Luftmensch/blob/main/code/Luftmensch_ESP.py)
+* Instalable: [código](https://github.com/lheredias/Luftmensch/blob/main/code/Luftmensch_INSTALABLE.py)
 * English: [code](https://github.com/lheredias/Luftmensch/blob/main/code/Luftmensch_ENG.py)
 ```
-You may find the ESP version code more compelling than its ENG counterpart for it is far deeper and almost twice as big.
+You may find the ESP version (portable & instalable) code more compelling than its ENG counterpart for it is far deeper and almost twice as big.
 ```
 ***
 ## New in version 1.4
 
 * Released an English or "General Public" version of LuftMensch.
 
-## Lo nuevo en la versión 1.4.1
+## Lo nuevo en la versión 1.4.2 (Instalable)
 
-* Se mejoró la funcionalidad de la opción 6 (creación de archivos .zip de valores.
+* Se añadieron dos funcionalidades exclusivas: opciones 8 y 9.
+
+## Lo nuevo en la versión 1.4.1 (Portable)
+
+* Se optimizó la opción 6 (creación de archivos .zip de valores).
 
 ## Author
 
 * [lheredias](https://github.com/lheredias) 
 
-## Download the latest "General Public" version
+## Download the latest "General Public" version in English
 * [Luftmensch v1.4](https://github.com/lheredias/Luftmensch/releases/tag/v1.4)
 
-## Descarga la última versión en Español
+## Descarga la última versión instalable en Español
+* [Luftmensch v1.4.2](https://github.com/lheredias/Luftmensch/releases/tag/v1.4.2)
+
+## Descarga la última versión portable en Español
 * [Luftmensch v1.4.1](https://github.com/lheredias/Luftmensch/releases/tag/v1.4.1)
 
 ## Platforms
@@ -58,6 +67,7 @@ You may find the ESP version code more compelling than its ENG counterpart for i
 Windows only.
 
 ## Requirements
+
 * PyQt5
 * [PyMuPDF](https://github.com/pymupdf/PyMuPDF)
 * Microsoft Word 
@@ -69,7 +79,7 @@ Windows only.
 Please submit questions and report issues [over here](https://github.com/lheredias/Luftmensch/discussions).
 
 ## License
-[MIT License](https://github.com/lheredias/Luftmensch/blob/main/LICENSE)
+[GPL License](https://github.com/lheredias/Luftmensch/blob/main/LICENSE)
 
 ## Screenshots
 

@@ -6,16 +6,20 @@ Version 1.4.4 (Instalable) released in September 2021.
 Version 1.4.3 (English) released in September 2021.
 Version 1.4.1 (Portable) released in September 2021.
 ```
+## :coffee: Treat me a coffee:
+
+[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/donate?cmd=_s-xclick&hosted_button_id=A4T4MYRVADR6C)
+
 ## :izakaya_lantern: Description
 
 LuftMensch is a free, open source GUI Application built entirely on Python and capable of:
     
-* Merging PDF files.
-* Converting PDF into PDF/A (requires MS Word installed).
-* Having all the pages of a PDF adopt vertical A4 dimensions without messing up its content.
-* Merging and converting images into a single PDF file.
-* Compressing PDF files (available in 300 dpi, 150 dpi and 72 dpi options)
-* Automating work-related tasks that require .txt manipulation (Spanish target users only).
+* Merging PDF files. :pushpin:
+* Converting PDF into PDF/A (requires MS Word installed). :pushpin:
+* Having all the pages of a PDF adopt vertical A4 dimensions without messing up its content. :pushpin:
+* Merging and converting images into a single PDF file. :pushpin:
+* Compressing PDF files (available in 300 dpi, 150 dpi and 72 dpi options) :pushpin:
+* Automating work-related tasks that require .txt manipulation (Spanish target users only). :pushpin:
 
 Its flexibility and capability of dealing with many scenarios means exceedingly simple usage instructions for end user.
 
@@ -38,7 +42,7 @@ As of September 2021, LuftMensch is under active development.
 You may find the ESP version (portable & instalable) code more compelling than its ENG counterpart for it is far deeper and almost twice as big.
 ```
 ***
-## New in version 1.4.3 (English)
+## New in version 1.4.3 (English) 
 
 * Released an English or "General Public" version of LuftMensch.
 
@@ -55,10 +59,10 @@ You may find the ESP version (portable & instalable) code more compelling than i
 * [lheredias](https://github.com/lheredias) 
 
 ## Download the latest "General Public" version in English
-* [Luftmensch v1.4](https://github.com/lheredias/Luftmensch/releases/tag/v1.4.3)
+* [Luftmensch v1.4.3](https://github.com/lheredias/Luftmensch/releases/tag/v1.4.3)
 
 ## Descarga la última versión instalable en Español
-* [Luftmensch v1.4.2](https://github.com/lheredias/Luftmensch/releases/tag/v1.4.4)
+* [Luftmensch v1.4.4](https://github.com/lheredias/Luftmensch/releases/tag/v1.4.4)
 
 ## Descarga la última versión portable en Español
 * [Luftmensch v1.4.1](https://github.com/lheredias/Luftmensch/releases/tag/v1.4.1)

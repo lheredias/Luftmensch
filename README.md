@@ -38,11 +38,11 @@ As of September 2021, LuftMensch is under active development.
 You may find the ESP version (portable & instalable) code more compelling than its ENG counterpart for it is far deeper and almost twice as big.
 ```
 ***
-## New in version 1.4
+## New in version 1.4.3 (English)
 
 * Released an English or "General Public" version of LuftMensch.
 
-## Lo nuevo en la versión 1.4.3 (Instalable)
+## Lo nuevo en la versión 1.4.4 (Instalable)
 
 * La versión instalable ahora cuenta con tres funcionalidades exclusivas: detalle de FE recibidas & emitidas y <strong><em>compresión de PDFs</em></strong>.
 
@@ -74,6 +74,7 @@ Windows only.
 * Microsoft Word 
 * win32com
 * python-docx
+* Ghostscript
 
 ## :speech_balloon: Contact
 

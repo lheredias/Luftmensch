@@ -48,15 +48,14 @@ def resource_path(relative_path):
 icon=resource_path('finalicon.ico')
 pic=resource_path('check small.png')
 logo=resource_path('app name.png')
+# Install Ghostscript and look for "bin" folder inside instalation directory.
+# Copy all four files to your current working directory et voilà.
+# Take these staps only if you're going to compile the file into an .exe.
+# If not, just comment the "gs" definition line below.
+gs=resource_path('gswin64c.exe')
+# ======================================================================
 username=getpass.getuser()
 defaultDir='D:\\Usuarios\\'+username+'\\Documents'
-choices=['1. Convertir PDF en PDF/A',
-         '2. Obtener PDF con páginas del mismo tamaño',
-                 '3. Unir varios archivos PDF',
-                 '4. Convertir una o varias imágenes en un solo archivo PDF',
-                 '5. Crear archivo .zip de Requerimientos y Cartas',
-                 '6. Crear archivo .zip de Valores',
-                 '7. Generar archivo de texto para solicitar descarga de LE',] 
 years=[str(i) for i in range(2010,2021)]
 years.reverse()
 months=[str(i) for i in range(1,13)]
@@ -72,7 +71,8 @@ choices=['1. Convertir PDF en PDF/A',
                  '6. Crear archivo .zip de Valores',
                  '7. Generar archivo de texto para solicitar descarga de LE',
                  '8. Detalle de FE recibidas',
-                 '9. Detalle de FE emitidas'] 
+                 '9. Detalle de FE emitidas',
+                 '10. Comprimir PDF'] 
 
 fontOne = QFont("Helvetica", 9)
 fontTwo=QFont("Helvetica", 9)
@@ -2317,6 +2317,7 @@ class ActionsSix(QWidget):
             if self.var3 is not None:
                 self.labelTwo.setText('')
                 self.labelThree.hide()
+                self.labelOne.setText('')
                 self.progress.show()
                 self.threadpool = QThreadPool()
                 self.runner = JobRunnerSix(self.var1,self.var2,self.var3)   
@@ -2799,10 +2800,7 @@ class ActionsSeven(QWidget):
         
         info.setWindowIcon(QIcon(icon))
         info.setText("Intrucciones de uso.")
-        info.setInformativeText(
-        '''
-Estas son las instrucciones de uso de la opción 1.'''
-        )
+        info.setInformativeText('''Estas son las instrucciones de uso de la opción 1.''')
         info.setFont(fontTwo)
         info.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
         info.setWindowModality(0)
@@ -2882,13 +2880,13 @@ class JobRunnerEight(QRunnable):
                 driver = webdriver.Chrome(ChromeDriverManager().install(),service_args=args)
                 # driver = webdriver.Chrome(ChromeDriverManager().install())
                 # driver = webdriver.Chrome(driverPath,service_args=args)
-                driver.get("INTRANET_SITE_ADRESS")
+                driver.get("HIDDEN")
                 
                 driver.find_element_by_name('cuenta').send_keys(self.username)
                 driver.find_element_by_name('password').send_keys(self.password)
                 driver.find_element_by_class_name('form-button').click()
                 time.sleep(1)           
-                driver.get('FE_SITE_ADRESS')
+                driver.get('HIDDEN')
                 time.sleep(2)        
                 try:
                     driver.switch_to.frame('menu')
@@ -3562,7 +3560,7 @@ class ActionsEight(QWidget):
 
     def instructions(self):
         info = QMessageBox()
-        info.setWindowTitle(choices[5][3:])
+        info.setWindowTitle(choices[7][3:])
         
         info.setWindowIcon(QIcon(icon))
         info.setText('''Automatiza la revisión de FE emitidas en favor del contribuyente por aquellos a través del PORTAL SOL de SUNAT.
@@ -3660,13 +3658,13 @@ class JobRunnerNine(QRunnable):
                 driver = webdriver.Chrome(ChromeDriverManager().install(),service_args=args)
                 # driver = webdriver.Chrome(ChromeDriverManager().install())
                 # driver = webdriver.Chrome(driverPath,service_args=args)
-                driver.get("INTRANET_SITE_ADRESS")
+                driver.get("HIDDEN")
                 
                 driver.find_element_by_name('cuenta').send_keys(self.username)
                 driver.find_element_by_name('password').send_keys(self.password)
                 driver.find_element_by_class_name('form-button').click()
                 time.sleep(1)           
-                driver.get('FE_SITE_ADRESS')
+                driver.get('HIDDEN')
                 time.sleep(2)        
                 try:
                     driver.switch_to.frame('menu')
@@ -4344,7 +4342,7 @@ class ActionsNine(QWidget):
 
     def instructions(self):
         info = QMessageBox()
-        info.setWindowTitle(choices[5][3:])
+        info.setWindowTitle(choices[8][3:])
         
         info.setWindowIcon(QIcon(icon))
         info.setText('''Automatiza la revisión de FE emitidas por el contribuyente a través del PORTAL SOL de SUNAT.
@@ -4374,7 +4372,410 @@ Si algún período aparece sin facturas, verifíca nuevamente ya que es probable
         info.setDefaultButton(QMessageBox.Cancel)
         info.show()
         retval = info.exec_()        
+
+# <codecell>
+class WorkerSignalsTen(QObject):
+    alert=pyqtSignal(str)
+    finished=pyqtSignal(str)
+    reportMsg=pyqtSignal(str)
+ 
+class JobRunnerTen(QRunnable):    
+    signals = WorkerSignalsTen()
+    
+    def __init__(self,SaveAs,state,choice):
+        super().__init__()
+
+        self.is_killed = False 
+        self.SaveAs=SaveAs
+        self.state=state
+        self.choice=choice
         
+    @pyqtSlot()
+    def is_opened(self):
+        temp_filename=self.SaveAs[:-4]+' temp.pdf'
+        if os.path.exists(self.SaveAs) == True:
+            try:              
+                os.rename(self.SaveAs,temp_filename)
+                os.rename(temp_filename,self.SaveAs)               
+                return False
+            except PermissionError:
+                return True
+        else:
+            return False
+        
+    def run(self):
+       
+        try:
+            if self.is_opened() == True:
+                self.signals.alert.emit('Error2')
+            else:          
+                size_before=os.path.getsize(self.SaveAs)
+                size_before/=1000000                           
+                import subprocess
+                file_name=os.path.basename(self.SaveAs)
+                print(file_name)
+                output_file=file_name[:-4]+' sehr witzig.pdf'
+                os.chdir(os.path.dirname(self.SaveAs))
+                quality=''
+                if self.choice==0:
+                    quality='/printer'
+                elif self.choice==1:
+                    quality='/ebook'
+                elif self.choice==2:
+                    quality='/screen'
+                startupinfo = None
+                if os.name == 'nt':
+                    startupinfo = subprocess.STARTUPINFO()
+                    startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+                start=time.time()
+                subprocess.run([gs,'-sDEVICE=pdfwrite','-q',
+                                        '-dCompatibilityLevel=1.4', 
+                                        '-dPDFSETTINGS='+quality,'-dNOSAFER',
+                                        '-dNOPAUSE','-dQUIET','-dBATCH',
+                                        '-sOutputFile='+'.'+output_file, 
+                                        file_name], startupinfo=startupinfo)
+                holder=os.path.join(os.path.dirname(self.SaveAs),'.'+output_file)
+                if self.is_killed:
+                    pass
+                else:
+                    done=False
+                    count=0
+                    while not done:
+                        try:
+                            shutil.copy(holder,self.SaveAs)
+                            # shutil.copy(self.SaveAs[:-4]+' sehr witzig.pdf',self.SaveAs)
+                            done=True
+                        except PermissionError:
+                            print('Permission denied')
+                            count+=1 
+                            time.sleep(count)          
+                    time.sleep(1)
+                done=False
+                count=0
+                while not done:
+                    try:
+                        os.remove(holder)
+                        # os.remove(self.SaveAs[:-4]+' sehr witzig.pdf')
+                        done=True
+                    except PermissionError:
+                        print('Permission denied')
+                        count+=1 
+                        time.sleep(count)
+                if self.is_killed:
+                    pass
+                else:
+                    if self.state==2:
+                        from subprocess import Popen 
+                        Popen([self.SaveAs],shell=True)
+                    time.sleep(1)
+                    size_after=os.path.getsize(self.SaveAs)
+                    size_after/=1000000
+                    if (size_before-size_after)<=1:
+                        self.signals.reportMsg.emit('No se puede reducir más el tamaño del documento con la opción elegida.')
+                    else:
+                        self.signals.reportMsg.emit("De %.2f MB se redujo a %.2f MB y tomó %.2f segundos" % (size_before, size_after,time.time()-start))
+                    self.signals.finished.emit('Done')
+        except Exception as e:      
+            self.signals.alert.emit(str(e))
+    def kill(self):
+        self.is_killed = True
+          
+class ActionsTen(QWidget):
+
+    def __init__(self):
+        super().__init__()
+        self.runner=None
+        self.title = 'LuftMensch'
+        self.var1=None
+        self.initUI()
+        self.msg1='Ingresa un archivo PDF.'
+        
+    def initUI(self):
+        
+        self.style = QApplication.style()
+        
+        
+        self.style1=("QPushButton { background-color: rgb(155, 61, 61 ); color: rgb(255, 255, 255 );}")
+        self.style2=("QPushButton { background-color: rgb(69, 70, 77); color: rgb(255, 255, 255);}")             
+        self.style3 = ("QProgressBar {border: 2px solid grey;border-radius: 5px;text-align: center}"
+                         "QProgressBar::chunk {background-color: IndianRed;width: 10px;margin: 1px;}")
+        self.style4=("QComboBox {selection-background-color: rgb(69, 70, 77);background-color: rgb(69, 70, 77); color: rgb(255, 255, 255);padding-left:10px}"
+                     "QComboBox QAbstractItemView::item { min-height: 35px; min-width: 50px;}"
+                     "QListView::item { color: white; background-color: rgb(69, 70, 77)}"
+                     "QListView::item:selected { color: white; background-color: IndianRed}") 
+        self.style5=("QPushButton { background-color: rgb(69, 70, 77); color: rgb(255, 255, 255);}")    
+
+        self.setWindowTitle(self.title)
+
+        self.h4=QHBoxLayout()     
+        self.h1=QHBoxLayout()
+        self.h2=QHBoxLayout()
+        self.v1=QVBoxLayout()
+        self.v2=QVBoxLayout()
+                               
+        # self.setStyleSheet("background-color: rgb(255, 255, 255); color: rgb(86, 88, 110)")
+        self.setWindowIcon(QIcon(icon))
+
+        self.buttonFour = QPushButton('Tipo de compresión', self)  
+        self.buttonFour.setMinimumHeight(35)  
+        # self.buttonFour.setMaximumWidth(200)
+        self.buttonFour.setFont(fontTwo)
+        self.buttonFour.setStyleSheet(self.style5)
+        self.buttonFour.setEnabled(False)
+        self.h4.addWidget(self.buttonFour,1)
+        
+        self.combo=QComboBox(self)
+        self.combo.addItems(['Baja',
+       'Media',
+       'Alta'])
+        self.combo.setMinimumHeight(35)  
+        # self.combo.setMaximumWidth(600)
+        self.combo.setFont(fontTwo)
+        self.combo.setStyleSheet(self.style4)
+        self.listview=QListView()
+        self.listview.setFont(fontTwo)
+        self.listview.setCursor(QCursor(Qt.PointingHandCursor))
+        self.combo.setView(self.listview)
+        self.combo.setCursor(QCursor(Qt.PointingHandCursor))
+        self.h4.addWidget(self.combo,4)
+        
+        self.buttonTwo = QPushButton('Cargar PDF', self)   
+        self.buttonTwo.clicked.connect(self.openFileNameDialogOne)
+        self.buttonTwo.setMinimumHeight(35)
+        # self.buttonTwo.setMaximumWidth(200)
+        self.buttonTwo.setStyleSheet(self.style2)
+        self.buttonTwo.setFont(fontTwo)
+        self.buttonTwo.setCursor(QCursor(Qt.PointingHandCursor))
+        self.h1.addWidget(self.buttonTwo,1)
+        
+        self.myTextBoxOne = QLineEdit(self)
+        self.myTextBoxOne.setMinimumHeight(35)  
+        self.myTextBoxOne.setStyleSheet('background-color: rgb(69, 70, 77); color: white')
+        # self.myTextBoxOne.setMaximumWidth(600)
+        self.myTextBoxOne.setFont(fontTwo)
+        self.myTextBoxOne.setReadOnly(True)
+        self.h1.addWidget(self.myTextBoxOne,4)
+        
+        # self.lineOne = QLabel('/'*250, self) 
+        # self.lineOne.setMaximumWidth(800)
+        # self.v1.addWidget(self.lineOne)
+        
+        self.CheckOne = QCheckBox('Abrir de inmediato el documento generado', self)  
+        self.CheckOne.setFont(fontTwo)
+        self.CheckOne.setMinimumHeight(35)
+        # self.CheckOne.setMaximumWidth(800)
+        self.CheckOne.setStyleSheet("QCheckBox {background-color: rgb(155, 61, 61); color: rgb(255, 255, 255);padding-left:10px;}") 
+        self.CheckOne.setChecked(False)
+        self.v1.addWidget(self.CheckOne)
+             
+        # self.lineTwo = QLabel('/'*250, self)
+        # self.lineTwo.setMaximumWidth(800)
+        # self.v1.addWidget(self.lineTwo)     
+        self.h2.addStretch()
+        self.start = QPushButton('Ejecutar', self)
+        self.start.setStyleSheet(self.style1)
+        # self.start.setFocus()
+        self.start.setFont(fontOne)
+        self.start.setMinimumHeight(35)
+        self.start.setEnabled(True)
+        self.start.setCursor(QCursor(Qt.PointingHandCursor))
+        self.start.clicked.connect(self.started) 
+        self.h2.addWidget(self.start)
+        # self.h2.addStretch()
+        self.button = QPushButton('Limpiar', self)
+        self.button.setStyleSheet(self.style1)
+        self.button.setFont(fontOne)
+        self.button.setMinimumHeight(35)
+        # self.button.setMinimumWidth(200)
+        self.button.setEnabled(True)
+        self.button.setCursor(QCursor(Qt.PointingHandCursor))
+        self.button.clicked.connect(self.clean) 
+        self.h2.addWidget(self.button)
+        # self.h2.addStretch()
+        self.progress = QProgressBar(self)
+        self.progress.setFormat("")
+        self.progress.setStyleSheet(self.style3)    
+        self.progress.setFont(fontOne)
+        # self.progress.setMaximumWidth(800)
+        self.progress.setAlignment(Qt.AlignCenter) 
+        self.progress.setValue(0)
+        self.progress.setMaximum(0)
+        self.progress.hide()
+             
+        self.labelTwo = QLabel('', self)
+        self.labelTwo.setFont(fontThree)
+        self.labelTwo.setStyleSheet("color:LightGreen")
+        self.labelTwo.setAlignment(Qt.AlignCenter)
+        # self.labelTwo.hide()
+        self.labelOne = QLabel('', self)
+        self.labelOne.setFont(fontThree)
+        self.labelOne.setAlignment(Qt.AlignCenter)
+        self.labelOne.hide()
+
+        self.effect = QGraphicsOpacityEffect(self)
+        self.pixmap = QPixmap(pic)
+        self.pixmap = self.pixmap.scaled(50, 50, Qt.KeepAspectRatio,Qt.SmoothTransformation)
+        self.labelThree = QLabel('', self)
+        self.labelThree.setAlignment(Qt.AlignCenter)       
+        # self.info.setIcon(QIcon(self.style.standardIcon(QStyle.SP_FileDialogInfoView)))  
+        
+        self.mainLayout = QVBoxLayout()
+        # self.mainLayout.setSpacing(30)
+        # self.v1.setSpacing(0)
+        self.mainLayout.addLayout(self.h4)
+        self.mainLayout.addLayout(self.h1)
+        self.mainLayout.addLayout(self.v1)
+        self.mainLayout.addLayout(self.h2)
+        self.mainLayout.addWidget(self.progress)
+        self.mainLayout.addWidget(self.labelOne)        
+        self.mainLayout.addWidget(self.labelTwo)
+        self.mainLayout.addWidget(self.labelThree)
+        self.setLayout(self.mainLayout)
+        self.mainLayout.setAlignment(Qt.AlignCenter)
+        
+        # quit = QAction("Quit", self)
+        # quit.triggered.connect(self.closeEvent)
+   
+    def started(self):
+        
+        if self.runner is None:
+            self.start.setEnabled(False)
+            if self.var1 is not None:
+                self.labelTwo.setText('')
+                self.labelOne.setText('')
+                self.labelThree.hide()
+                self.progress.show()
+                self.choice = self.combo.currentIndex()
+                self.state = self.CheckOne.checkState()
+                self.threadpool = QThreadPool()
+                self.runner = JobRunnerTen(self.var1,self.state,self.choice)   
+                self.threadpool.start(self.runner)                                         
+                try:
+                    self.runner.signals.alert.disconnect(self.alert)
+                    self.runner.signals.finished.disconnect(self.finished)
+                    self.runner.signals.reportMsg.disconnect(self.report)
+                except TypeError:     
+                    self.runner.signals.alert.connect(self.alert)
+                    self.runner.signals.finished.connect(self.finished)
+                    self.runner.signals.reportMsg.connect(self.report)
+                else:
+                    self.runner.signals.alert.connect(self.alert)
+                    self.runner.signals.finished.connect(self.finished)
+                    self.runner.signals.reportMsg.connect(self.report)
+            else:
+                self.start.setEnabled(True)
+                self.labelTwo.setText('Intenta de nuevo.')
+                self.error(self.msg1)
+                
+    def clean(self):
+        
+        self.myTextBoxOne.setText(None)
+        self.var1=None
+        self.runner=None
+        self.labelTwo.setText('')
+        self.labelThree.hide()
+        self.progress.hide()
+        self.labelOne.setText('')
+      
+    def openFileNameDialogOne(self):
+        
+        fileName, _ = QFileDialog.getOpenFileName(self,"Selecciona tu documento",'',filter="PDF (*.pdf)")
+        
+        if fileName:        
+            if '.pdf' not in fileName:
+                fileName=fileName+'.pdf'
+            fileName=os.path.abspath(fileName)         
+            self.myTextBoxOne.setText(fileName)
+            self.var1=self.myTextBoxOne.text()
+        return fileName
+  
+    def alert(self, msg):
+        if msg=='Error2':
+            self.error('Cierra el PDF sobre el cual deseas guardar el resultado.')
+        else:
+            self.error('Ocurrió un error inesperado: '+msg)
+        self.clean()
+    def report(self,msg):
+        self.labelOne.setText(msg)
+        self.labelOne.show()
+    def finished(self, msg):
+        if msg=='Done':
+            self.runner=None
+            self.myTextBoxOne.setText(None)
+            self.var1=None
+            self.start.setEnabled(True)   
+            self.labelTwo.setText('¡Listo, ya puedes visualizar tus documentos!')
+            self.labelThree.show()
+            
+            self.labelThree.setPixmap(self.pixmap) 
+            self.labelThree.show()
+            self.progress.hide()
+
+    # def closeEvent(self, event):
+    #     close = QMessageBox()
+    #     # close.setWindowTitle(self.title)
+    #     close.setWindowTitle("¿Seguro?")
+    #     close.setWindowIcon(QIcon(icon))
+    #     close.setFont(fontTwo)
+    #     close.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
+    #     # close.setText("¿Estás seguro?")
+    #     # close.setInformativeText('Se detendrá la función si se está ejecutando, pero no te preocupes ya que se guardará el avance.')
+    #     close.setText("¿Estás seguro que deseas salir?")
+    #     close.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
+    #     close = close.exec()
+
+    #     if close == QMessageBox.Yes:           
+    #         event.accept()     
+    #         self.clean()
+    #     else:
+    #         event.ignore()
+     
+    def error(self,errorMsg):
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Critical)
+        msg.setWindowTitle(self.title)
+        msg.setWindowIcon(QIcon(icon))
+        msg.setText("Error")
+        msg.setFont(fontTwo)
+        msg.setStandardButtons(QMessageBox.Ok)
+        buttonOk = msg.button(QMessageBox.Ok)
+        buttonOk.setCursor(QCursor(Qt.PointingHandCursor))
+        buttonOk.setFont(fontOne)
+        msg.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
+        msg.setInformativeText(errorMsg)
+        msg.exec_()
+        self.start.setEnabled(True)
+        self.runner=None
+    
+    def instructions(self):
+        info = QMessageBox()
+        info.setWindowTitle(choices[9][3:])
+        
+        info.setWindowIcon(QIcon(icon))
+        info.setText('''Compresión baja: 300 dpi
+Compresión media: 150 dpi
+Compresión alta: 72 dpi
+
+El proceso puede tomar varios minutos dependiendo del tamaño del documento y de la cantidad de imágenes que contenga. 
+
+Como referencia, se puede reducir un documento de 600 MB a uno de 47 MB en 10 minutos usando una compresión "Alta".
+
+No abras el documento mientras el programa lo está procesando.''')
+
+        info.setFont(fontTwo)
+        info.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
+        info.setWindowModality(0)
+        # info.setModal(True)
+        info.activateWindow()
+        info.setStandardButtons(QMessageBox.Ok)
+        buttonOk = info.button(QMessageBox.Ok)
+        buttonOk.setCursor(QCursor(Qt.PointingHandCursor))
+        buttonOk.setText('Entendido')
+        buttonOk.setFont(fontOne)
+        info.setDefaultButton(QMessageBox.Ok)
+        info.show()
+        retval = info.exec_()
+     
 # <codecell>  
     
 class MainWindow(QMainWindow):
@@ -4390,6 +4791,7 @@ class MainWindow(QMainWindow):
         self.window7 = ActionsSeven()   
         self.window8 = ActionsEight() 
         self.window9 = ActionsNine()
+        self.window10 = ActionsTen()
         self.title = 'LuftMensch'
         self.initUI()
         
@@ -4442,6 +4844,7 @@ class MainWindow(QMainWindow):
         self.help.addAction(choices[5], self.window6.instructions)     
         self.help.addAction(choices[7], self.window8.instructions) 
         self.help.addAction(choices[8], self.window9.instructions) 
+        self.help.addAction(choices[9], self.window10.instructions) 
    
         self.stackedLayout = QStackedLayout()
               
@@ -4467,7 +4870,8 @@ class MainWindow(QMainWindow):
                  self.window6,
                  self.window7,
                  self.window8,
-                 self.window9]    
+                 self.window9,
+                 self.window10]    
         
         for window in windows:
             self.stackedLayout.addWidget(window)
@@ -4512,7 +4916,7 @@ class MainWindow(QMainWindow):
         self.labelFour.setAlignment(Qt.AlignCenter) 
         self.v.addWidget(self.labelFour)
         
-        self.titleOne = QLabel('Versión 1.4.2 <Instalable>', self)
+        self.titleOne = QLabel('Versión 1.4.4 <Instalable>', self)
         self.titleOne.setFont(fontFive)
         self.titleOne.setStyleSheet("color:	IndianRed")
         self.titleOne.setAlignment(Qt.AlignRight | Qt.AlignBottom)  
@@ -4525,7 +4929,7 @@ class MainWindow(QMainWindow):
         
         self.status_label = QLabel()
         self.statusBar().addPermanentWidget(self.status_label)
-        self.status_label.setText('Versión 1.4.2 <Instalable>, lanzada en septiembre del 2021.')
+        self.status_label.setText('Versión 1.4.4 <Instalable>, lanzada en septiembre del 2021.')
 
         self.w = QWidget(self)
         self.w.setLayout(self.mainLayout)
@@ -4563,6 +4967,9 @@ class MainWindow(QMainWindow):
         elif self.window9.runner: 
             close.setText("La aplicación está consolidando el detalle de FE emitidas. Si sales, se detendrá por completo el proceso y no se guardarán los resultados.")
             # QMessageBox.information(self,'Finalizando...','El proceso se detendrá por completo en unos instantes.')
+        elif self.window10.runner: 
+            close.setText("La aplicación está comprimiendo un documento. Si sales, no se completará el proceso.")
+            # QMessageBox.information(self,'Finalizando...','El proceso se detendrá por completo en unos instantes.')
         else:
             close.setText("Se abandonará por completo la aplicación.")           
         close.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
@@ -4580,7 +4987,9 @@ class MainWindow(QMainWindow):
             if self.window8.runner: 
                 self.window8.runner.kill()  
             elif self.window9.runner: 
-                self.window9.runner.kill()              
+                self.window9.runner.kill()
+            elif self.window10.runner: 
+                self.window10.runner.kill()               
             event.accept() 
         else:
             event.ignore()
@@ -4630,10 +5039,7 @@ class MainWindow(QMainWindow):
         info.setWindowTitle("¿Cómo actualizar LuftMensch?")
         
         info.setWindowIcon(QIcon(icon))
-        info.setText('''Para actualizar la aplicación:
-1. Ejecuta el archivo "unins000.exe" (archivo ejecutable con ícono de caja), el cual se encuentra dentro de la carpeta de la aplicación.
-2. Descarga la versión instalable más reciente.
-3. Ejecuta el instalador.''')
+        info.setText('''Descarga la versión instalable más reciente e instálala. La nueva versión reemplazará automáticamente la anterior.''')
 
         info.setFont(fontTwo)
         info.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")

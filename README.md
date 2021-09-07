@@ -1,8 +1,8 @@
-# Luftmensch 1.4.4 (Instalable) | 1.4.3 (English) | 1.4.1 (Portable)
+# Luftmensch 1.4.5 (Instalable) | 1.4.3 (English) | 1.4.1 (Portable)
 ![Luftmensch icon](https://raw.githubusercontent.com/lheredias/Luftmensch/main/finalicon.ico) ![Luftmensch logo](https://github.com/lheredias/Luftmensch/blob/main/app%20name.png)
 
 ```
-Version 1.4.4 (Instalable) released in September 2021.
+Version 1.4.5 (Instalable) released in September 2021.
 Version 1.4.3 (English) released in September 2021.
 Version 1.4.1 (Portable) released in September 2021.
 ```
@@ -46,7 +46,7 @@ You may find the ESP version (portable & instalable) code more compelling than i
 
 * Released an English or "General Public" version of LuftMensch.
 
-## Lo nuevo en la versión 1.4.4 (Instalable)
+## Lo nuevo en la versión 1.4.5 (Instalable)
 
 * La versión instalable ahora cuenta con tres funcionalidades exclusivas: detalle de FE recibidas & emitidas y <strong><em>compresión de PDFs</em></strong>.
 
@@ -62,7 +62,7 @@ You may find the ESP version (portable & instalable) code more compelling than i
 * [Luftmensch v1.4.3](https://github.com/lheredias/Luftmensch/releases/tag/v1.4.3)
 
 ## Descarga la última versión instalable en Español
-* [Luftmensch v1.4.4](https://github.com/lheredias/Luftmensch/releases/tag/v1.4.4)
+* [Luftmensch v1.4.5](https://github.com/lheredias/Luftmensch/releases/tag/v1.4.5)
 
 ## Descarga la última versión portable en Español
 * [Luftmensch v1.4.1](https://github.com/lheredias/Luftmensch/releases/tag/v1.4.1)

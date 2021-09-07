@@ -3061,8 +3061,12 @@ class JobRunnerEight(QRunnable):
                                 consolidado['Guía'][i]=rem
                         
                         for i in range(len(consolidado)):
-                            ruc.append(consolidado.Emisor[i].split('-')[0].strip())
-                            rs.append(consolidado.Emisor[i][14:].strip())
+                            if len(consolidado.Emisor[i].split('-')[0].strip())==11:
+                                ruc.append(consolidado.Emisor[i].split('-')[0].strip())
+                                rs.append(consolidado.Emisor[i][14:].strip())
+                            else:
+                                ruc.append(npnan)
+                                rs.append(consolidado.Emisor[i].strip())
                             serie.append(consolidado['Nro. Factura Electrónica'][i].split('-')[0].strip())
                             numero.append(consolidado['Nro. Factura Electrónica'][i].split('-')[1].strip())
                             if '$' in consolidado['Importe Total'][i]:
@@ -3837,8 +3841,12 @@ class JobRunnerNine(QRunnable):
                                 consolidado['Guía'][i]=rem
                         
                         for i in range(len(consolidado)):
-                            ruc.append(consolidado.Receptor[i].split('-')[0].strip())
-                            rs.append(consolidado.Receptor[i][14:].strip())
+                            if len(consolidado.Receptor[i].split('-')[0].strip())==11:
+                                ruc.append(consolidado.Receptor[i].split('-')[0].strip())
+                                rs.append(consolidado.Receptor[i][14:].strip())
+                            else:
+                                ruc.append(npnan)
+                                rs.append(consolidado.Receptor[i].strip())
                             serie.append(consolidado['Nro. Factura Electrónica'][i].split('-')[0].strip())
                             numero.append(consolidado['Nro. Factura Electrónica'][i].split('-')[1].strip())
                             if '$' in consolidado['Importe Total'][i]:

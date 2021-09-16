@@ -28,6 +28,7 @@ import pandas as pd
 # Use conda install [package name] if you're in a conda environment
 from numpy import nan as npnan
 from webdriver_manager.chrome import ChromeDriverManager
+import json
 
 
 if hasattr(Qt, 'AA_EnableHighDpiScaling'):
@@ -44,6 +45,10 @@ def resource_path(relative_path):
         base_path = os.path.abspath(".")
     
     return os.path.join(base_path, relative_path)
+
+preferences=resource_path('preferences.txt')
+with open(preferences) as json_file:
+    prev_prefs = json.load(json_file)
 
 icon=resource_path('finalicon.ico')
 pic=resource_path('check small.png')
@@ -133,7 +138,16 @@ class JobRunnerOne(QRunnable):
                 worddoc.SaveAs(self.SaveAs,FileFormat = 17)               
                 worddoc.Close(True)
                 word.Quit()
-                os.remove(DestDir+tempDocx)    
+                done=False
+                count=0
+                while not done:
+                    try:
+                        os.remove(DestDir+tempDocx)
+                        done=True
+                    except PermissionError:
+                        print('Permission denied')
+                        count+=1 
+                        time.sleep(count)                    
                 pdf=fitz.open(self.SaveAs)
                 opened_file=fitz.open(backup)
                 pdf.insertPDF(opened_file)
@@ -219,7 +233,7 @@ class ActionsOne(QWidget):
         self.CheckOne.setMinimumHeight(35)
         # self.CheckOne.setMaximumWidth(800)
         self.CheckOne.setStyleSheet("QCheckBox {background-color: rgb(155, 61, 61); color: rgb(255, 255, 255);padding-left:10px;}") 
-        self.CheckOne.setChecked(True)
+        self.CheckOne.setChecked(prev_prefs["1"])
         self.v1.addWidget(self.CheckOne)
              
         # self.lineTwo = QLabel('/'*250, self)
@@ -293,6 +307,7 @@ class ActionsOne(QWidget):
                 self.labelThree.hide()
                 self.progress.show()
                 self.state = self.CheckOne.checkState()
+                prev_prefs["1"]=self.state
                 self.threadpool = QThreadPool()
                 self.runner = JobRunnerOne(self.var1,self.state)   
                 self.threadpool.start(self.runner)                                         
@@ -502,7 +517,16 @@ class JobRunnerTwo(QRunnable):
                     worddoc.SaveAs(self.SaveAs,FileFormat = 17)               
                     worddoc.Close(True)
                     word.Quit()
-                    os.remove(DestDir+tempDocx)    
+                    done=False
+                    count=0
+                    while not done:
+                        try:
+                            os.remove(DestDir+tempDocx)
+                            done=True
+                        except PermissionError:
+                            print('Permission denied')
+                            count+=1 
+                            time.sleep(count)     
                     pdf=fitz.open(self.SaveAs)
                     opened_file=fitz.open(backup)
                     pdf.insertPDF(opened_file)
@@ -586,7 +610,7 @@ class ActionsTwo(QWidget):
         self.CheckOne.setMinimumHeight(35)
         # self.CheckOne.setMaximumWidth(800)
         self.CheckOne.setStyleSheet("QCheckBox {background-color: rgb(155, 61, 61); color: rgb(255, 255, 255);padding-left:10px;}") 
-        self.CheckOne.setChecked(True)
+        self.CheckOne.setChecked(prev_prefs["2"])
         self.v1.addWidget(self.CheckOne)
         
         self.CheckTwo = QCheckBox('Convertir de inmediato a PDF/A', self)
@@ -594,7 +618,7 @@ class ActionsTwo(QWidget):
         self.CheckTwo.setMinimumHeight(35)
         # self.CheckTwo.setMaximumWidth(800)
         self.CheckTwo.setStyleSheet("QCheckBox {background-color: rgb(155, 61, 61); color: rgb(255, 255, 255);padding-left:10px;}")  
-        self.CheckTwo.setChecked(True)
+        self.CheckTwo.setChecked(prev_prefs["3"])
         self.v1.addWidget(self.CheckTwo)
              
         # self.lineTwo = QLabel('/'*250, self)
@@ -671,6 +695,8 @@ class ActionsTwo(QWidget):
                 self.progress.show()
                 self.state = self.CheckOne.checkState()
                 self.PDFA=self.CheckTwo.checkState()
+                prev_prefs["2"]=self.state
+                prev_prefs["3"]=self.PDFA
                 self.threadpool = QThreadPool()
                 self.runner = JobRunnerTwo(self.var1,self.state,self.PDFA)   
                 self.threadpool.start(self.runner)                                         
@@ -852,7 +878,16 @@ class JobRunnerThree(QRunnable):
                     worddoc.SaveAs(self.SaveAs,FileFormat = 17)               
                     worddoc.Close(True)
                     word.Quit()
-                    os.remove(DestDir+tempDocx)    
+                    done=False
+                    count=0
+                    while not done:
+                        try:
+                            os.remove(DestDir+tempDocx)
+                            done=True
+                        except PermissionError:
+                            print('Permission denied')
+                            count+=1 
+                            time.sleep(count)     
                     pdf=fitz.open(self.SaveAs)
                     opened_file=fitz.open(backup)
                     pdf.insertPDF(opened_file)
@@ -954,7 +989,7 @@ class ActionsThree(QWidget):
         self.CheckOne.setMinimumHeight(35)
         # self.CheckOne.setMaximumWidth(800)
         self.CheckOne.setStyleSheet("QCheckBox {background-color: rgb(155, 61, 61); color: rgb(255, 255, 255);padding-left:10px;}") 
-        self.CheckOne.setChecked(True)
+        self.CheckOne.setChecked(prev_prefs["4"])
         self.v1.addWidget(self.CheckOne)
         
         self.CheckTwo = QCheckBox('Convertir de inmediato a PDF/A', self)
@@ -962,7 +997,7 @@ class ActionsThree(QWidget):
         self.CheckTwo.setMinimumHeight(35)
         # self.CheckTwo.setMaximumWidth(800)
         self.CheckTwo.setStyleSheet("QCheckBox {background-color: rgb(155, 61, 61); color: rgb(255, 255, 255);padding-left:10px;}")  
-        self.CheckTwo.setChecked(False)
+        self.CheckTwo.setChecked(prev_prefs["5"])
         self.v1.addWidget(self.CheckTwo)
              
         # self.lineTwo = QLabel('/'*250, self)
@@ -1038,6 +1073,8 @@ class ActionsThree(QWidget):
                 self.progress.show()
                 self.state = self.CheckOne.checkState()
                 self.PDFA=self.CheckTwo.checkState()
+                prev_prefs["4"]=self.state
+                prev_prefs["5"]=self.PDFA
                 self.threadpool = QThreadPool()
                 self.runner = JobRunnerThree(self.var1,self.var2,self.state,self.PDFA)   
                 self.threadpool.start(self.runner)                                         
@@ -1319,7 +1356,7 @@ class ActionsFour(QWidget):
         self.CheckOne.setMinimumHeight(35)
         # self.CheckOne.setMaximumWidth(800)
         self.CheckOne.setStyleSheet("QCheckBox {background-color: rgb(155, 61, 61); color: rgb(255, 255, 255);padding-left:10px;}") 
-        self.CheckOne.setChecked(True)
+        self.CheckOne.setChecked(prev_prefs["6"])
         self.v1.addWidget(self.CheckOne)
              
         # self.lineTwo = QLabel('/'*250, self)
@@ -1396,6 +1433,7 @@ class ActionsFour(QWidget):
                 self.labelThree.hide()
                 self.progress.show()
                 self.state = self.CheckOne.checkState()
+                prev_prefs["6"]=self.state
                 self.threadpool = QThreadPool()
                 self.runner = JobRunnerFour(self.var1,self.var2,self.state)   
                 self.threadpool.start(self.runner)                                         
@@ -2880,13 +2918,13 @@ class JobRunnerEight(QRunnable):
                 driver = webdriver.Chrome(ChromeDriverManager().install(),service_args=args)
                 # driver = webdriver.Chrome(ChromeDriverManager().install())
                 # driver = webdriver.Chrome(driverPath,service_args=args)
-                driver.get("HIDDEN")
+                driver.get("http://intranet/cl-at-iamenu/menuS01Alias")
                 
                 driver.find_element_by_name('cuenta').send_keys(self.username)
                 driver.find_element_by_name('password').send_keys(self.password)
                 driver.find_element_by_class_name('form-button').click()
                 time.sleep(1)           
-                driver.get('HIDDEN')
+                driver.get('http://intranet/cl-at-iamenu/menuS03Alias?accion=invocarPrograma&programa=5:5.68.1')
                 time.sleep(2)        
                 try:
                     driver.switch_to.frame('menu')
@@ -3398,7 +3436,7 @@ class ActionsEight(QWidget):
         self.report.setFont(fontTwo)
         self.report.setPlaceholderText('FE RECIBIDAS: acá se generará el reporte del proceso...') 
         # self.report.setText('Acá se generará el reporte del proceso...') 
-        self.report.setStyleSheet("color: Gainsboro;border: 2px solid rgb(69, 70, 77)")     
+        self.report.setStyleSheet("background-color: rgb(22, 23, 24);color: Gainsboro;border: 1px solid DarkGray")
         self.report.setReadOnly(True)
         self.v2.addWidget(self.report)
         
@@ -3662,13 +3700,13 @@ class JobRunnerNine(QRunnable):
                 driver = webdriver.Chrome(ChromeDriverManager().install(),service_args=args)
                 # driver = webdriver.Chrome(ChromeDriverManager().install())
                 # driver = webdriver.Chrome(driverPath,service_args=args)
-                driver.get("HIDDEN")
+                driver.get("http://intranet/cl-at-iamenu/menuS01Alias")
                 
                 driver.find_element_by_name('cuenta').send_keys(self.username)
                 driver.find_element_by_name('password').send_keys(self.password)
                 driver.find_element_by_class_name('form-button').click()
                 time.sleep(1)           
-                driver.get('HIDDEN')
+                driver.get('http://intranet/cl-at-iamenu/menuS03Alias?accion=invocarPrograma&programa=5:5.68.1')
                 time.sleep(2)        
                 try:
                     driver.switch_to.frame('menu')
@@ -3932,11 +3970,11 @@ class JobRunnerNine(QRunnable):
                         with pd.ExcelWriter(self.SaveAs, 
                                             engine='xlsxwriter',
                                             datetime_format='d/mm/yyyy') as writer: 
-                             outcome.to_excel(writer,sheet_name='FE Recibidas',index = False) 
+                             outcome.to_excel(writer,sheet_name='FE Emitidas',index = False) 
                              workbook  = writer.book
                              format1 = workbook.add_format({'num_format': '#,##0.00'})
                              format2 = workbook.add_format({'num_format': 'd/mm/yyyy'})
-                             worksheet = writer.sheets['FE Recibidas']
+                             worksheet = writer.sheets['FE Emitidas']
                              worksheet.set_column('B:B',18, format2)
                              worksheet.set_column('C:C',18, format2)
                              worksheet.set_column('H:H',15, format1)
@@ -4184,7 +4222,7 @@ class ActionsNine(QWidget):
         self.report.setFont(fontTwo)
         self.report.setPlaceholderText('FE EMITIDAS: acá se generará el reporte del proceso...') 
         # self.report.setText('Acá se generará el reporte del proceso...') 
-        self.report.setStyleSheet("background-color: black;color: Gainsboro;border: 2px solid rgb(69, 70, 77)")     
+        self.report.setStyleSheet("background-color: rgb(22, 23, 24);color: Gainsboro;border: 1px solid DarkGray")
         self.report.setReadOnly(True)
         self.v2.addWidget(self.report)
         
@@ -4203,9 +4241,9 @@ class ActionsNine(QWidget):
         self.v1.addWidget(self.progress)
         self.v1.addWidget(self.labelOne)
         self.v1.addWidget(self.labelTwo)
-        self.v1.addWidget(self.labelThree)    
+        self.v1.addWidget(self.labelThree) 
+        self.mainLayout.addLayout(self.v2)   
         self.mainLayout.addLayout(self.v1)
-        self.mainLayout.addLayout(self.v2)
         self.setLayout(self.mainLayout)
         
         # quit = QAction("Quit", self)
@@ -4423,6 +4461,7 @@ class JobRunnerTen(QRunnable):
                 file_name=os.path.basename(self.SaveAs)
                 print(file_name)
                 output_file=file_name[:-4]+' sehr witzig.pdf'
+                go_back=os.getcwd()
                 os.chdir(os.path.dirname(self.SaveAs))
                 quality=''
                 if self.choice==0:
@@ -4482,6 +4521,7 @@ class JobRunnerTen(QRunnable):
                         self.signals.reportMsg.emit('No se puede reducir más el tamaño del documento con la opción elegida.')
                     else:
                         self.signals.reportMsg.emit("De %.2f MB se redujo a %.2f MB y tomó %.2f segundos" % (size_before, size_after,time.time()-start))
+                    os.chdir(go_back)
                     self.signals.finished.emit('Done')
         except Exception as e:      
             self.signals.alert.emit(str(e))
@@ -4573,7 +4613,7 @@ class ActionsTen(QWidget):
         self.CheckOne.setMinimumHeight(35)
         # self.CheckOne.setMaximumWidth(800)
         self.CheckOne.setStyleSheet("QCheckBox {background-color: rgb(155, 61, 61); color: rgb(255, 255, 255);padding-left:10px;}") 
-        self.CheckOne.setChecked(False)
+        self.CheckOne.setChecked(prev_prefs["7"])
         self.v1.addWidget(self.CheckOne)
              
         # self.lineTwo = QLabel('/'*250, self)
@@ -4655,6 +4695,7 @@ class ActionsTen(QWidget):
                 self.progress.show()
                 self.choice = self.combo.currentIndex()
                 self.state = self.CheckOne.checkState()
+                prev_prefs["7"]=self.state
                 self.threadpool = QThreadPool()
                 self.runner = JobRunnerTen(self.var1,self.state,self.choice)   
                 self.threadpool.start(self.runner)                                         
@@ -4815,16 +4856,17 @@ class MainWindow(QMainWindow):
                      "QComboBox QAbstractItemView::item { min-height: 35px; min-width: 50px;}"
                      "QListView::item { color: white; background-color: rgb(69, 70, 77)}"
                      "QListView::item:selected { color: white; background-color: IndianRed}") 
-        
+        self.dark="background-color: rgb(22, 23, 24); color:CornflowerBlue"
+        self.light="background-color: White; color:RoyalBlue"
         self.style = QApplication.style()
        
         self.setWindowTitle(self.title)       
         # self.setMinimumSize(750,500)
-        self.setMinimumSize(530,540)
+        self.setMinimumSize(650,540)
         # self.resize(500,600)
         self.move(0, 0)
         # self.setWindowState(Qt.WindowMaximized)
-        self.setStyleSheet("background-color: rgb(22, 23, 24); color:CornflowerBlue")
+        self.setStyleSheet(self.dark if prev_prefs["8"]=='dark' else self.light)
         self.setWindowIcon(QIcon(icon))
         
         self.menuBar = self.menuBar()
@@ -4854,6 +4896,14 @@ class MainWindow(QMainWindow):
         self.help.addAction(choices[8], self.window9.instructions) 
         self.help.addAction(choices[9], self.window10.instructions) 
    
+        self.theme=QMenu("&Elegir tema de fondo")
+        self.theme.setStyleSheet("QMenu {background-color: white; color: black}"
+                                   "QMenu:item:selected {background-color: white ;color: rgb(155, 61, 61)}") 
+        self.menuBar.addMenu(self.theme)
+        self.theme.setCursor(QCursor(Qt.PointingHandCursor))
+        self.theme.addAction('Dark', self.dark_theme)
+        self.theme.addAction('Light', self.light_theme)
+
         self.stackedLayout = QStackedLayout()
               
         self.mainLayout = QVBoxLayout()
@@ -4902,6 +4952,8 @@ class MainWindow(QMainWindow):
         self.h.addLayout(self.v)
         self.h.addLayout(self.v2)   
 
+        self.h.addLayout(self.v3) 
+
         self.stackedLayout.setAlignment(Qt.AlignCenter)
         self.h.setAlignment(Qt.AlignCenter)
                
@@ -4924,7 +4976,7 @@ class MainWindow(QMainWindow):
         self.labelFour.setAlignment(Qt.AlignCenter) 
         self.v.addWidget(self.labelFour)
         
-        self.titleOne = QLabel('Versión 1.4.4 <Instalable>', self)
+        self.titleOne = QLabel('Versión 1.4.6 <Instalable>', self)
         self.titleOne.setFont(fontFive)
         self.titleOne.setStyleSheet("color:	IndianRed")
         self.titleOne.setAlignment(Qt.AlignRight | Qt.AlignBottom)  
@@ -4933,11 +4985,11 @@ class MainWindow(QMainWindow):
         self.labelOne = QLabel('Hola, '+username, self)
         self.labelOne.setFont(fontFive)
         self.labelOne.setAlignment(Qt.AlignRight)  
-        self.v2.addWidget(self.labelOne)        
+        self.v2.addWidget(self.labelOne)   
         
         self.status_label = QLabel()
         self.statusBar().addPermanentWidget(self.status_label)
-        self.status_label.setText('Versión 1.4.4 <Instalable>, lanzada en septiembre del 2021.')
+        self.status_label.setText('Versión 1.4.6 <Instalable>, lanzada en septiembre del 2021.')
 
         self.w = QWidget(self)
         self.w.setLayout(self.mainLayout)
@@ -4946,6 +4998,21 @@ class MainWindow(QMainWindow):
         quit = QAction("Quit", self)
         quit.triggered.connect(self.closeEvent)
         
+    def dark_theme(self):
+        if prev_prefs["8"]=='light':
+            prev_prefs["8"]='dark'
+            self.setStyleSheet(self.dark)
+            self.theme.setStyleSheet(self.dark)
+        else:
+            pass
+    def light_theme(self):
+        if prev_prefs["8"]=='dark':
+            prev_prefs["8"]='light'
+            self.setStyleSheet(self.light)
+            self.theme.setStyleSheet(self.light)
+        else:
+            pass           
+
     def toggle_window(self):
         self.stackedLayout.setCurrentIndex(self.pageCombo.currentIndex())
     def error(self,errorMsg):
@@ -4998,6 +5065,11 @@ class MainWindow(QMainWindow):
                 self.window9.runner.kill()
             elif self.window10.runner: 
                 self.window10.runner.kill()               
+            prefs={'1':prev_prefs["1"],'2':prev_prefs["2"],'3':prev_prefs["3"],
+                '4':prev_prefs["4"],'5':prev_prefs["5"],
+                '6':prev_prefs["6"],'7':prev_prefs["7"],'8':prev_prefs["8"]}
+            with open(preferences, 'w') as outfile:
+                json.dump(prefs, outfile)
             event.accept() 
         else:
             event.ignore()

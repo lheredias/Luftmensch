@@ -1,10 +1,10 @@
 from PyQt5.QtCore import (pyqtSignal,QThreadPool,pyqtSlot,QRunnable,QObject,Qt)
 from PyQt5.QtWidgets import (QApplication, QMainWindow,QLabel,QFileDialog,QAction,
-                             QProgressBar, QPushButton,QMessageBox,QLineEdit,QMenu,QComboBox,
-                             QHBoxLayout,QStackedLayout,QGraphicsOpacityEffect,QAbstractButton,
-                             QCheckBox,QVBoxLayout,QWidget,QListView)
+                             QProgressBar, QPushButton,QMessageBox,QLineEdit,QMenu,
+                             QGraphicsOpacityEffect,QComboBox,QHBoxLayout,QStackedLayout,
+                             QTextEdit,QCheckBox,QVBoxLayout,QWidget,QListView)
 
-from PyQt5.QtGui import (QIcon,QFont,QPixmap,QCursor,QPainter)
+from PyQt5.QtGui import (QIcon,QFont,QPixmap,QCursor)
 import time
 import sys
 import os
@@ -13,15 +13,33 @@ import shutil
 import fitz
 from win32com import client
 from docx import Document  
+from re import findall
 from webbrowser import open as op
-
+from selenium import webdriver
+from selenium.webdriver.support import expected_conditions as ec
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.common.exceptions import UnexpectedAlertPresentException
+from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.chrome.options import Options
+import pandas as pd  
+# You may need to install Pandas's optional dependencies depending on your working environment:
+# xlsxwriter, xlrd, openpyxl, BeautifulSoup4, html5lib, lxml
+# Use conda install [package name] if you're in a conda environment
+from numpy import nan as npnan
+from webdriver_manager.chrome import ChromeDriverManager
+import json
+import subprocess
+import requests
+QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
+QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
 # os.chdir(r'/Users/lenin/Documents/Python Scripts/Luftmensch')
-
-if hasattr(Qt, 'AA_EnableHighDpiScaling'):
+""" if hasattr(Qt, 'AA_EnableHighDpiScaling'):
     QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
 
 if hasattr(Qt, 'AA_UseHighDpiPixmaps'):
-    QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
+    QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True) """
+
 def resource_path(relative_path):
     """ Get absolute path to resource, works for dev and for PyInstaller """
     try:
@@ -32,6 +50,11 @@ def resource_path(relative_path):
     
     return os.path.join(base_path, relative_path)
 
+preferences=resource_path('preferences.json')
+
+with open(preferences, 'r') as openfile:
+    prev_prefs = json.load(openfile)
+  
 icon=resource_path('finalicon.ico')
 pic=resource_path('check small.png')
 logo=resource_path('app name.png')
@@ -41,9 +64,7 @@ logo=resource_path('app name.png')
 # If not, just comment the "gs" definition line below.
 gs=resource_path('gswin64c.exe')
 # ======================================================================
-donate_pic=resource_path('donate.png')
 username=getpass.getuser()
-
 years=[str(i) for i in range(2010,2021)]
 years.reverse()
 months=[str(i) for i in range(1,13)]
@@ -51,16 +72,45 @@ for i in range(len(months)):
     if len(months[i])==1:
         months[i]='0'+months[i]
 months.reverse()
-choices=['1. PDF to PDF/A',
-         '2. PDF with Vertical A4 dimensions',
-                 '3. Merge PDFs',
-                 '4. Images to PDF',
-                 '5. Compress PDF'] 
+choices=['1. Convertir PDF en PDF/A',
+         '2. Obtener PDF con páginas del mismo tamaño',
+                 '3. Unir varios archivos PDF',
+                 '4. Convertir una o varias imágenes en un solo archivo PDF',
+                 '5. Crear archivo .zip de Requerimientos y Cartas',
+                 '6. Crear archivo .zip de Valores',
+                 '7. Generar archivo de texto para solicitar descarga de LE',
+                 '8. Detalle de FE recibidas',
+                 '9. Detalle de FE emitidas',
+                 '10. Comprimir PDF'] 
 
 fontOne = QFont("Helvetica", 9)
 fontTwo=QFont("Helvetica", 9)
 fontThree=QFont('Consolas', 11)  #Done message font
 fontFive=QFont('Consolas', 11) #Version font
+msg_window_style="color: rgb(255, 255, 255); background-color: rgb(69, 70, 77)"
+try:
+    import pyi_splash
+    # pyi_splash.update_text('UI Loaded ...')
+    pyi_splash.close()
+except:
+    pass
+progressStyle=("QProgressBar {border: 2px solid grey;border-radius: 5px;text-align: center}"
+                         "QProgressBar::chunk {background-color: IndianRed;width: 10px;margin: 1px;}")
+buttonStyle01=("QPushButton { background-color: rgb(155, 61, 61 ); color: rgb(255, 255, 255 );}")
+buttonStyle02=("QPushButton { background-color: rgb(69, 70, 77); color: rgb(255, 255, 255);}")
+comboStyle=("QComboBox {selection-background-color: rgb(69, 70, 77);background-color: rgb(69, 70, 77); color: rgb(255, 255, 255);padding-left:10px}"
+                     "QComboBox QAbstractItemView::item { min-height: 35px; min-width: 50px;}"
+                     "QListView::item { color: white; background-color: rgb(69, 70, 77)}"
+                     "QListView::item:selected { color: white; background-color: IndianRed}")
+style01=("QPushButton { background-color: rgb(155, 61, 61 ); color: rgb(255, 255, 255 );}"
+                     "QPushButton:hover { background-color: rgba(155, 61, 61,230) ;color: white;}"
+                      "QPushButton:pressed { background-color: rgb(69, 70, 77) ;color: rgb(255, 255, 255 );}")
+style02=("QPushButton { background-color: rgb(69, 70, 77); color: rgb(255, 255, 255);}"
+                      "QPushButton:hover { background-color: rgba(69, 70, 77,230) ;color: white;}"
+                      "QPushButton:pressed { background-color: rgb(155, 61, 61 ); color: rgb(255, 255, 255 );}")
+checkboxStyle="QCheckBox {background-color: rgb(155, 61, 61); color: rgb(255, 255, 255);padding-left:10px;}"
+textboxStyle='background-color: rgb(69, 70, 77); color: white'
+buttonMinHeight=35
 # <codecell>
 class WorkerSignalsOne(QObject):
     alert=pyqtSignal(str)
@@ -107,45 +157,56 @@ class JobRunnerOne(QRunnable):
                         count+=1 
                         time.sleep(count)          
                 time.sleep(1)
-                DestDir=os.path.abspath(os.path.join(self.SaveAs, '..'))                
-                tempDocx='\\tempword.docx'
+                # ==============================================================
+                holder=self.SaveAs[:-4]+' sehr witzig.pdf'
+                subprocess.check_call(["attrib","+H",holder])   
+                # ==============================================================
+                tempDocx=os.path.join(os.path.dirname(self.SaveAs),'tempword.docx')
                 documento = Document()
-                documento.save(DestDir+tempDocx)  
-                try:
-                    word = client.DispatchEx('Word.Application')
-                except Exception:
-                    self.signals.alert.emit('NoWord')
-                else:
-                    worddoc = word.Documents.Open(DestDir+tempDocx,ReadOnly = 1)                   
-                    worddoc.SaveAs(self.SaveAs,FileFormat = 17)               
-                    worddoc.Close(True)
-                    word.Quit()
-                    os.remove(DestDir+tempDocx)    
-                    pdf=fitz.open(self.SaveAs)
-                    opened_file=fitz.open(backup)
-                    pdf.insertPDF(opened_file)
-                    opened_file.close()
-                    pdf.deletePage(0)
-                    pdf.saveIncr()
-                    pdf.close()               
-                    time.sleep(1)      
-                    done=False
-                    count=0
-                    while not done:
-                        try:
-                            os.remove(backup)
-                            done=True
-                        except PermissionError:
-                            print('Permission denied')
-                            count+=1 
-                            time.sleep(count)
-                    if self.state==2:
-                        from subprocess import Popen 
-                        Popen([self.SaveAs],shell=True)
-                    time.sleep(1)
-                    self.signals.finished.emit('Done')
+                documento.save(tempDocx)
+                # =======================================
+                holder=tempDocx
+                subprocess.check_call(["attrib","+H",holder])   
+                # =======================================            
+                word = client.DispatchEx('Word.Application')
+                worddoc = word.Documents.Open(tempDocx,ReadOnly = 1)                   
+                worddoc.SaveAs(self.SaveAs,FileFormat = 17)               
+                worddoc.Close(True)
+                word.Quit()
+                done=False
+                count=0
+                while not done:
+                    try:
+                        os.remove(tempDocx)
+                        done=True
+                    except PermissionError:
+                        print('Permission denied')
+                        count+=1 
+                        time.sleep(count)                    
+                pdf=fitz.open(self.SaveAs)
+                opened_file=fitz.open(backup)
+                pdf.insertPDF(opened_file)
+                opened_file.close()
+                pdf.deletePage(0)
+                pdf.saveIncr()
+                pdf.close()               
+                time.sleep(1)      
+                done=False
+                count=0
+                while not done:
+                    try:
+                        os.remove(backup)
+                        done=True
+                    except PermissionError:
+                        print('Permission denied')
+                        count+=1 
+                        time.sleep(count)
+                if self.state==2:
+                    subprocess.Popen([self.SaveAs],shell=True)
+                time.sleep(1)
+                self.signals.finished.emit('Done')
         except Exception as e:      
-               self.signals.alert.emit(str(type(e)))
+            self.signals.alert.emit(str(e))
     def kill(self):
         self.is_killed = True
           
@@ -157,76 +218,59 @@ class ActionsOne(QWidget):
         self.title = 'LuftMensch'
         self.var1=None
         self.initUI()
-        self.msg1='Choose a PDF file.'
+        self.msg1='Ingresa un archivo PDF.'
         
     def initUI(self):
-        
-        self.style = QApplication.style()
-        
-        
-        self.style1=("QPushButton { background-color: rgb(155, 61, 61 ); color: rgb(255, 255, 255 );}")
-        self.style2=("QPushButton { background-color: rgb(69, 70, 77); color: rgb(255, 255, 255);}")             
-        self.style3 = ("QProgressBar {border: 2px solid grey;border-radius: 5px;text-align: center}"
-                         "QProgressBar::chunk {background-color: IndianRed;width: 10px;margin: 1px;}")
-          
-        self.setWindowTitle(self.title)
-             
+    
         self.h1=QHBoxLayout()
         self.h2=QHBoxLayout()
         self.v1=QVBoxLayout()
         self.v2=QVBoxLayout()
                                
-        # self.setStyleSheet("background-color: rgb(255, 255, 255); color: rgb(86, 88, 110)")
-        self.setWindowIcon(QIcon(icon))
-
-        
-        self.buttonTwo = QPushButton('Load PDF', self)   
+        self.buttonTwo = QPushButton('Cargar PDF', self)   
         self.buttonTwo.clicked.connect(self.openFileNameDialogOne)
-        self.buttonTwo.setMinimumHeight(35)
+        self.buttonTwo.setMinimumHeight(buttonMinHeight)
         # self.buttonTwo.setMaximumWidth(200)
-        self.buttonTwo.setStyleSheet(self.style2)
+        self.buttonTwo.setStyleSheet(buttonStyle02)
         self.buttonTwo.setFont(fontTwo)
         self.buttonTwo.setCursor(QCursor(Qt.PointingHandCursor))
         self.h1.addWidget(self.buttonTwo,1)
         
         self.myTextBoxOne = QLineEdit(self)
-        self.myTextBoxOne.setMinimumHeight(35)  
-        self.myTextBoxOne.setStyleSheet('background-color: rgb(69, 70, 77); color: white')
+        self.myTextBoxOne.setMinimumHeight(buttonMinHeight)  
+        self.myTextBoxOne.setStyleSheet(textboxStyle)
         # self.myTextBoxOne.setMaximumWidth(600)
         self.myTextBoxOne.setFont(fontTwo)
         self.myTextBoxOne.setReadOnly(True)
         self.h1.addWidget(self.myTextBoxOne,4)
+    
         
-        # self.lineOne = QLabel('/'*250, self) 
-        # self.lineOne.setMaximumWidth(800)
-        # self.v1.addWidget(self.lineOne)
-        
-        self.CheckOne = QCheckBox('Open immediately', self)  
+        self.CheckOne = QCheckBox('Abrir de inmediato el documento generado', self)  
         self.CheckOne.setFont(fontTwo)
-        self.CheckOne.setMinimumHeight(35)
+        self.CheckOne.setMinimumHeight(buttonMinHeight)
         # self.CheckOne.setMaximumWidth(800)
-        self.CheckOne.setStyleSheet("QCheckBox {background-color: rgb(155, 61, 61); color: rgb(255, 255, 255);padding-left:10px;}") 
-        self.CheckOne.setChecked(True)
+        self.CheckOne.setStyleSheet(checkboxStyle) 
+        self.CheckOne.setChecked(prev_prefs["1"])
         self.v1.addWidget(self.CheckOne)
              
         # self.lineTwo = QLabel('/'*250, self)
         # self.lineTwo.setMaximumWidth(800)
         # self.v1.addWidget(self.lineTwo)     
         self.h2.addStretch()
-        self.start = QPushButton('Run', self)
-        self.start.setStyleSheet(self.style1)
+        self.start = QPushButton('Ejecutar', self)
+        self.start.setStyleSheet(buttonStyle01)
         # self.start.setFocus()
         self.start.setFont(fontOne)
-        self.start.setMinimumHeight(35)
+        self.start.setMinimumHeight(buttonMinHeight)
         self.start.setEnabled(True)
         self.start.setCursor(QCursor(Qt.PointingHandCursor))
         self.start.clicked.connect(self.started) 
         self.h2.addWidget(self.start)
         # self.h2.addStretch()
-        self.button = QPushButton('Clean', self)
-        self.button.setStyleSheet(self.style1)
+        self.button = QPushButton('Limpiar', self)
+        self.button.setStyleSheet(buttonStyle01)
         self.button.setFont(fontOne)
-        self.button.setMinimumHeight(35)
+        self.button.setMinimumHeight(buttonMinHeight)
         # self.button.setMinimumWidth(200)
         self.button.setEnabled(True)
         self.button.setCursor(QCursor(Qt.PointingHandCursor))
@@ -235,7 +279,7 @@ class ActionsOne(QWidget):
         # self.h2.addStretch()
         self.progress = QProgressBar(self)
         self.progress.setFormat("")
-        self.progress.setStyleSheet(self.style3)    
+        self.progress.setStyleSheet(progressStyle)    
         self.progress.setFont(fontOne)
         # self.progress.setMaximumWidth(800)
         self.progress.setAlignment(Qt.AlignCenter) 
@@ -245,7 +289,7 @@ class ActionsOne(QWidget):
              
         self.labelTwo = QLabel('', self)
         self.labelTwo.setFont(fontThree)
-        self.labelTwo.setStyleSheet("color:LightGreen")
+        self.labelTwo.setStyleSheet("color: ForestGreen")
         self.labelTwo.setAlignment(Qt.AlignCenter)
         # self.labelTwo.hide()
         
@@ -267,9 +311,6 @@ class ActionsOne(QWidget):
         self.mainLayout.addWidget(self.labelThree)
         self.setLayout(self.mainLayout)
         self.mainLayout.setAlignment(Qt.AlignCenter)
-        
-        # quit = QAction("Quit", self)
-        # quit.triggered.connect(self.closeEvent)
    
     def started(self):
         
@@ -280,6 +321,7 @@ class ActionsOne(QWidget):
                 self.labelThree.hide()
                 self.progress.show()
                 self.state = self.CheckOne.checkState()
+                # prev_prefs["1"]=self.state
                 self.threadpool = QThreadPool()
                 self.runner = JobRunnerOne(self.var1,self.state)   
                 self.threadpool.start(self.runner)                                         
@@ -294,7 +336,7 @@ class ActionsOne(QWidget):
                     self.runner.signals.finished.connect(self.finished)
             else:
                 self.start.setEnabled(True)
-                self.labelTwo.setText('Try again')
+                self.labelTwo.setText('Intenta de nuevo.')
                 self.error(self.msg1)
                 
     def clean(self):
@@ -308,23 +350,17 @@ class ActionsOne(QWidget):
         
     def openFileNameDialogOne(self):
         
-        fileName, _ = QFileDialog.getOpenFileName(self,"Choose your document ",'',filter="PDF (*.pdf)")
+        fileName = QFileDialog.getOpenFileName(self,"Selecciona tu documento",'',filter="PDF (*.pdf)")
         
-        if fileName:        
-            if '.pdf' not in fileName:
-                fileName=fileName+'.pdf'
-            fileName=os.path.abspath(fileName)         
-            self.myTextBoxOne.setText(fileName)
-            self.var1=self.myTextBoxOne.text()
-        return fileName
+        if len(fileName[0])!=0:          
+            self.myTextBoxOne.setText(fileName[0])
+            self.var1=os.path.abspath(fileName[0])
   
     def alert(self, msg):
         if msg=='Error2':
-            self.error('The PDF you are trying to overwrite is currently open. Close it and try again.')
-        elif msg=='NoWord':
-            self.error('You shall have MS Word installed.')    
+            self.error('Cierra el PDF sobre el cual deseas guardar el resultado.')
         else:
-            self.error('Unexpected error found: '+msg)
+            self.error('Ocurrió un error inesperado: '+msg)
         self.clean()
     def finished(self, msg):
         if msg=='Done':
@@ -332,13 +368,13 @@ class ActionsOne(QWidget):
             self.myTextBoxOne.setText(None)
             self.var1=None
             self.start.setEnabled(True)   
-            self.labelTwo.setText('ALL DONE! You can check your document now!')
+            self.labelTwo.setText('¡Listo, ya puedes visualizar tus documentos!')
             self.labelThree.show()
             
             self.labelThree.setPixmap(self.pixmap) 
             self.labelThree.show()
             self.progress.hide()
-     
+
     def error(self,errorMsg):
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Critical)
@@ -350,7 +386,7 @@ class ActionsOne(QWidget):
         buttonOk = msg.button(QMessageBox.Ok)
         buttonOk.setCursor(QCursor(Qt.PointingHandCursor))
         buttonOk.setFont(fontOne)
-        msg.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
+        msg.setStyleSheet(msg_window_style)
         msg.setInformativeText(errorMsg)
         msg.exec_()
         self.start.setEnabled(True)
@@ -361,19 +397,19 @@ class ActionsOne(QWidget):
         info.setWindowTitle(choices[0][3:])
         
         info.setWindowIcon(QIcon(icon))
-        info.setText('''Make sure the PDF/A Compliant check box is selected in MS Word.
+        info.setText('''La opción "Compatible con PDF/A" debe encontrarse activa en Microsoft Word. Para activarla, dirígete a:
 
-If you are not sure, go to: File -> Save as -> PDF -> Options''')
+Archivo -> Guardar como -> PDF -> Opciones''')
 
         info.setFont(fontTwo)
-        info.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
+        info.setStyleSheet(msg_window_style)
         info.setWindowModality(0)
         # info.setModal(True)
         info.activateWindow()
         info.setStandardButtons(QMessageBox.Ok)
         buttonOk = info.button(QMessageBox.Ok)
         buttonOk.setCursor(QCursor(Qt.PointingHandCursor))
-        buttonOk.setText('OK')
+        buttonOk.setText('Entendido')
         buttonOk.setFont(fontOne)
         info.setDefaultButton(QMessageBox.Ok)
         info.show()
@@ -413,7 +449,21 @@ class JobRunnerTwo(QRunnable):
             if self.is_opened() == True:
                 self.signals.alert.emit('Error2')
             else:
-                backup=shutil.copy(self.SaveAs,self.SaveAs[:-4]+' sehr witzig.pdf')
+                done=False
+                count=0
+                while not done:
+                    try:
+                        backup=shutil.copy(self.SaveAs,self.SaveAs[:-4]+' sehr witzig.pdf')
+                        done=True
+                    except PermissionError:
+                        print('Permission denied')
+                        count+=1
+                        time.sleep(count)                 
+                time.sleep(1)  
+                # ==============================================================
+                holder=self.SaveAs[:-4]+' sehr witzig.pdf'   
+                subprocess.check_call(["attrib","+H",holder])   
+                # ==============================================================  
                 src= fitz.open(backup)
                 doc = fitz.open()
                 for ipage in src:
@@ -422,8 +472,8 @@ class JobRunnerTwo(QRunnable):
                     #These lines of code take care of the many problems that arise when dealing with 
                     #different page sizes. 
                     if ipage.get_contents() != []:               
-                        if ipage.rotation==90: 
-                            ipage.setRotation(0)               
+                        if ipage.rotation>0: 
+                            ipage.setRotation(0)                
                         if ipage.rect.width > ipage.rect.height:
                             fmt = fitz.PaperRect("a4-l")  # landscape if input suggests
                         else:
@@ -463,45 +513,57 @@ class JobRunnerTwo(QRunnable):
                             count+=1 
                             time.sleep(count)          
                     time.sleep(1)
-                    DestDir=os.path.abspath(os.path.join(self.SaveAs, '..'))                
-                    tempDocx='\\tempword.docx'
+                    # ==============================================================
+                    holder=self.SaveAs[:-4]+' sehr witzig.pdf' 
+                    subprocess.check_call(["attrib","+H",holder])   
+                    # ==============================================================
+                    tempDocx=os.path.join(os.path.dirname(self.SaveAs),'tempword.docx')
                     documento = Document()
-                    documento.save(DestDir+tempDocx) 
-                    try:
-                        word = client.DispatchEx('Word.Application')
-                    except Exception:
-                        self.signals.alert.emit('NoWord')
-                    else:
-                        worddoc = word.Documents.Open(DestDir+tempDocx,ReadOnly = 1)                   
-                        worddoc.SaveAs(self.SaveAs,FileFormat = 17)               
-                        worddoc.Close(True)
-                        word.Quit()
-                        os.remove(DestDir+tempDocx)    
-                        pdf=fitz.open(self.SaveAs)
-                        opened_file=fitz.open(backup)
-                        pdf.insertPDF(opened_file)
-                        opened_file.close()
-                        pdf.deletePage(0)
-                        pdf.saveIncr()
-                        pdf.close()               
-                        time.sleep(1)      
-                        done=False
-                        count=0
-                        while not done:
-                            try:
-                                os.remove(backup)
-                                done=True
-                            except PermissionError:
-                                print('Permission denied')
-                                count+=1 
-                                time.sleep(count)
+                    documento.save(tempDocx)   
+                    # =======================================
+                    holder=tempDocx
+                    subprocess.check_call(["attrib","+H",holder])   
+                    # =======================================             
+                    word = client.DispatchEx('Word.Application')
+                    worddoc = word.Documents.Open(tempDocx,ReadOnly = 1)                   
+                    worddoc.SaveAs(self.SaveAs,FileFormat = 17)               
+                    worddoc.Close(True)
+                    word.Quit()
+                    done=False
+                    count=0
+                    while not done:
+                        try:
+                            os.remove(tempDocx)
+                            done=True
+                        except PermissionError:
+                            print('Permission denied')
+                            count+=1 
+                            time.sleep(count)     
+                    pdf=fitz.open(self.SaveAs)
+                    opened_file=fitz.open(backup)
+                    pdf.insertPDF(opened_file)
+                    opened_file.close()
+                    pdf.deletePage(0)
+                    pdf.saveIncr()
+                    pdf.close()               
+                    time.sleep(1)      
+                    done=False
+                    count=0
+                    while not done:
+                        try:
+                            os.remove(backup)
+                            done=True
+                        except PermissionError:
+                            print('Permission denied')
+                            count+=1 
+                            time.sleep(count)
                 if self.state==2:
-                    from subprocess import Popen 
-                    Popen([self.SaveAs],shell=True)
+                     
+                    subprocess.Popen([self.SaveAs],shell=True)
                 time.sleep(1)
                 self.signals.finished.emit('Done')
         except Exception as e:      
-               self.signals.alert.emit(str(type(e)))                
+            self.signals.alert.emit(str(e))           
     def kill(self):
         self.is_killed = True
            
@@ -513,40 +575,28 @@ class ActionsTwo(QWidget):
         self.title = 'LuftMensch'
         self.var1=None
         self.initUI()
-        self.msg1='Choose a PDF file.'
+        self.msg1='Ingresa un archivo PDF.'
         
     def initUI(self):
-        self.style = QApplication.style()
-       
-        
-        self.style1=("QPushButton { background-color: rgb(155, 61, 61 ); color: rgb(255, 255, 255 );}")
-        self.style2=("QPushButton { background-color: rgb(69, 70, 77); color: rgb(255, 255, 255);}")          
-        self.style3 = ("QProgressBar {border: 2px solid grey;border-radius: 5px;text-align: center}"
-                         "QProgressBar::chunk {background-color: IndianRed;width: 10px;margin: 1px;}")
-          
-        self.setWindowTitle(self.title)
-             
+    
         self.h1=QHBoxLayout()
         self.h2=QHBoxLayout()
         self.v1=QVBoxLayout()
         self.v2=QVBoxLayout()
-                               
-        # self.setStyleSheet("background-color: rgb(255, 255, 255); color: rgb(86, 88, 110)")
-        self.setWindowIcon(QIcon(icon))
-    
+
         
-        self.buttonTwo = QPushButton('Load PDF', self)   
+        self.buttonTwo = QPushButton('Cargar PDF', self)   
         self.buttonTwo.clicked.connect(self.openFileNameDialogOne)
-        self.buttonTwo.setMinimumHeight(35)
+        self.buttonTwo.setMinimumHeight(buttonMinHeight)
         # self.buttonTwo.setMaximumWidth(200)
-        self.buttonTwo.setStyleSheet(self.style2)
+        self.buttonTwo.setStyleSheet(buttonStyle02)
         self.buttonTwo.setFont(fontTwo)
         self.buttonTwo.setCursor(QCursor(Qt.PointingHandCursor))
         self.h1.addWidget(self.buttonTwo,1)
         
         self.myTextBoxOne = QLineEdit(self)
-        self.myTextBoxOne.setMinimumHeight(35)  
-        self.myTextBoxOne.setStyleSheet('background-color: rgb(69, 70, 77); color: white')
+        self.myTextBoxOne.setMinimumHeight(buttonMinHeight)  
+        self.myTextBoxOne.setStyleSheet(textboxStyle)
         self.myTextBoxOne.setFont(fontTwo)
         self.myTextBoxOne.setReadOnly(True)
         self.h1.addWidget(self.myTextBoxOne,4)
@@ -555,41 +605,41 @@ class ActionsTwo(QWidget):
         # self.lineOne.setMaximumWidth(800)
         # self.v1.addWidget(self.lineOne)
         
-        self.CheckOne = QCheckBox('Open immeddiately', self)  
+        self.CheckOne = QCheckBox('Abrir de inmediato el documento generado', self)  
         self.CheckOne.setFont(fontTwo)
-        self.CheckOne.setMinimumHeight(35)
+        self.CheckOne.setMinimumHeight(buttonMinHeight)
         # self.CheckOne.setMaximumWidth(800)
-        self.CheckOne.setStyleSheet("QCheckBox {background-color: rgb(155, 61, 61); color: rgb(255, 255, 255);padding-left:10px;}") 
-        self.CheckOne.setChecked(True)
+        self.CheckOne.setStyleSheet(checkboxStyle) 
+        self.CheckOne.setChecked(prev_prefs["2"])
         self.v1.addWidget(self.CheckOne)
         
-        self.CheckTwo = QCheckBox('Immediately convert to PDF/A', self)
+        self.CheckTwo = QCheckBox('Convertir de inmediato a PDF/A', self)
         self.CheckTwo.setFont(fontTwo)
-        self.CheckTwo.setMinimumHeight(35)
+        self.CheckTwo.setMinimumHeight(buttonMinHeight)
         # self.CheckTwo.setMaximumWidth(800)
-        self.CheckTwo.setStyleSheet("QCheckBox {background-color: rgb(155, 61, 61); color: rgb(255, 255, 255);padding-left:10px;}")  
-        self.CheckTwo.setChecked(True)
+        self.CheckTwo.setStyleSheet(checkboxStyle)  
+        self.CheckTwo.setChecked(prev_prefs["3"])
         self.v1.addWidget(self.CheckTwo)
              
         # self.lineTwo = QLabel('/'*250, self)
         # self.lineTwo.setMaximumWidth(800)
         # self.v1.addWidget(self.lineTwo)     
         self.h2.addStretch()
-        self.start = QPushButton('Run', self)
-        self.start.setStyleSheet(self.style1)
+        self.start = QPushButton('Ejecutar', self)
+        self.start.setStyleSheet(buttonStyle01)
         # self.start.setFocus()
         self.start.setFont(fontOne)
-        self.start.setMinimumHeight(35)
+        self.start.setMinimumHeight(buttonMinHeight)
         # self.start.setMaximumWidth(200)
         self.start.setEnabled(True)
         self.start.setCursor(QCursor(Qt.PointingHandCursor))
         self.start.clicked.connect(self.started) 
         self.h2.addWidget(self.start)
     
-        self.button = QPushButton('Clean', self)
-        self.button.setStyleSheet(self.style1)
+        self.button = QPushButton('Limpiar', self)
+        self.button.setStyleSheet(buttonStyle01)
         self.button.setFont(fontOne)
-        self.button.setMinimumHeight(35)
+        self.button.setMinimumHeight(buttonMinHeight)
         # self.button.setMaximumWidth(200)
         self.button.setEnabled(True)
         self.button.setCursor(QCursor(Qt.PointingHandCursor))
@@ -598,7 +648,7 @@ class ActionsTwo(QWidget):
         
         self.progress = QProgressBar(self)
         self.progress.setFormat("")
-        self.progress.setStyleSheet(self.style3)    
+        self.progress.setStyleSheet(progressStyle)    
         self.progress.setFont(fontOne)
         # self.progress.setMaximumWidth(800)
         self.progress.setAlignment(Qt.AlignCenter) 
@@ -609,7 +659,7 @@ class ActionsTwo(QWidget):
         
         self.labelTwo = QLabel('', self)
         self.labelTwo.setFont(fontThree)
-        self.labelTwo.setStyleSheet("color:LightGreen")
+        self.labelTwo.setStyleSheet("color: ForestGreen")
         self.labelTwo.setAlignment(Qt.AlignCenter)
         # self.labelTwo.hide()
         
@@ -645,6 +695,8 @@ class ActionsTwo(QWidget):
                 self.progress.show()
                 self.state = self.CheckOne.checkState()
                 self.PDFA=self.CheckTwo.checkState()
+                # prev_prefs["2"]=self.state
+                # prev_prefs["3"]=self.PDFA
                 self.threadpool = QThreadPool()
                 self.runner = JobRunnerTwo(self.var1,self.state,self.PDFA)   
                 self.threadpool.start(self.runner)                                         
@@ -659,7 +711,7 @@ class ActionsTwo(QWidget):
                     self.runner.signals.finished.connect(self.finished)
             else:
                 self.start.setEnabled(True)
-                self.labelTwo.setText('Try again')
+                self.labelTwo.setText('Intenta de nuevo.')
                 self.error(self.msg1)
                 
     def clean(self):
@@ -673,23 +725,17 @@ class ActionsTwo(QWidget):
         
     def openFileNameDialogOne(self):
     
-        fileName, _ = QFileDialog.getOpenFileName(self,"Choose your document",'',filter="PDF (*.pdf)")
+        fileName = QFileDialog.getOpenFileName(self,"Selecciona tu documento",'',filter="PDF (*.pdf)")
         
-        if fileName:        
-            if '.pdf' not in fileName:
-                fileName=fileName+'.pdf'
-            fileName=os.path.abspath(fileName)         
-            self.myTextBoxOne.setText(fileName)
-            self.var1=self.myTextBoxOne.text()
-        return fileName
+        if len(fileName[0])!=0:                 
+            self.myTextBoxOne.setText(fileName[0])
+            self.var1=os.path.abspath(fileName[0])
   
     def alert(self, msg):
         if msg=='Error2':
-            self.error('The PDF you are trying to overwrite is currently open. Close it and try again.')
-        elif msg=='NoWord':
-            self.error('You need to have MS Word installed.') 
+            self.error('Cierra el PDF sobre el cual intentas guardar el resultado.')
         else:
-            self.error('Unexpected error found: '+msg)
+            self.error('Ocurrió un error inesperado: '+msg)
         self.clean()
     def finished(self, msg):
         if msg=='Done':
@@ -697,11 +743,12 @@ class ActionsTwo(QWidget):
             self.myTextBoxOne.setText(None)
             self.var1=None
             self.start.setEnabled(True)   
-            self.labelTwo.setText('ALL DONE! You can check your document now!')
+            self.labelTwo.setText('¡Listo, ya puedes visualizar tus documentos!')
             self.labelThree.show()
             self.labelThree.setPixmap(self.pixmap) 
             self.labelThree.show()
             self.progress.hide()
+
     
     def error(self,errorMsg):
         msg = QMessageBox()
@@ -714,12 +761,13 @@ class ActionsTwo(QWidget):
         buttonOk = msg.button(QMessageBox.Ok)
         buttonOk.setCursor(QCursor(Qt.PointingHandCursor))
         buttonOk.setFont(fontOne)
-        msg.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
+        msg.setStyleSheet(msg_window_style)
         msg.setInformativeText(errorMsg)
         msg.exec_()
         self.start.setEnabled(True)
         self.runner=None
-
+ 
+   
 # <codecell>    
 class WorkerSignalsThree(QObject):
     alert=pyqtSignal(str)
@@ -778,16 +826,32 @@ class JobRunnerThree(QRunnable):
                             count+=1
                             time.sleep(count)                 
                     time.sleep(1)
-                    DestDir=os.path.abspath(os.path.join(self.SaveAs, '..'))                
-                    tempDocx='\\tempword.docx'
+                    # ==============================================================
+                    holder=self.SaveAs[:-4]+' sehr witzig.pdf' 
+                    subprocess.check_call(["attrib","+H",holder])   
+                    # ==============================================================
+                    tempDocx=os.path.join(os.path.dirname(self.SaveAs),'tempword.docx')
                     documento = Document()
-                    documento.save(DestDir+tempDocx)               
+                    documento.save(tempDocx) 
+                    # =======================================
+                    holder=tempDocx
+                    subprocess.check_call(["attrib","+H",holder])   
+                    # =======================================              
                     word = client.DispatchEx('Word.Application')
-                    worddoc = word.Documents.Open(DestDir+tempDocx,ReadOnly = 1)                   
+                    worddoc = word.Documents.Open(tempDocx,ReadOnly = 1)                   
                     worddoc.SaveAs(self.SaveAs,FileFormat = 17)               
                     worddoc.Close(True)
                     word.Quit()
-                    os.remove(DestDir+tempDocx)    
+                    done=False
+                    count=0
+                    while not done:
+                        try:
+                            os.remove(tempDocx)
+                            done=True
+                        except PermissionError:
+                            print('Permission denied')
+                            count+=1 
+                            time.sleep(count)     
                     pdf=fitz.open(self.SaveAs)
                     opened_file=fitz.open(backup)
                     pdf.insertPDF(opened_file)
@@ -807,12 +871,12 @@ class JobRunnerThree(QRunnable):
                             count+=1
                             time.sleep(count)               
                 if self.state==2:
-                    from subprocess import Popen 
-                    Popen([self.SaveAs],shell=True)
+                     
+                    subprocess.Popen([self.SaveAs],shell=True)
                 time.sleep(1)
                 self.signals.finished.emit('Done')
         except Exception as e:      
-               self.signals.alert.emit(str(type(e)))                      
+            self.signals.alert.emit(str(e))                       
     def kill(self):
         self.is_killed = True
                      
@@ -825,57 +889,44 @@ class ActionsThree(QWidget):
         self.var1=None
         self.var2=None
         self.initUI()
-        self.msg1='Verify your input.'
+        self.msg1='Verifica los datos ingresados.'
         
     def initUI(self):
-        self.style = QApplication.style()
-        
-        
-        self.style1=("QPushButton { background-color: rgb(155, 61, 61 ); color: rgb(255, 255, 255 );}")
-        self.style2=("QPushButton { background-color: rgb(69, 70, 77); color: rgb(255, 255, 255);}") 
-        self.style3 = ("QProgressBar {border: 2px solid grey;border-radius: 5px;text-align: center}"
-                         "QProgressBar::chunk {background-color: IndianRed;width: 10px;margin: 1px;}")
-          
-        self.setWindowTitle(self.title)
              
         self.h1=QHBoxLayout()
         self.h2=QHBoxLayout()
         self.h3=QHBoxLayout()
         self.v1=QVBoxLayout()
         self.v2=QVBoxLayout()
-                               
-        # self.setStyleSheet("background-color: rgb(255, 255, 255); color: rgb(86, 88, 110)")
-        self.setWindowIcon(QIcon(icon))
-    
-       
-        self.buttonTwo = QPushButton('Load PDFs', self)   
+
+        self.buttonTwo = QPushButton('Cargar PDFs', self)   
         self.buttonTwo.clicked.connect(self.openFileNameDialogOne)
-        self.buttonTwo.setMinimumHeight(35)
+        self.buttonTwo.setMinimumHeight(buttonMinHeight)
         # self.buttonTwo.setMaximumWidth(200)
-        self.buttonTwo.setStyleSheet(self.style2)
+        self.buttonTwo.setStyleSheet(buttonStyle02)
         self.buttonTwo.setFont(fontTwo)
         self.buttonTwo.setCursor(QCursor(Qt.PointingHandCursor))
         self.h1.addWidget(self.buttonTwo,1)
         
         self.myTextBoxOne = QLineEdit(self)
-        self.myTextBoxOne.setMinimumHeight(35)  
-        self.myTextBoxOne.setStyleSheet('background-color: rgb(69, 70, 77); color: white')
+        self.myTextBoxOne.setMinimumHeight(buttonMinHeight)  
+        self.myTextBoxOne.setStyleSheet(textboxStyle)
         self.myTextBoxOne.setFont(fontTwo)
         self.myTextBoxOne.setReadOnly(True)
         self.h1.addWidget(self.myTextBoxOne,4)
         
-        self.buttonThree = QPushButton('Save as', self)      
+        self.buttonThree = QPushButton('Guardar como', self)      
         self.buttonThree.clicked.connect(self.openFileNameDialogTwo)
-        self.buttonThree.setMinimumHeight(35)
+        self.buttonThree.setMinimumHeight(buttonMinHeight)
         # self.buttonThree.setMaximumWidth(200)
-        self.buttonThree.setStyleSheet(self.style2)
+        self.buttonThree.setStyleSheet(buttonStyle02)
         self.buttonThree.setFont(fontTwo)
         self.buttonThree.setCursor(QCursor(Qt.PointingHandCursor))
         self.h3.addWidget(self.buttonThree,1)
         
         self.myTextBoxTwo = QLineEdit(self)
-        self.myTextBoxTwo.setMinimumHeight(35)  
-        self.myTextBoxTwo.setStyleSheet('background-color: rgb(69, 70, 77); color: white')  
+        self.myTextBoxTwo.setMinimumHeight(buttonMinHeight)  
+        self.myTextBoxTwo.setStyleSheet(textboxStyle)  
         self.myTextBoxTwo.setFont(fontTwo)
         self.myTextBoxTwo.setReadOnly(True)
         self.h3.addWidget(self.myTextBoxTwo,4)
@@ -884,41 +935,41 @@ class ActionsThree(QWidget):
         # self.lineOne.setMaximumWidth(800)
         # self.v1.addWidget(self.lineOne)
         
-        self.CheckOne = QCheckBox('Open immeddiately', self)  
+        self.CheckOne = QCheckBox('Abrir de inmediato el documento generado', self)  
         self.CheckOne.setFont(fontTwo)
-        self.CheckOne.setMinimumHeight(35)
+        self.CheckOne.setMinimumHeight(buttonMinHeight)
         # self.CheckOne.setMaximumWidth(800)
-        self.CheckOne.setStyleSheet("QCheckBox {background-color: rgb(155, 61, 61); color: rgb(255, 255, 255);padding-left:10px;}") 
-        self.CheckOne.setChecked(True)
+        self.CheckOne.setStyleSheet(checkboxStyle) 
+        self.CheckOne.setChecked(prev_prefs["4"])
         self.v1.addWidget(self.CheckOne)
         
-        self.CheckTwo = QCheckBox('Immediately convert to PDF/A', self)
+        self.CheckTwo = QCheckBox('Convertir de inmediato a PDF/A', self)
         self.CheckTwo.setFont(fontTwo)
-        self.CheckTwo.setMinimumHeight(35)
+        self.CheckTwo.setMinimumHeight(buttonMinHeight)
         # self.CheckTwo.setMaximumWidth(800)
-        self.CheckTwo.setStyleSheet("QCheckBox {background-color: rgb(155, 61, 61); color: rgb(255, 255, 255);padding-left:10px;}")  
-        self.CheckTwo.setChecked(False)
+        self.CheckTwo.setStyleSheet(checkboxStyle)  
+        self.CheckTwo.setChecked(prev_prefs["5"])
         self.v1.addWidget(self.CheckTwo)
              
         # self.lineTwo = QLabel('/'*250, self)
         # self.lineTwo.setMaximumWidth(800)
         # self.v1.addWidget(self.lineTwo)     
         self.h2.addStretch()
-        self.start = QPushButton('Run', self)
-        self.start.setStyleSheet(self.style1)
+        self.start = QPushButton('Ejecutar', self)
+        self.start.setStyleSheet(buttonStyle01)
         # self.start.setFocus()
         self.start.setFont(fontOne)
-        self.start.setMinimumHeight(35)
+        self.start.setMinimumHeight(buttonMinHeight)
         # self.start.setMaximumWidth(200)
         self.start.setEnabled(True)
         self.start.setCursor(QCursor(Qt.PointingHandCursor))
         self.start.clicked.connect(self.started) 
         self.h2.addWidget(self.start)
     
-        self.button = QPushButton('Clean', self)
-        self.button.setStyleSheet(self.style1)
+        self.button = QPushButton('Limpiar', self)
+        self.button.setStyleSheet(buttonStyle01)
         self.button.setFont(fontOne)
-        self.button.setMinimumHeight(35)
+        self.button.setMinimumHeight(buttonMinHeight)
         # self.button.setMaximumWidth(200)
         self.button.setEnabled(True)
         self.button.setCursor(QCursor(Qt.PointingHandCursor))
@@ -927,7 +978,7 @@ class ActionsThree(QWidget):
         
         self.progress = QProgressBar(self)
         self.progress.setFormat("")
-        self.progress.setStyleSheet(self.style3)    
+        self.progress.setStyleSheet(progressStyle)    
         self.progress.setFont(fontOne)
         # self.progress.setMaximumWidth(800)
         self.progress.setAlignment(Qt.AlignCenter) 
@@ -937,7 +988,7 @@ class ActionsThree(QWidget):
                 
         self.labelTwo = QLabel('', self)
         self.labelTwo.setFont(fontThree)
-        self.labelTwo.setStyleSheet("color:LightGreen")
+        self.labelTwo.setStyleSheet("color: ForestGreen")
         self.labelTwo.setAlignment(Qt.AlignCenter)
         # self.labelTwo.hide()
         
@@ -973,6 +1024,8 @@ class ActionsThree(QWidget):
                 self.progress.show()
                 self.state = self.CheckOne.checkState()
                 self.PDFA=self.CheckTwo.checkState()
+                # prev_prefs["4"]=self.state
+                # prev_prefs["5"]=self.PDFA
                 self.threadpool = QThreadPool()
                 self.runner = JobRunnerThree(self.var1,self.var2,self.state,self.PDFA)   
                 self.threadpool.start(self.runner)                                         
@@ -987,7 +1040,7 @@ class ActionsThree(QWidget):
                     self.runner.signals.finished.connect(self.finished)
             else:
                 self.start.setEnabled(True)
-                self.labelTwo.setText('Try again')
+                self.labelTwo.setText('Intenta de nuevo.')
                 self.error(self.msg1)
                 
     def clean(self):
@@ -1004,37 +1057,30 @@ class ActionsThree(QWidget):
     def openFileNameDialogOne(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        fileNames, _ = QFileDialog.getOpenFileNames(self,"Choose your documents","","PDF (*.pdf)",options=options)
-        files=[]
-        if fileNames: 
-            for fileName in fileNames:
-                fileName=os.path.abspath(fileName)
-                files.append(fileName)
-            self.myTextBoxOne.setText(str(files).strip('[').strip(']'))
-            self.var1=files
-            
-        return files
+        fileNames= QFileDialog.getOpenFileNames(self,"Selecciona tus PDFs","","PDF (*.pdf)",options=options)
+        if len(fileNames[0])!=0: 
+            self.myTextBoxOne.setText(str(fileNames[0]).strip('[').strip(']'))
+            self.var1=list(map(lambda x: os.path.abspath(x), fileNames[0]))
+
     def openFileNameDialogTwo(self):
         
-        fileName, _ = QFileDialog.getSaveFileName(self,"Save as",'',filter="PDF (*.pdf)")
+        fileName = QFileDialog.getSaveFileName(self,"Guardar como",'',filter="PDF (*.pdf)")
         
-        if fileName:        
-            if '.pdf' not in fileName:
-                fileName=fileName+'.pdf'
-            fileName=os.path.abspath(fileName)         
-            self.myTextBoxTwo.setText(fileName)
-            self.var2=self.myTextBoxTwo.text()
-        return fileName
+        if len(fileName[0])!=0:        
+            if '.pdf' not in fileName[0]:
+                fileName[0]=fileName[0]+'.pdf'        
+            self.myTextBoxTwo.setText(fileName[0])
+            self.var2=os.path.abspath(fileName[0]) 
   
     def alert(self, msg):
         if msg=='Error1':
-            self.error('Cannot overwrite input documents.')
+            self.error('No puedes guardar el resultado encima de uno de los PDFs que deseas unir.')
         elif msg=='Error2':
-            self.error('The PDF you are trying to overwrite is currently open. Close it and try again.')
+            self.error('Cierra el PDF sobre el cual deseas guardar el resultado.')
         elif msg=='Error3':
-            self.error('Upload two or more PDFs.')
+            self.error('Debes seleccionar más de un PDF.')
         else:
-            self.error('Unexpected error found: '+msg)
+            self.error('Ocurrió un error inesperado: '+msg)
         self.clean()
         
     def finished(self, msg):
@@ -1045,11 +1091,12 @@ class ActionsThree(QWidget):
             self.var1=None
             self.var2=None
             self.start.setEnabled(True)   
-            self.labelTwo.setText('ALL DONE! You can check your document now!')
+            self.labelTwo.setText('¡Listo, ya puedes visualizar tus documentos!')
             
             self.labelThree.setPixmap(self.pixmap) 
             self.labelThree.show()
             self.progress.hide()
+
     
     def error(self,errorMsg):
         msg = QMessageBox()
@@ -1062,33 +1109,12 @@ class ActionsThree(QWidget):
         buttonOk = msg.button(QMessageBox.Ok)
         buttonOk.setCursor(QCursor(Qt.PointingHandCursor))
         buttonOk.setFont(fontOne)
-        msg.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
+        msg.setStyleSheet(msg_window_style)
         msg.setInformativeText(errorMsg)
         msg.exec_()
         self.start.setEnabled(True)
         self.runner=None
-    
-    def instructions(self):
-        info = QMessageBox()
-        info.setWindowTitle(self.title)
-        
-        info.setWindowIcon(QIcon(icon))
-        info.setText("Intrucciones de uso.")
-        info.setInformativeText(
-        '''
-Estas son las instrucciones de uso.'''
-        )
-        info.setFont(fontTwo)
-        info.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
-        info.setWindowModality(0)
-        # info.setModal(True)
-        info.activateWindow()
-        info.setStandardButtons(QMessageBox.Ok)
-        buttonOk = info.button(QMessageBox.Ok)
-        buttonOk.setText('Entendido')
-        info.setDefaultButton(QMessageBox.Ok)
-        info.show()
-        retval = info.exec_()    
+  
     
 # <codecell>    
 class WorkerSignalsFour(QObject):
@@ -1152,12 +1178,12 @@ class JobRunnerFour(QRunnable):
                 #-----------------------------------------MINI-LOOP----------------------------------------#        
                 doc.close()
                 if self.state==2:
-                    from subprocess import Popen 
-                    Popen([self.SaveAs],shell=True)
+                     
+                    subprocess.Popen([self.SaveAs],shell=True)
                 time.sleep(1)
                 self.signals.finished.emit('Done')
         except Exception as e:      
-               self.signals.alert.emit(str(type(e))) 
+            self.signals.alert.emit(str(e))   
     def kill(self):
         self.is_killed = True
                     
@@ -1171,57 +1197,44 @@ class ActionsFour(QWidget):
         self.var1=None
         self.var2=None
         self.initUI()
-        self.msg1='Verify your inputs.'
+        self.msg1='Verifica los datos ingresados.'
         
     def initUI(self):
-        self.style = QApplication.style()
-       
         
-        self.style1=("QPushButton { background-color: rgb(155, 61, 61 ); color: rgb(255, 255, 255 );}")
-        self.style2=("QPushButton { background-color: rgb(69, 70, 77); color: rgb(255, 255, 255);}") 
-        self.style3 = ("QProgressBar {border: 2px solid grey;border-radius: 5px;text-align: center}"
-                         "QProgressBar::chunk {background-color: IndianRed;width: 10px;margin: 1px;}")
-          
-        self.setWindowTitle(self.title)
-             
         self.h1=QHBoxLayout()
         self.h2=QHBoxLayout()
         self.h3=QHBoxLayout()
         self.v1=QVBoxLayout()
         self.v2=QVBoxLayout()
-                               
-        # self.setStyleSheet("background-color: rgb(255, 255, 255); color: rgb(86, 88, 110)")
-        self.setWindowIcon(QIcon(icon))
-    
-      
-        self.buttonTwo = QPushButton('Load images', self)   
+
+        self.buttonTwo = QPushButton('Cargar imágenes', self)   
         self.buttonTwo.clicked.connect(self.openFileNameDialogOne)
-        self.buttonTwo.setMinimumHeight(35)
+        self.buttonTwo.setMinimumHeight(buttonMinHeight)
         # self.buttonTwo.setMaximumWidth(200)
-        self.buttonTwo.setStyleSheet(self.style2)
+        self.buttonTwo.setStyleSheet(buttonStyle02)
         self.buttonTwo.setFont(fontTwo)
         self.buttonTwo.setCursor(QCursor(Qt.PointingHandCursor))
         self.h1.addWidget(self.buttonTwo,1)
         
         self.myTextBoxOne = QLineEdit(self)
-        self.myTextBoxOne.setMinimumHeight(35)  
-        self.myTextBoxOne.setStyleSheet('background-color: rgb(69, 70, 77); color: white')
+        self.myTextBoxOne.setMinimumHeight(buttonMinHeight)  
+        self.myTextBoxOne.setStyleSheet(textboxStyle)
         self.myTextBoxOne.setFont(fontTwo)
         self.myTextBoxOne.setReadOnly(True)
         self.h1.addWidget(self.myTextBoxOne,4)
         
-        self.buttonThree = QPushButton('Save as', self)      
+        self.buttonThree = QPushButton('Guardar como', self)      
         self.buttonThree.clicked.connect(self.openFileNameDialogTwo)
-        self.buttonThree.setMinimumHeight(35)
+        self.buttonThree.setMinimumHeight(buttonMinHeight)
         # self.buttonThree.setMaximumWidth(200)
-        self.buttonThree.setStyleSheet(self.style2)
+        self.buttonThree.setStyleSheet(buttonStyle02)
         self.buttonThree.setFont(fontTwo)
         self.buttonThree.setCursor(QCursor(Qt.PointingHandCursor))
         self.h3.addWidget(self.buttonThree,1)
         
         self.myTextBoxTwo = QLineEdit(self)
-        self.myTextBoxTwo.setMinimumHeight(35)  
-        self.myTextBoxTwo.setStyleSheet('background-color: rgb(69, 70, 77); color: white')   
+        self.myTextBoxTwo.setMinimumHeight(buttonMinHeight)  
+        self.myTextBoxTwo.setStyleSheet(textboxStyle)   
         self.myTextBoxTwo.setFont(fontTwo)
         self.myTextBoxTwo.setReadOnly(True)
         self.h3.addWidget(self.myTextBoxTwo,4)
@@ -1230,33 +1243,33 @@ class ActionsFour(QWidget):
         # self.lineOne.setMaximumWidth(800)
         # self.v1.addWidget(self.lineOne)
         
-        self.CheckOne = QCheckBox('Open immeddiately', self)  
+        self.CheckOne = QCheckBox('Abrir de inmediato el documento generado', self)  
         self.CheckOne.setFont(fontTwo)
-        self.CheckOne.setMinimumHeight(35)
+        self.CheckOne.setMinimumHeight(buttonMinHeight)
         # self.CheckOne.setMaximumWidth(800)
-        self.CheckOne.setStyleSheet("QCheckBox {background-color: rgb(155, 61, 61); color: rgb(255, 255, 255);padding-left:10px;}") 
-        self.CheckOne.setChecked(True)
+        self.CheckOne.setStyleSheet(checkboxStyle) 
+        self.CheckOne.setChecked(prev_prefs["6"])
         self.v1.addWidget(self.CheckOne)
              
         # self.lineTwo = QLabel('/'*250, self)
         # self.lineTwo.setMaximumWidth(800)
         # self.v1.addWidget(self.lineTwo)     
         self.h2.addStretch()
-        self.start = QPushButton('Run', self)
-        self.start.setStyleSheet(self.style1)
+        self.start = QPushButton('Ejecutar', self)
+        self.start.setStyleSheet(buttonStyle01)
         # self.start.setFocus()
         self.start.setFont(fontOne)
-        self.start.setMinimumHeight(35)
+        self.start.setMinimumHeight(buttonMinHeight)
         # self.start.setMaximumWidth(200)
         self.start.setEnabled(True)
         self.start.setCursor(QCursor(Qt.PointingHandCursor))
         self.start.clicked.connect(self.started) 
         self.h2.addWidget(self.start)
     
-        self.button = QPushButton('Clean', self)
-        self.button.setStyleSheet(self.style1)
+        self.button = QPushButton('Limpiar', self)
+        self.button.setStyleSheet(buttonStyle01)
         self.button.setFont(fontOne)
-        self.button.setMinimumHeight(35)
+        self.button.setMinimumHeight(buttonMinHeight)
         # self.button.setMaximumWidth(200)
         self.button.setEnabled(True)
         self.button.setCursor(QCursor(Qt.PointingHandCursor))
@@ -1265,7 +1278,7 @@ class ActionsFour(QWidget):
         
         self.progress = QProgressBar(self)
         self.progress.setFormat("")
-        self.progress.setStyleSheet(self.style3)    
+        self.progress.setStyleSheet(progressStyle)    
         self.progress.setFont(fontOne)
         # self.progress.setMaximumWidth(800)
         self.progress.setAlignment(Qt.AlignCenter) 
@@ -1276,7 +1289,7 @@ class ActionsFour(QWidget):
         
         self.labelTwo = QLabel('', self)
         self.labelTwo.setFont(fontThree)
-        self.labelTwo.setStyleSheet("color:LightGreen")
+        self.labelTwo.setStyleSheet("color: ForestGreen")
         self.labelTwo.setAlignment(Qt.AlignCenter)
         # self.labelTwo.hide()
         
@@ -1312,6 +1325,7 @@ class ActionsFour(QWidget):
                 self.labelThree.hide()
                 self.progress.show()
                 self.state = self.CheckOne.checkState()
+                # prev_prefs["6"]=self.state
                 self.threadpool = QThreadPool()
                 self.runner = JobRunnerFour(self.var1,self.var2,self.state)   
                 self.threadpool.start(self.runner)                                         
@@ -1326,7 +1340,7 @@ class ActionsFour(QWidget):
                     self.runner.signals.finished.connect(self.finished)
             else:
                 self.start.setEnabled(True)
-                self.labelTwo.setText('Try again')
+                self.labelTwo.setText('Intenta de nuevo.')
                 self.error(self.msg1)
                 
     def clean(self):
@@ -1343,35 +1357,27 @@ class ActionsFour(QWidget):
     def openFileNameDialogOne(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        fileNames, _ = QFileDialog.getOpenFileNames(self,"Choose your images","","Images (*.png *.jpg *.jpeg)",options=options)
-        files=[]
-        if fileNames: 
-            for fileName in fileNames:
-                fileName=os.path.abspath(fileName)
-                files.append(fileName)
-            self.myTextBoxOne.setText(str(files).strip('[').strip(']'))
-            self.var1=files
-            
-        return files
+        fileNames = QFileDialog.getOpenFileNames(self,"Selecciona tus imágenes","","Imágenes (*.png *.jpg *.jpeg)",options=options)
+        if len(fileNames[0])!=0: 
+            self.myTextBoxOne.setText(str(fileNames[0]).strip('[').strip(']'))
+            self.var1=list(map(lambda x: os.path.abspath(x), fileNames[0]))
+        
     def openFileNameDialogTwo(self):
     
-        fileName, _ = QFileDialog.getSaveFileName(self,"Save as",'',filter="PDF (*.pdf)")
+        fileName= QFileDialog.getSaveFileName(self,"Guardar como",'',filter="PDF (*.pdf)")
         
-        if fileName:        
-            if '.pdf' not in fileName:
-                fileName=fileName+'.pdf'
-            fileName=os.path.abspath(fileName)         
-            self.myTextBoxTwo.setText(fileName)
-            self.var2=self.myTextBoxTwo.text()
-        return fileName
+        if len(fileName[0])!=0:                
+            self.myTextBoxTwo.setText(fileName[0])
+            self.var2=os.path.abspath(fileName[0])
+       
   
     def alert(self, msg):
         if msg=='Error1':
-            self.error('Cannot overwrite input documents.')
+            self.error('No puedes guardar el resultado encima de uno de los PDFs que deseas unir.')
         elif msg=='Error2':
-            self.error('The PDF you are trying to overwrite is currently open. Close it and try again.')
+            self.error('Cierra el PDF sobre el cual deseas guardar el resultado.')
         else:
-            self.error('Unexpected error found: '+msg)
+            self.error('Ocurrió un error inesperado: '+msg)
         self.clean()
         
     def finished(self, msg):
@@ -1382,7 +1388,7 @@ class ActionsFour(QWidget):
             self.var1=None
             self.var2=None
             self.start.setEnabled(True)   
-            self.labelTwo.setText('ALL DONE! You can check your document now!')
+            self.labelTwo.setText('¡Listo, ya puedes visualizar tus documentos!')
             self.labelThree.show()
             
             self.labelThree.setPixmap(self.pixmap) 
@@ -1400,20 +1406,2704 @@ class ActionsFour(QWidget):
         buttonOk = msg.button(QMessageBox.Ok)
         buttonOk.setCursor(QCursor(Qt.PointingHandCursor))
         buttonOk.setFont(fontOne)
-        msg.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
+        msg.setStyleSheet(msg_window_style)
         msg.setInformativeText(errorMsg)
         msg.exec_()
         self.start.setEnabled(True)
         self.runner=None
 
-# <codecell>
+  
+# <codecell>    
 class WorkerSignalsFive(QObject):
+  
+    alert=pyqtSignal(str)
+    finished=pyqtSignal(str)
+    
+class JobRunnerFive(QRunnable):    
+    signals = WorkerSignalsFive()
+    
+    def __init__(self,SaveAs,name,choice,OFcircular):
+        super().__init__()
+
+        self.is_killed = False 
+        self.SaveAs=SaveAs
+        self.name=name
+        self.choice=choice
+        self.OFcircular=OFcircular
+        
+    @pyqtSlot()
+        
+    def run(self):
+        
+        try:
+            RDDir=os.path.dirname(self.SaveAs)
+            if self.name in os.listdir(RDDir):
+                self.signals.alert.emit('Error1')
+            else:   
+                if self.choice==0:
+                    doc = fitz.open(self.SaveAs)
+                    page = doc.loadPage(0)              
+                    text = page.getText()  
+                    nro_req=findall('(?<!\d)\d{13}(?!\d)', text) 
+                    nro_ruc=findall('(?<!\d)\d{11}(?!\d)', text)  
+                    doc.close()
+                    if len(nro_ruc)==0 or len(nro_req)==0:
+                        self.signals.alert.emit('Error2')
+                    else:
+                        os.mkdir(os.path.join(RDDir,self.name))        
+                        targetOne=os.path.join(RDDir,self.name)
+                        os.mkdir(os.path.join(targetOne,self.name))
+                        targetTwo=os.path.join(RDDir,self.name,self.name)
+                        
+                        nro_ruc = nro_ruc[0]
+                        nro_req = nro_req[0]
+               
+                        text_RD_path=os.path.join(targetTwo,'files.txt')
+                        with open(text_RD_path, 'w') as text_RD:
+                            text_RD.write(nro_ruc+'|'+nro_req)
+                        
+                        shutil.copy(self.SaveAs,os.path.join(targetTwo,nro_ruc+'_'+nro_req+'.pdf'))
+                        shutil.make_archive(targetTwo, 'zip',root_dir=targetOne , base_dir=self.name)
+                        
+                        time.sleep(1)
+                        self.signals.finished.emit('Done')
+                elif self.choice==1:
+                    carta=0
+                    doc=fitz.open(self.SaveAs)
+                    page = doc.loadPage(0)              
+                    text = page.getText() 
+                    doc.close()
+                    
+                    lines=text.split('\n')
+                    for line in lines:
+                        if ('CARTA' or 'Carta' or 'carta') in line:
+                            target=line
+                            target=target.replace(' ','')
+                            if '/' in target:
+                                target=target.replace('/','-')
+                                # carta=1                  
+                            target=target.split('-')
+                            if len(target[-1])==6:
+                                carta=1
+                          
+                            break
+                    if carta==1: 
+                        OF=[]
+                        if self.OFcircular !='':
+                            OF.append(self.OFcircular)
+                            print(OF)
+                        else:
+                            OF=findall('(?<!\d)\d{12}(?!\d)', text)
+                            print(OF)
+                        num=findall('[0-9]+', target[0])
+                        print(num)
+                        if len(num)==0 or len(OF)==0:
+                            self.signals.alert.emit('Error3')
+                        else:
+                            if len(OF[0])==12:
+                                os.mkdir(os.path.join(RDDir,self.name))          
+                                targetOne=os.path.join(RDDir,self.name)
+                                os.mkdir(os.path.join(targetOne,self.name))
+                                targetTwo=os.path.join(RDDir,self.name,self.name)
+                                
+                                num=num[0]
+                                OF=OF[0]             
+                                there=len(num)
+                                added=(7-there)*'0'
+                                num=added+num+target[1]
+                                # area=target[2].split('/')[1]
+                                area=target[-1]
+                                num=num+area
+                                
+                                ruc=findall('(?<!\d)\d{11}(?!\d)', text)
+                                ruc=ruc[0]
+                                
+                                text_RD_path=os.path.join(targetTwo,'files.txt')
+                                with open(text_RD_path, 'w') as text_RD:
+                                    text_RD.write(ruc+'|'+num+'|'+OF)
+                                
+                                shutil.copy(self.SaveAs,os.path.join(targetTwo,ruc+'_'+num+'.pdf'))
+                                shutil.make_archive(targetTwo, 'zip',root_dir=targetOne , base_dir=self.name)
+                                
+                                time.sleep(1)
+                                self.signals.finished.emit('Done')
+                            else:
+                                self.signals.alert.emit('Error5')
+                    else:               
+                        OF=findall('[0-9]+', target[0])
+                        ruc=findall('(?<!\d)\d{11}(?!\d)', text)
+                        if len(OF)==0 or len(ruc)==0:
+                            self.signals.alert.emit('Error4')
+                        else:
+                            os.mkdir(os.path.join(RDDir,self.name))         
+                            targetOne=os.path.join(RDDir,self.name)
+                            os.mkdir(os.path.join(targetOne,self.name))
+                            targetTwo=os.path.join(RDDir,self.name,self.name)
+                            
+                            OF=OF[0]
+                            num=OF+target[1]
+                            ruc=ruc[0]
+                            
+                            text_RD_path=targetTwo+'\\files.txt'
+                            with open(text_RD_path, 'w') as text_RD:
+                                text_RD.write(ruc+'|'+num+'|'+OF)
+                            shutil.copy(self.SaveAs,os.path.join(targetTwo,ruc+'_'+num+'.pdf'))
+                            shutil.make_archive(targetTwo, 'zip',root_dir=targetOne , base_dir=self.name)
+                            
+                            time.sleep(1)
+                            self.signals.finished.emit('Done')
+        except Exception as e:      
+            self.signals.alert.emit(str(e))          
+    def kill(self):
+        self.is_killed = True
+           
+class ActionsFive(QWidget):
+
+    def __init__(self):
+        super().__init__()
+        self.runner=None
+        self.title = 'LuftMensch'       
+        self.var1=None
+        self.var2=None
+        self.initUI()
+        self.msg1='Verifica los datos ingresados.'
+        
+    def initUI(self):
+
+        self.h1=QHBoxLayout()
+        self.h2=QHBoxLayout()
+        self.h3=QHBoxLayout()
+        self.h4=QHBoxLayout()
+        self.h5=QHBoxLayout()
+        self.v2=QVBoxLayout()
+  
+      
+        self.buttonTwo = QPushButton('Cargar PDF', self)   
+        self.buttonTwo.clicked.connect(self.openFileNameDialogOne)
+        self.buttonTwo.setMinimumHeight(buttonMinHeight)
+        # self.buttonTwo.setMaximumWidth(200)
+        self.buttonTwo.setStyleSheet(buttonStyle02)
+        self.buttonTwo.setFont(fontTwo)
+        self.buttonTwo.setCursor(QCursor(Qt.PointingHandCursor))
+        self.h1.addWidget(self.buttonTwo,1)
+        
+        self.myTextBoxOne = QLineEdit(self)
+        self.myTextBoxOne.setMinimumHeight(buttonMinHeight)  
+        self.myTextBoxOne.setStyleSheet(textboxStyle)
+        self.myTextBoxOne.setFont(fontTwo)
+        self.myTextBoxOne.setReadOnly(True)
+        self.h1.addWidget(self.myTextBoxOne,4)
+        
+        self.buttonThree = QPushButton('Nombre', self)  
+        self.buttonThree.setMinimumHeight(buttonMinHeight)
+        # self.buttonThree.setMaximumWidth(200)
+        self.buttonThree.setStyleSheet(buttonStyle02)
+        self.buttonThree.setFont(fontTwo)
+        self.buttonThree.setEnabled(False)
+        self.h3.addWidget(self.buttonThree,1)
+        
+        self.myTextBoxTwo = QLineEdit(self)
+        self.myTextBoxTwo.setMinimumHeight(buttonMinHeight)  
+        self.myTextBoxTwo.setStyleSheet(textboxStyle)  
+        self.myTextBoxTwo.setFont(fontTwo)
+        self.myTextBoxTwo.setPlaceholderText('Ingresa un nombre para el archivo .zip')
+        self.h3.addWidget(self.myTextBoxTwo,4)
+                                  
+        self.buttonFour = QPushButton('Opciones', self)  
+        self.buttonFour.setMinimumHeight(buttonMinHeight)  
+        # self.buttonFour.setMaximumWidth(200)
+        self.buttonFour.setFont(fontTwo)
+        self.buttonFour.setStyleSheet(buttonStyle02)
+        self.buttonFour.setEnabled(False)
+        self.h4.addWidget(self.buttonFour,1)
+        
+        self.buttonFive = QPushButton('OF', self)  
+        self.buttonFive.setMinimumHeight(buttonMinHeight)
+        # self.buttonFive.setMaximumWidth(200)
+        self.buttonFive.setStyleSheet(buttonStyle02)
+        self.buttonFive.setFont(fontTwo)
+        self.buttonFive.setEnabled(False)
+        self.h5.addWidget(self.buttonFive,1)
+        
+        self.myTextBoxThree = QLineEdit(self)
+        self.myTextBoxThree.setMinimumHeight(buttonMinHeight)  
+        self.myTextBoxThree.setStyleSheet(textboxStyle)  
+        self.myTextBoxThree.setFont(fontTwo)
+        self.myTextBoxThree.setPlaceholderText('SOLO SI LA OF NO HA SIDO CONSIGNADA EN LA CARTA')
+        self.h5.addWidget(self.myTextBoxThree,4)
+        
+        self.combo=QComboBox(self)
+        self.combo.addItems(['Requerimiento y resultado',
+                             'Cartas'])
+        self.combo.setMinimumHeight(buttonMinHeight)  
+        # self.combo.setMaximumWidth(600)
+        self.combo.setFont(fontTwo)
+        self.combo.setStyleSheet(comboStyle)
+        self.listview=QListView()
+        self.listview.setFont(fontTwo)
+        self.listview.setCursor(QCursor(Qt.PointingHandCursor))
+        self.combo.setView(self.listview)
+        self.combo.setCursor(QCursor(Qt.PointingHandCursor))
+        self.h4.addWidget(self.combo,4)
+        
+        self.h2.addStretch()             
+        self.start = QPushButton('Ejecutar', self)
+        self.start.setStyleSheet(buttonStyle01)
+        # self.start.setFocus()
+        self.start.setFont(fontOne)
+        self.start.setMinimumHeight(buttonMinHeight)
+        # self.start.setMaximumWidth(200)
+        self.start.setEnabled(True)
+        self.start.setCursor(QCursor(Qt.PointingHandCursor))
+        self.start.clicked.connect(self.started) 
+        self.h2.addWidget(self.start)
+    
+        self.button = QPushButton('Limpiar', self)
+        self.button.setStyleSheet(buttonStyle01)
+        self.button.setFont(fontOne)
+        self.button.setMinimumHeight(buttonMinHeight)
+        # self.button.setMaximumWidth(200)
+        self.button.setEnabled(True)
+        self.button.setCursor(QCursor(Qt.PointingHandCursor))
+        self.button.clicked.connect(self.clean) 
+        self.h2.addWidget(self.button)
+        
+        self.progress = QProgressBar(self)
+        self.progress.setFormat("")
+        self.progress.setStyleSheet(progressStyle)    
+        self.progress.setFont(fontOne)
+        # self.progress.setMaximumWidth(800)
+        self.progress.setAlignment(Qt.AlignCenter) 
+        self.progress.setValue(0)
+        self.progress.setMaximum(0)
+        self.progress.hide()       
+        
+        self.labelTwo = QLabel('', self)
+        self.labelTwo.setFont(fontThree)
+        self.labelTwo.setStyleSheet("color: ForestGreen")
+        self.labelTwo.setAlignment(Qt.AlignCenter)
+        # self.labelTwo.hide()
+        
+        self.effect = QGraphicsOpacityEffect(self)
+        self.pixmap = QPixmap(pic)
+        self.pixmap = self.pixmap.scaled(50, 50, Qt.KeepAspectRatio,Qt.SmoothTransformation)
+        self.labelThree = QLabel('', self)
+        self.labelThree.setAlignment(Qt.AlignCenter)       
+        # self.info.setIcon(QIcon(self.style.standardIcon(QStyle.SP_FileDialogInfoView)))  
+        
+        self.mainLayout = QVBoxLayout()
+        self.mainLayout.setAlignment(Qt.AlignCenter)
+        # self.mainLayout.setSpacing(30)
+        self.mainLayout.addLayout(self.h1)
+        self.mainLayout.addLayout(self.h3)
+        self.mainLayout.addLayout(self.h4)
+        self.mainLayout.addLayout(self.h5)
+        self.mainLayout.addLayout(self.h2)
+        self.mainLayout.addWidget(self.progress)
+        self.mainLayout.addWidget(self.labelTwo)
+        self.mainLayout.addWidget(self.labelThree)       
+        self.setLayout(self.mainLayout)
+        
+        # quit = QAction("Quit", self)
+        # quit.triggered.connect(self.closeEvent)
+   
+    def started(self):
+        
+        if self.runner is None:
+            self.start.setEnabled(False)
+            self.name=self.myTextBoxTwo.text().strip()
+            if self.myTextBoxThree.text() is not None:
+                self.var2=self.myTextBoxThree.text().strip()
+                print(self.var2)
+            if self.var1 is not None and len(self.name.strip())>0:
+                
+                self.labelTwo.setText('')
+                self.labelThree.hide()
+                self.progress.show()
+                self.name=self.myTextBoxTwo.text()
+                self.choice = self.combo.currentIndex()
+                print(self.choice)
+                self.threadpool = QThreadPool()
+                self.runner = JobRunnerFive(self.var1,self.name,self.choice,self.var2)   
+                self.threadpool.start(self.runner)                                         
+                try:
+                    self.runner.signals.alert.disconnect(self.alert)
+                    self.runner.signals.finished.disconnect(self.finished)
+                except TypeError:     
+                    self.runner.signals.alert.connect(self.alert)
+                    self.runner.signals.finished.connect(self.finished)
+                else:
+                    self.runner.signals.alert.connect(self.alert)
+                    self.runner.signals.finished.connect(self.finished)
+            else:
+                self.start.setEnabled(True)
+                self.labelTwo.setText('Intenta de nuevo.')
+                self.error(self.msg1)
+                
+    def clean(self):
+        
+        self.myTextBoxOne.setText(None)
+        self.myTextBoxThree.setText(None)
+        self.var1=None
+        self.var2=None
+        self.labelTwo.setText('')
+        self.labelThree.hide()
+        self.myTextBoxTwo.setText('')
+        self.progress.hide()
+        self.runner=None
+
+    def openFileNameDialogOne(self):
+
+        fileName = QFileDialog.getOpenFileName(self,"Carga tu documento",'',filter="PDF (*.pdf)")
+        
+        if len(fileName[0])!=0:        
+            self.myTextBoxOne.setText(fileName[0])
+            self.var1=os.path.abspath(fileName[0])
+        
+  
+    def alert(self, msg):
+        if msg=='Error1':
+            self.error('Ya existe una carpeta con ese nombre.')
+        elif msg=='Error2':
+            self.error('No se encontró el número de RUC y/o Requerimiento.')
+        elif msg=='Error3':
+            self.error('No se encontró el número de Carta y/o OF.')
+        elif msg=='Error4':
+            self.error('No se encontró el número de RUC y/o OF.')
+        elif msg=='Error5':
+            self.error('El número de OF debe contener doce dígitos.')
+        else:
+            self.error('Ocurrió un error inesperado: '+msg)
+        self.clean()
+        
+    def finished(self, msg):
+        if msg=='Done':
+            self.runner=None
+            self.myTextBoxOne.setText(None)
+            self.myTextBoxThree.setText(None)
+            self.var1=None
+            self.var2=None
+            self.start.setEnabled(True)   
+            self.labelTwo.setText('¡Listo, ya puedes visualizar tus documentos!')
+            self.labelThree.show()
+            
+            self.labelThree.setPixmap(self.pixmap) 
+            self.labelThree.show()
+            self.progress.hide()
+   
+    
+    def error(self,errorMsg):
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Critical)
+        msg.setWindowTitle(self.title)
+        msg.setWindowIcon(QIcon(icon))
+        msg.setText("Error")
+        msg.setFont(fontTwo)
+        msg.setStandardButtons(QMessageBox.Ok)
+        buttonOk = msg.button(QMessageBox.Ok)
+        buttonOk.setCursor(QCursor(Qt.PointingHandCursor))
+        buttonOk.setFont(fontOne)
+        msg.setStyleSheet(msg_window_style)
+        msg.setInformativeText(errorMsg)
+        msg.exec_()
+        self.start.setEnabled(True)
+    
+    def instructions(self):
+        info = QMessageBox()
+        info.setWindowTitle(choices[4][3:])
+        
+        info.setWindowIcon(QIcon(icon))
+        info.setText('''Se creará una carpeta que contendrá el .zip resultante junto con su versión descomprimida para que puedas visualizar el contenido sin descomprimir el fichero.
+                     
+Dicha carpeta se guardará en el directorio de tu Requerimiento/Carta.
+ 
+Digita el número de OF si no ha sido consignado en la CARTA, como en el caso de las circulares.''')
+        info.setFont(fontTwo)
+        info.setStyleSheet(msg_window_style)
+        info.setWindowModality(0)
+        # info.setModal(True)
+        info.activateWindow()
+        info.setStandardButtons(QMessageBox.Ok)
+        buttonOk = info.button(QMessageBox.Ok)
+        buttonOk.setCursor(QCursor(Qt.PointingHandCursor))
+        buttonOk.setText('Entendido')
+        buttonOk.setFont(fontOne)
+        info.setDefaultButton(QMessageBox.Ok)
+        info.show()
+        retval = info.exec_()
+# <codecell>  
+class WorkerSignalsSix(QObject):
+    alert=pyqtSignal(str)
+    finished=pyqtSignal(str)
+    reportMsg=pyqtSignal(str)
+    
+class JobRunnerSix(QRunnable):    
+    signals = WorkerSignalsSix()
+    
+    def __init__(self,rds,rms,rpv):
+        super().__init__()
+
+        self.is_killed = False 
+        self.rds=rds
+        self.rms=rms
+        self.rpv=rpv
+        
+    @pyqtSlot()
+
+    def run(self):
+        
+        try:
+            if self.rpv.endswith('.csv'):
+                fatal=False
+                df=pd.read_csv(self.rpv,dtype=str)
+                tipo=[]
+                pre=[]
+                names=[]
+                ruc=df['num_ruc'][0]
+                tipo=df['des_doc'].apply(lambda x: x[:2]).tolist()
+                df['num_reg_pre']=df['num_reg_pre'].str.strip()
+                df['cod_tri']=df['cod_tri'].str.strip()
+                pre=df['num_reg_pre'].tolist()
+                lines=df['cod_tri'].tolist()
+                names=[]
+                for p in pre:
+                    names.append(ruc+'_'+p+'_'+'01')
+                targetName='Valores '+ruc
+                codesRDs=[]
+                codesRMs=[]
+            elif self.rpv.endswith('.pdf'): 
+                fatal=False
+                text=''
+                doc = fitz.open(self.rpv)
+                for  i in range(len(doc)):
+                    page = doc.loadPage(i) 
+                    text += page.getText() 
+                doc.close()
+                
+                nums=findall('[0-9]+', text)
+                for i in nums:
+                    if len(i)==11:
+                        ruc=i
+                        break
+                # ruc=findall('(?<!\d)\d{11}(?!\d)', text)
+                if len(ruc)!=11:
+                    self.signals.alert.emit('ruc')
+                else:
+                    pre=[]
+                    for i in nums:
+                        if len(i)>=7 and i.startswith('00'):
+                            pre.append(i)                                 
+                
+                    tipo=findall(r"\bRD\b(?!')|\bRM\b(?!')", text)
+                    targetName='Valores '+ruc
+                    names=[]
+                    for p in pre:
+                        names.append(ruc+'_'+p+'_'+'01')
+                                
+                    lines=[]
+                    text=text.replace('\n',' ').split(pre[0])[1]
+                    for p in pre[1:]:  
+                        lines.append(text.replace('\n',' ').split(p)[0])
+                        text=text.replace('\n',' ').split(p)[1]
+                    lines.append(text)  
+                    codesRDs=[]
+                    codesRMs=[]
+                   
+            if 'RM' in tipo and self.rms is None:
+                print('error1')
+                self.signals.alert.emit('rm')
+            elif 'RD' in tipo and self.rds is None:
+                print('error2')
+                self.signals.alert.emit('rd')
+            else:  
+                fatal2=False
+                if 'RM' in tipo:
+                    for rm in self.rms:
+                        doc = fitz.open(rm)
+                        page = doc.loadPage(0) 
+                        foo = page.getText() 
+                        doc.close()
+                        i=3
+                        code=foo.split('\n')[i]
+                        while len(code)<4 or len(code)>6 or ('a' or 'e' or 'i' or 'o' or 'u') in code:           
+                            code=foo.split('\n')[i+1]
+                            i+=1
+                        if len(code.strip())==4:
+                            code='0'+code[:-1]+'0'+code[-1]                                 
+                        else:
+                            code='0'+code
+                        codesRMs.append(code)
+                        ruc2=findall('(?<!\d)\d{11}(?!\d)', foo)
+                        try:
+                            ruc2=ruc2[0]
+                            if ruc2!=ruc:    
+                                fatal2=True
+                        except:
+                            fatal2=True
+                if 'RD' in tipo:
+                    for rd in self.rds:
+                        doc = fitz.open(rd)
+                        page = doc.loadPage(0) 
+                        foo = page.getText() 
+                        doc.close()
+                        i=3
+                        code=foo.split('\n')[i]
+                        while len(code)<4 or len(code)>6 or ('a' or 'e' or 'i' or 'o' or 'u') in code:           
+                            code=foo.split('\n')[i+1]
+                            i+=1
+                        if len(code.strip())==4:
+                            code='0'+code[:-1]+'0'+code[-1]                                 
+                        else:
+                            code='0'+code
+                        codesRDs.append(code)
+                        ruc2=findall('(?<!\d)\d{11}(?!\d)', foo)
+                        try:
+                            ruc2=ruc2[0]
+                            if ruc2!=ruc:
+                                fatal2=True
+                        except:
+                            fatal2=True
+                if fatal2==False:
+                    try:
+                        RDDir=os.path.dirname(self.rds[0])
+                    except TypeError:
+                        RDDir=os.path.dirname(self.rms[0])
+                    if targetName in os.listdir(RDDir):
+                        self.signals.alert.emit('Error')
+                    else:
+                        os.mkdir(os.path.join(RDDir,targetName))          
+                        targetOne=os.path.join(RDDir,targetName)
+                        os.mkdir(os.path.join(targetOne,targetName))
+                        targetTwo=os.path.join(RDDir,targetName,targetName)
+
+                        codes=[]   
+                        for i in range(len(names)):
+                            if tipo[i]=='RD':
+                                idx=None
+                                for code in codesRDs:                   
+                                    if code in lines[i]:
+                                        idx=codesRDs.index(code)
+                                        """ codes.append(code) """
+                                        break
+                                if idx is None:
+                                    fatal=True
+                                    break
+                                else:                   
+                                    shutil.copy(self.rds[idx],os.path.join(targetTwo,names[i]+'.pdf'))
+                            elif tipo[i]=='RM':
+                                idx=None
+                                for code in codesRMs:                   
+                                    if code in lines[i]:
+                                        idx=codesRMs.index(code)
+                                        """ codes.append(code) """
+                                        break
+                                if idx is None:
+                                    fatal=True
+                                    break
+                                else:                   
+                                    shutil.copy(self.rms[idx],os.path.join(targetTwo,names[i]+'.pdf'))
+                        """ df={'num_reg_pre':pre,'des_doc':tipo,'cod_tri':codes}
+                        df=pd.DataFrame(df)
+                        df['num_ruc']=str(ruc)
+                        df.to_csv('rpv_output.csv',index=False) """
+                        if fatal==False:
+                            
+                            text_RD_path=os.path.join(targetTwo,'files.txt')
+                            with open(text_RD_path, 'w') as text_RD:
+                                for i in range(len(names)):
+                                    text_RD.write(ruc+'|'+pre[i]+'|'+'01\n')
+                            
+                            shutil.make_archive(targetTwo, 'zip',root_dir=targetOne , base_dir=targetName)
+                            time.sleep(3)
+                            self.signals.reportMsg.emit('Se encontraron '+str(tipo.count('RD'))+' RDs y '+str(tipo.count('RM'))+' RMs')
+                    
+                            self.signals.finished.emit('Done')
+                        else:
+                            self.signals.alert.emit('fatal')              
+                            shutil.rmtree(targetOne)
+                            time.sleep(3)
+                else:
+                    self.signals.alert.emit('ruc2') 
+        except Exception as e:      
+            self.signals.alert.emit(str(e))    
+                
+    def kill(self):
+        self.is_killed = True
+           
+class ActionsSix(QWidget):
+ 
+    def __init__(self):
+        super().__init__()
+        self.runner=None
+        self.title = 'LuftMensch'
+        self.var1=None
+        self.var2=None
+        self.var3=None
+        self.initUI()
+        self.msg1='Verifica los datos ingresados.' 
+        
+    def initUI(self):
+             
+        self.h1=QHBoxLayout()
+        self.h2=QHBoxLayout()
+        self.h3=QHBoxLayout()
+        self.h4=QHBoxLayout()
+        self.v2=QVBoxLayout()
+ 
+        self.buttonTwo = QPushButton('RDs', self)   
+        self.buttonTwo.clicked.connect(self.openFileNameDialogOne)
+        self.buttonTwo.setMinimumHeight(buttonMinHeight)
+        # self.buttonTwo.setMaximumWidth(200)
+        self.buttonTwo.setStyleSheet(buttonStyle02)
+        self.buttonTwo.setFont(fontTwo)
+        self.buttonTwo.setCursor(QCursor(Qt.PointingHandCursor))
+        self.h1.addWidget(self.buttonTwo,1)
+        
+        self.buttonThree = QPushButton('RMs', self)      
+        self.buttonThree.clicked.connect(self.openFileNameDialogTwo)
+        self.buttonThree.setMinimumHeight(buttonMinHeight)
+        # self.buttonThree.setMaximumWidth(200)
+        self.buttonThree.setStyleSheet(buttonStyle02)
+        self.buttonThree.setFont(fontTwo)
+        self.buttonThree.setCursor(QCursor(Qt.PointingHandCursor)) 
+        self.h3.addWidget(self.buttonThree,1)
+        
+        self.buttonFour = QPushButton('RPV', self)      
+        self.buttonFour.clicked.connect(self.openFileNameDialogThree)
+        self.buttonFour.setMinimumHeight(buttonMinHeight)
+        # self.buttonFour.setMaximumWidth(200)
+        self.buttonFour.setStyleSheet(buttonStyle02)
+        self.buttonFour.setFont(fontTwo)
+        self.buttonFour.setCursor(QCursor(Qt.PointingHandCursor))
+        self.h4.addWidget(self.buttonFour,1)
+        
+        self.myTextBoxOne = QLineEdit(self)
+        self.myTextBoxOne.setMinimumHeight(buttonMinHeight)  
+        self.myTextBoxOne.setStyleSheet(textboxStyle)
+        self.myTextBoxOne.setFont(fontTwo)
+        self.myTextBoxOne.setReadOnly(True)
+        self.myTextBoxOne.setPlaceholderText('Déjalo en blanco si no tienes RDs')
+        self.h1.addWidget(self.myTextBoxOne,4)
+        
+        self.myTextBoxTwo = QLineEdit(self)
+        self.myTextBoxTwo.setMinimumHeight(buttonMinHeight)  
+        self.myTextBoxTwo.setStyleSheet(textboxStyle)  
+        self.myTextBoxTwo.setFont(fontTwo)
+        self.myTextBoxTwo.setReadOnly(True)
+        self.myTextBoxTwo.setPlaceholderText('Déjalo en blanco si no tienes RMs')
+        self.h3.addWidget(self.myTextBoxTwo,4)
+        
+        self.myTextBoxThree = QLineEdit(self)
+        self.myTextBoxThree.setMinimumHeight(buttonMinHeight)  
+        self.myTextBoxThree.setStyleSheet(textboxStyle)    
+        self.myTextBoxThree.setFont(fontTwo)
+        self.myTextBoxThree.setReadOnly(True)
+        self.myTextBoxThree.setPlaceholderText('Carga tu RPV en formato .pdf o .csv')
+        self.h4.addWidget(self.myTextBoxThree,4)
+         
+        self.h2.addStretch()                   
+        self.start = QPushButton('Ejecutar', self)
+        self.start.setStyleSheet(buttonStyle01)
+        # self.start.setFocus()
+        self.start.setFont(fontOne)
+        self.start.setMinimumHeight(buttonMinHeight)
+        # self.start.setMaximumWidth(200)
+        self.start.setEnabled(True)
+        self.start.setCursor(QCursor(Qt.PointingHandCursor))
+        self.start.clicked.connect(self.started) 
+        self.h2.addWidget(self.start)
+    
+        self.button = QPushButton('Limpiar', self)
+        self.button.setStyleSheet(buttonStyle01)
+        self.button.setFont(fontOne)
+        self.button.setMinimumHeight(buttonMinHeight)
+        # self.button.setMaximumWidth(200)
+        self.button.setEnabled(True)
+        self.button.setCursor(QCursor(Qt.PointingHandCursor))
+        self.button.clicked.connect(self.clean) 
+        self.h2.addWidget(self.button)
+        
+        self.progress = QProgressBar(self)
+        self.progress.setFormat("")
+        self.progress.setStyleSheet(progressStyle)    
+        self.progress.setFont(fontOne)
+        # self.progress.setMaximumWidth(800)
+        self.progress.setAlignment(Qt.AlignCenter) 
+        self.progress.setValue(0)
+        self.progress.setMaximum(0)
+        self.progress.hide()
+        
+        self.labelOne = QLabel('', self)
+        self.labelOne.setFont(fontThree)
+        self.labelOne.setAlignment(Qt.AlignCenter)
+        self.labelOne.hide()
+        
+        self.labelTwo = QLabel('', self)
+        self.labelTwo.setFont(fontThree)
+        self.labelTwo.setStyleSheet("color: ForestGreen")
+        self.labelTwo.setAlignment(Qt.AlignCenter)
+        # self.labelTwo.hide()      
+
+        self.effect = QGraphicsOpacityEffect(self)
+        self.pixmap = QPixmap(pic)
+        self.pixmap = self.pixmap.scaled(50, 50, Qt.KeepAspectRatio,Qt.SmoothTransformation)
+        self.labelThree = QLabel('', self)
+        self.labelThree.setAlignment(Qt.AlignCenter)
+       
+        # self.info.setIcon(QIcon(self.style.standardIcon(QStyle.SP_FileDialogInfoView)))  
+        
+        self.mainLayout = QVBoxLayout()
+        self.mainLayout.setAlignment(Qt.AlignCenter)
+        # self.mainLayout.setSpacing(30)
+        self.mainLayout.addLayout(self.h1)
+        self.mainLayout.addLayout(self.h3)
+        self.mainLayout.addLayout(self.h4)
+        self.mainLayout.addLayout(self.h2)
+        self.mainLayout.addWidget(self.progress)
+        self.mainLayout.addWidget(self.labelOne)
+        self.mainLayout.addWidget(self.labelTwo)
+        self.mainLayout.addWidget(self.labelThree)       
+        self.setLayout(self.mainLayout)
+        
+        # quit = QAction("Quit", self)
+        # quit.triggered.connect(self.closeEvent)
+   
+    def started(self):
+        
+        if self.runner is None:
+            self.start.setEnabled(False)
+            if self.var3 is not None:
+                self.labelTwo.setText('')
+                self.labelThree.hide()
+                self.labelOne.setText('')
+                self.progress.show()
+                self.threadpool = QThreadPool()
+                self.runner = JobRunnerSix(self.var1,self.var2,self.var3)   
+                self.threadpool.start(self.runner)                                         
+                try:
+                    self.runner.signals.alert.disconnect(self.alert)
+                    self.runner.signals.finished.disconnect(self.finished)
+                    self.runner.signals.reportMsg.disconnect(self.report)
+                except TypeError:     
+                    self.runner.signals.alert.connect(self.alert)
+                    self.runner.signals.finished.connect(self.finished)
+                    self.runner.signals.reportMsg.connect(self.report)
+                else:
+                    self.runner.signals.alert.connect(self.alert)
+                    self.runner.signals.finished.connect(self.finished)
+                    self.runner.signals.reportMsg.connect(self.report)
+            else:
+                self.start.setEnabled(True)
+                self.labelTwo.setText('Intenta de nuevo.')
+                self.error(self.msg1)
+                self.progress.hide()
+                
+    def clean(self):
+        
+        self.myTextBoxOne.setText(None)
+        self.myTextBoxTwo.setText(None)
+        self.myTextBoxThree.setText(None)
+        self.var1=None
+        self.var2=None
+        self.var3=None
+        self.runner=None
+        self.labelTwo.setText('')
+        self.labelOne.setText('')
+        self.labelThree.hide()
+        self.progress.hide()
+
+    def openFileNameDialogOne(self):
+
+        fileNames = QFileDialog.getOpenFileNames(self,"Carga tus RDs (uno por cada tipo)",'',"PDF (*.pdf)")
+ 
+        if len(fileNames[0])!=0: 
+            self.myTextBoxOne.setText(str(fileNames[0]).strip('[').strip(']'))
+            self.var1=list(map(lambda x: os.path.abspath(x), fileNames[0]))
+
+    def openFileNameDialogTwo(self):
+
+        fileNames = QFileDialog.getOpenFileNames(self,"Carga tus RMs (uno por cada tipo)",'',"PDF (*.pdf)")
+       
+        if len(fileNames[0])!=0: 
+            self.myTextBoxTwo.setText(str(fileNames[0]).strip('[').strip(']'))
+            self.var2=list(map(lambda x: os.path.abspath(x), fileNames[0]))
+
+    def openFileNameDialogThree(self):
+
+        fileName = QFileDialog.getOpenFileName(self,"Carga tu RPV",'',"PDF o CSV (*.pdf *.csv)")
+        
+        if len(fileName[0])!=0:    
+            self.myTextBoxThree.setText(fileName[0])
+            self.var3=os.path.abspath(fileName[0])
+  
+    def alert(self, msg):
+        if msg=='Error':
+            self.error('Ya existe un folder con ese nombre')
+        elif msg=='rm':
+            self.error('No has cargado las RMs')
+        elif msg=='rd':
+            self.error('No has cargado las RDs')
+        elif msg=='ruc':
+            self.error('No se encontró el número de RUC')
+        elif msg=='ruc2':
+            self.error('El número de RUC de uno de los valores no coincide con el del RPV.')
+        elif msg=='fatal':
+            self.error('No has cargado todas la RDs y/o RMs')
+        else:
+            self.error('Ocurrió un error inesperado: '+msg)
+        self.clean()
+    def report(self,msg):
+        self.labelOne.setText(msg)
+        self.labelOne.show()
+    def finished(self, msg):
+        if msg=='Done':
+            self.runner=None
+            self.myTextBoxOne.setText(None)
+            self.myTextBoxTwo.setText(None)
+            self.myTextBoxThree.setText(None)
+            self.var1=None
+            self.var2=None
+            self.var3=None
+            self.start.setEnabled(True)   
+            self.labelTwo.setText('¡Listo, ya puedes visualizar tus documentos!')
+            self.labelThree.show()
+            self.labelThree.setPixmap(self.pixmap) 
+            self.progress.hide()
+
+    
+    def error(self,errorMsg):
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Critical)
+        msg.setWindowTitle(self.title)
+        msg.setWindowIcon(QIcon(icon))
+        msg.setText("Error")
+        msg.setFont(fontTwo)
+        msg.setStandardButtons(QMessageBox.Ok)
+        buttonOk = msg.button(QMessageBox.Ok)
+        buttonOk.setCursor(QCursor(Qt.PointingHandCursor))
+        buttonOk.setFont(fontOne)
+        msg.setStyleSheet(msg_window_style)
+        msg.setInformativeText(errorMsg)
+        msg.exec_()
+        self.start.setEnabled(True)
+        self.runner=None
+    
+    def instructions(self):
+        info = QMessageBox()
+        info.setWindowTitle(choices[5][3:])
+        
+        info.setWindowIcon(QIcon(icon))
+        info.setText('''Carga un valor por código de tributo.
+                     
+Para seleccionar más de un valor, mantén presionada la tecla CTRL.
+
+Se creará una carpeta que contendrá el .zip resultante junto con su versión descomprimida para que puedas visualizar el contenido sin descomprimir el fichero.
+                     
+Dicha carpeta se guardará en el directorio de tu primera RD, o RM de tratarse de una verificación no determinativa, bajo un nombre de la forma "Valores + RUC".
+
+Es importante que, de tenerlas, incluyas las RMs por infracciones formales y que se consigne en ellas el código de tributo correcto.''')
+        info.setFont(fontTwo)
+        info.setStyleSheet(msg_window_style)
+        info.setWindowModality(0)
+        # info.setModal(True)
+        info.activateWindow()
+        info.setStandardButtons(QMessageBox.Ok)
+        buttonOk = info.button(QMessageBox.Ok)
+        buttonOk.setCursor(QCursor(Qt.PointingHandCursor))
+        buttonOk.setText('Entendido')
+        buttonOk.setFont(fontOne)
+        info.setDefaultButton(QMessageBox.Ok)
+        info.show()
+        retval = info.exec_()
+ 
+# <codecell>  
+class WorkerSignalsSeven(QObject):
+
+    finished=pyqtSignal(str)
+    
+class JobRunnerSeven(QRunnable):    
+    signals = WorkerSignalsSeven()
+    
+    def __init__(self,SaveAs,RUC,doc,profile):
+        super().__init__()
+
+        self.is_killed = False 
+        self.SaveAs=SaveAs
+        self.RUC=RUC
+        if profile==0:
+            self.profile='F01'
+        elif profile==1:
+            self.profile='F02'
+        elif profile==2:
+            self.profile='F03'
+        elif profile==3:
+            self.profile='F04'           
+        self.doc=doc
+        
+    @pyqtSlot()
+        
+    def run(self):
+       
+        text='6,'+self.RUC+','+self.profile+','+self.doc+',DESCARGA LE'
+        
+        with open(self.SaveAs, "w") as text_file:
+            text_file.write('')
+            text_file.write(text)
+        time.sleep(1)
+        self.signals.finished.emit('Done')                    
+    def kill(self):
+        self.is_killed = True   
+        
+class ActionsSeven(QWidget):
+
+ 
+    def __init__(self):
+        super().__init__()
+        self.runner=None
+        self.title = 'LuftMensch'
+        self.var1=None
+        self.msg1='El RUC debe tener 11 dígitos y el doc. de sustento 12 o 18.'
+        self.initUI()
+    def initUI(self):
+        
+             
+        self.h1=QHBoxLayout()
+        self.h2=QHBoxLayout()
+        self.h3=QHBoxLayout()
+        self.h4=QHBoxLayout()
+        self.h5=QHBoxLayout()
+        self.v2=QVBoxLayout()
+                               
+        # self.setStyleSheet("background-color: rgb(255, 255, 255); color: rgb(86, 88, 110)")
+        
+    
+        self.buttonOne = QPushButton('RUC', self) 
+        self.buttonOne.setMinimumHeight(buttonMinHeight)
+        # self.buttonOne.setMaximumWidth(200)
+        self.buttonOne.setStyleSheet(buttonStyle02)
+        self.buttonOne.setFont(fontTwo)
+        self.buttonOne.setEnabled(False)
+        self.h1.addWidget(self.buttonOne,1)
+        
+        self.myTextBoxZero = QLineEdit(self)
+        self.myTextBoxZero.setMinimumHeight(buttonMinHeight)  
+        self.myTextBoxZero.setStyleSheet(textboxStyle)
+        self.myTextBoxZero.setFont(fontTwo)
+        self.myTextBoxZero.setPlaceholderText('Ingresa el número de RUC')
+        self.h1.addWidget(self.myTextBoxZero,4)
+        
+        self.buttonThree = QPushButton('Doc. Sustento', self)  
+        self.buttonThree.setMinimumHeight(buttonMinHeight)
+        # self.buttonThree.setMaximumWidth(200)
+        self.buttonThree.setStyleSheet(buttonStyle02)
+        self.buttonThree.setFont(fontTwo)
+        self.buttonThree.setEnabled(False)
+        self.h3.addWidget(self.buttonThree,1)
+        
+        self.buttonTwo = QPushButton('Guardar como', self)      
+        self.buttonTwo.clicked.connect(self.openFileNameDialogTwo)
+        self.buttonTwo.setMinimumHeight(buttonMinHeight)
+        # self.buttonTwo.setMaximumWidth(200)
+        self.buttonTwo.setStyleSheet(buttonStyle02)
+        self.buttonTwo.setFont(fontTwo)
+        self.buttonTwo.setCursor(QCursor(Qt.PointingHandCursor))
+        self.h5.addWidget(self.buttonTwo,1)
+        
+        self.myTextBoxTwo = QLineEdit(self)
+        self.myTextBoxTwo.setMinimumHeight(buttonMinHeight)  
+        self.myTextBoxTwo.setStyleSheet(textboxStyle)  
+        self.myTextBoxTwo.setFont(fontTwo)
+        self.myTextBoxTwo.setPlaceholderText('Ingresa el número de OF o equivalente')
+        self.h3.addWidget(self.myTextBoxTwo,4)
+        
+        self.myTextBoxOne = QLineEdit(self)
+        self.myTextBoxOne.setMinimumHeight(buttonMinHeight)  
+        self.myTextBoxOne.setStyleSheet(textboxStyle) 
+        self.myTextBoxOne.setFont(fontTwo)
+        self.myTextBoxOne.setReadOnly(True)
+        self.h5.addWidget(self.myTextBoxOne,4)
+                                  
+        self.buttonFour = QPushButton('Perfiles', self)  
+        self.buttonFour.setMinimumHeight(buttonMinHeight)  
+        # self.buttonFour.setMaximumWidth(200)
+        self.buttonFour.setFont(fontTwo)
+        self.buttonFour.setStyleSheet(buttonStyle02)
+        self.buttonFour.setEnabled(False)
+        self.h4.addWidget(self.buttonFour,1)
+        
+        self.combo=QComboBox(self)
+        self.combo.addItems(['F01 - Orden de Fiscalización',
+       'F02 - Acción Inductiva - Esquela',
+       'F03 - Programa de Fiscalización - Aduanas',
+       'F04 - Acción Inductiva - Carta Inductiva'])
+        self.combo.setMinimumHeight(buttonMinHeight)  
+        # self.combo.setMaximumWidth(600)
+        self.combo.setFont(fontTwo)
+        self.combo.setStyleSheet(comboStyle)
+        self.listview=QListView()
+        self.listview.setFont(fontTwo)
+        self.listview.setCursor(QCursor(Qt.PointingHandCursor))
+        self.combo.setView(self.listview)
+        self.combo.setCursor(QCursor(Qt.PointingHandCursor))
+        self.h4.addWidget(self.combo,4)
+        
+        self.h2.addStretch()              
+        self.start = QPushButton('Ejecutar', self)
+        self.start.setStyleSheet(buttonStyle01)
+        # self.start.setFocus()
+        self.start.setFont(fontOne)
+        self.start.setMinimumHeight(buttonMinHeight)
+        # self.start.setMaximumWidth(200)
+        self.start.setEnabled(True)
+        self.start.setCursor(QCursor(Qt.PointingHandCursor))
+        self.start.clicked.connect(self.started) 
+        self.h2.addWidget(self.start)
+    
+        self.button = QPushButton('Limpiar', self)
+        self.button.setStyleSheet(buttonStyle01)
+        self.button.setFont(fontOne)
+        self.button.setMinimumHeight(buttonMinHeight)
+        # self.button.setMaximumWidth(200)
+        self.button.setEnabled(True)
+        self.button.setCursor(QCursor(Qt.PointingHandCursor))
+        self.button.clicked.connect(self.clean) 
+        self.h2.addWidget(self.button)
+        
+        self.progress = QProgressBar(self)
+        self.progress.setFormat("")
+        self.progress.setStyleSheet(progressStyle)    
+        self.progress.setFont(fontOne)
+        # self.progress.setMaximumWidth(800)
+        self.progress.setAlignment(Qt.AlignCenter) 
+        self.progress.setValue(0)
+        self.progress.setMaximum(0)
+        self.progress.hide()
+        
+        
+        self.labelTwo = QLabel('', self)
+        self.labelTwo.setFont(fontThree)
+        self.labelTwo.setStyleSheet("color: ForestGreen")
+        self.labelTwo.setAlignment(Qt.AlignCenter)
+        # self.labelTwo.hide()
+        
+        self.effect = QGraphicsOpacityEffect(self)
+        self.pixmap = QPixmap(pic)
+        self.pixmap = self.pixmap.scaled(50, 50, Qt.KeepAspectRatio,Qt.SmoothTransformation)
+        self.labelThree = QLabel('', self)
+        self.labelThree.setAlignment(Qt.AlignCenter)       
+        # self.info.setIcon(QIcon(self.style.standardIcon(QStyle.SP_FileDialogInfoView)))  
+        
+        self.mainLayout = QVBoxLayout()
+        self.mainLayout.setAlignment(Qt.AlignCenter)
+        # self.mainLayout.setSpacing(30)
+        self.mainLayout.addLayout(self.h1)
+        self.mainLayout.addLayout(self.h3)
+        self.mainLayout.addLayout(self.h4)
+        self.mainLayout.addLayout(self.h5)
+        self.mainLayout.addLayout(self.h2)
+        self.mainLayout.addWidget(self.progress)
+        self.mainLayout.addWidget(self.labelTwo)
+        self.mainLayout.addWidget(self.labelThree)       
+        self.setLayout(self.mainLayout)
+        
+        # quit = QAction("Quit", self)
+        # quit.triggered.connect(self.closeEvent)
+   
+    def started(self):
+        
+        if self.runner is None:
+            self.start.setEnabled(False)
+            self.RUC=self.myTextBoxZero.text().strip()
+            self.doc=self.myTextBoxTwo.text().strip()
+            if self.var1 is not None and len(self.RUC)==11 and (len(self.doc)==12 or len(self.doc)==18):
+                self.labelTwo.setText('')
+                self.labelThree.hide()
+                self.progress.show()
+                self.name=self.myTextBoxTwo.text()
+                self.choice = self.combo.currentIndex()
+                print(self.choice)
+                self.threadpool = QThreadPool()
+                self.runner = JobRunnerSeven(self.var1,self.RUC,self.doc,self.choice)   
+                self.threadpool.start(self.runner)                                         
+                try:
+                    self.runner.signals.finished.disconnect(self.finished)
+                except TypeError:     
+                    self.runner.signals.finished.connect(self.finished)
+                else:
+                    self.runner.signals.finished.connect(self.finished)
+            else:
+                self.start.setEnabled(True)
+                self.labelTwo.setText('Intenta de nuevo.')
+                self.error(self.msg1)
+                
+    def clean(self):
+        
+        self.myTextBoxZero.setText(None)
+        self.myTextBoxOne.setText(None)
+        self.var1=None
+        self.runner=None
+        self.labelTwo.setText('')
+        self.labelThree.hide()
+        self.myTextBoxTwo.setText('')
+        self.progress.hide()
+
+    def openFileNameDialogTwo(self):
+        
+        fileName = QFileDialog.getSaveFileName(self,"Guardar como",'',filter="Texto (*.txt)")
+        
+        if len(fileName[0])!=0:        
+            if '.txt' not in fileName[0]:
+                fileName[0]=fileName[0]+'.txt'
+            self.myTextBoxOne.setText(fileName[0])
+            self.var1=os.path.abspath(fileName[0])
+
+    def finished(self, msg):
+        if msg=='Done':
+            self.runner=None
+            self.myTextBoxZero.setText(None)
+            self.myTextBoxOne.setText(None)
+            self.myTextBoxTwo.setText(None)
+            self.var1=None
+            self.start.setEnabled(True)   
+            self.labelTwo.setText('¡Listo, ya puedes visualizar tus documentos!')
+            self.labelThree.show()
+            
+            self.labelThree.setPixmap(self.pixmap) 
+            self.labelThree.show()
+            self.progress.hide()
+     
+    def error(self,errorMsg):
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Critical)
+        msg.setWindowTitle(self.title)
+        msg.setWindowIcon(QIcon(icon))
+        msg.setText("Verifica los datos ingresados")
+        msg.setFont(fontTwo)
+        msg.setStandardButtons(QMessageBox.Ok)
+        buttonOk = msg.button(QMessageBox.Ok)
+        buttonOk.setCursor(QCursor(Qt.PointingHandCursor))
+        buttonOk.setFont(fontOne)
+        msg.setStyleSheet(msg_window_style)
+        msg.setInformativeText(errorMsg)
+        msg.exec_()
+        self.start.setEnabled(True)
+        self.runner=None
+    
+    def instructions(self):
+        info = QMessageBox()
+        info.setWindowTitle(self.title)
+        
+        info.setWindowIcon(QIcon(icon))
+        info.setText("Intrucciones de uso.")
+        info.setInformativeText('''Estas son las instrucciones de uso de la opción 1.''')
+        info.setFont(fontTwo)
+        info.setStyleSheet(msg_window_style)
+        info.setWindowModality(0)
+        # info.setModal(True)
+        info.activateWindow()
+        info.setStandardButtons(QMessageBox.Ok)
+        buttonOk = info.button(QMessageBox.Ok)
+        buttonOk.setText('Entendido')
+        info.setDefaultButton(QMessageBox.Ok)
+        info.show()
+        retval = info.exec_()
+ 
+# <codecell>  
+class WorkerSignalsEight(QObject):
+    alert=pyqtSignal(str)
+    finished=pyqtSignal(str)
+    report=pyqtSignal(str)
+    
+class JobRunnerEight(QRunnable):    
+    signals = WorkerSignalsEight()
+    
+    def __init__(self,username,password,ruc,start,end,SaveAs):
+        super().__init__()
+
+        self.is_killed = False 
+        self.username=username
+        self.password=password
+        self.ruc=ruc
+        self.start=start
+        self.end=end
+        self.SaveAs=SaveAs
+        
+    @pyqtSlot()
+    
+        
+    def is_opened(self):
+        temp_filename=self.SaveAs[:-4]+' temp.xlsx'
+        if os.path.exists(self.SaveAs) == True:
+            try:              
+                os.rename(self.SaveAs,temp_filename)
+                os.rename(temp_filename,self.SaveAs)               
+                return False
+            except PermissionError:
+                return True
+        else:
+            return False
+    def run(self):
+        try:
+            start=self.start
+            end=self.end
+            start_num=int(start)
+            end_num=int(end)      
+            if start_num>end_num:
+                self.signals.alert.emit('Error1')
+            if self.is_opened() == True:
+                self.signals.alert.emit('Error2')
+            else:
+                self.signals.report.emit('Procesando...')
+                periodos=[start]
+                while start_num<end_num:
+                    if int(start[-2:])<12:
+                        start_num+=1
+                        start=str(start_num)
+                        periodos.append(start)
+                    else:
+                        start_num=int(start[:-2])+1
+                        start=str(start_num)+'01'
+                        start_num=int(start)
+                        periodos.append(start)
+                   
+                
+                
+                self.signals.report.emit('Iniciando la consulta... no olvides deshabilitar momentáneamente el Proxy.')
+                consolidado=pd.DataFrame()
+                args = ["hide_console", ]
+                options=Options()
+                options.headless=True
+                driver = webdriver.Chrome(ChromeDriverManager().install(),options=options,service_args=args)
+                self.signals.report.emit('Estableciendo conexión...')
+                driver.get("http://intranet/cl-at-iamenu/menuS01Alias")
+
+                driver.find_element_by_name('cuenta').send_keys(self.username)
+                driver.find_element_by_name('password').send_keys(self.password)
+                driver.find_element_by_class_name('form-button').click()
+                time.sleep(1)           
+                driver.get('http://intranet/cl-at-iamenu/menuS03Alias?accion=invocarPrograma&programa=5:5.68.1')
+                time.sleep(2)        
+                try:
+                    driver.switch_to.frame('menu')
+                except Exception:
+                    self.signals.alert.emit('Error3')
+                    self.signals.report.emit('Usuario y/o contraseña incorrectos. Intenta de nuevo.')
+                    driver.quit()
+                else:
+                    time.sleep(2)
+                    driver.find_element_by_xpath('/html/body/div/ul/li/a').click()
+                    time.sleep(2)
+                    driver.find_element_by_xpath('/html/body/div/ul/li/ul/li[1]/a').click()           
+                    wait = WebDriverWait(driver, 30)     
+                    self.signals.report.emit('Conexión exitosa...')
+                    for periodo in periodos:         
+                        if self.is_killed:
+                            break 
+                        driver.switch_to.default_content()
+                        driver.switch_to.frame('det')
+                        driver.switch_to.frame('det')
+                        wait.until(ec.visibility_of_element_located((By.ID, "criterio.nroRUC")))
+                        driver.find_element_by_id('criterio.nroRUC').send_keys(self.ruc)
+                        time.sleep(1)
+                        
+                        driver.find_element_by_xpath('//*[@id="criterio.periodo"]').clear()
+                        time.sleep(1)
+                        driver.find_element_by_xpath('//*[@id="criterio.periodo"]').send_keys(periodo)
+                        time.sleep(1)
+                        driver.find_element_by_xpath('/html/body/div[1]/table/tbody/tr/td/div/div/form/table/tbody/tr/td/table/tbody/tr/td/table[2]/tbody/tr[3]/td[3]/div/div[1]').click()
+                        wait.until(ec.element_to_be_clickable((By.XPATH, "/html/body/div[8]/div/div[3]")))
+                        driver.find_element_by_xpath('/html/body/div[8]/div/div[3]').click()
+                        time.sleep(1)
+                        
+                        driver.find_element_by_xpath('/html/body/div[1]/table/tbody/tr/td/div/div/form/table/tbody/tr/td/table/tbody/tr/td/table[3]/tbody/tr/td[1]/span').click()  
+                        try:
+                            wait.until(ec.visibility_of_element_located((By.ID, "listadoFacturas")))
+                        except UnexpectedAlertPresentException as e: 
+                            time.sleep(1)
+                            self.signals.report.emit(e.alert_text+' período: '+periodo)
+                            time.sleep(1)
+                        else:        
+                            driver.switch_to.default_content()
+                            driver.switch_to.frame('det')
+                            driver.switch_to.frame('det')
+                            
+                            done=False
+                            d=1
+                            while not done:
+                                try:
+                                    divi=driver.find_element_by_xpath('//*[@id="dojox_grid__View_'+str(d)+'"]/div')
+                                    done=True
+                                except NoSuchElementException:
+                                    d+=1
+                                    
+                            imprimir=driver.find_element_by_id('recibido.btnImprimir_label')    
+                            driver.execute_script("arguments[0].click();", imprimir)
+                            driver.switch_to.window(driver.window_handles[-1])
+                            time.sleep(1)       
+                            
+                            df=driver.find_element_by_xpath('/html/body/table/tbody/tr[2]/td/table')
+                            df=pd.read_html(df.get_attribute('outerHTML'))
+                            df=df[0][1:].reset_index(drop=True)
+                            driver.close()
+                            driver.switch_to.window(driver.window_handles[0])
+                            time.sleep(1)  
+                            
+                            driver.switch_to.default_content()
+                            driver.switch_to.frame('det')
+                            driver.switch_to.frame('det')
+                            headers=['Nro. Factura Electrónica','Emisor','Importe Total',
+                                     'Fecha de Emisión','Comprobante Anulado']
+                            df.columns=headers 
+                            df['detalle']=npnan
+                            df['detalle'] = df['detalle'].astype('object')
+                            df['Periodo']=str(periodo)
+                            df['Guía']=npnan
+                            df['Guía'] = df['Guía'].astype('object')
+                            df['Observaciones']=npnan
+                            df['Observaciones'] = df['Observaciones'].astype('object')
+                            
+                            self.signals.report.emit('El número de FE recibidas en el período '+periodo+' es: '+str(len(df)))
+                            
+                            for i in range(len(df)):   
+                                if self.is_killed:
+                                    break  
+                                done=False
+                                
+                                while not done:
+                                    try:
+                                        element=driver.find_element_by_css_selector('a[onclick="consultaFactura.view(\''+str(i)+'\')"]') 
+                                        done=True
+                                    except NoSuchElementException:                           
+                                        driver.execute_script('arguments[0].scrollTop = arguments[0].scrollTop + arguments[0].offsetHeight;',
+                                                             divi)
+                                        time.sleep(1)
+                                
+                                driver.execute_script("arguments[0].click();", element)
+                                
+                                driver.switch_to.window(driver.window_handles[-1])
+                                time.sleep(1)
+                                eso=driver.find_elements_by_class_name("detalle")
+                                tabla=pd.read_html(eso[0].get_attribute('outerHTML'))
+                                detalle = tabla[0].dropna(axis=0, thresh=4)
+                                detalle=detalle[1:].values.tolist()
+                                df.at[i,'detalle']=detalle
+                                
+                                guia=driver.find_elements_by_xpath("/html/body/table/tbody/tr[1]/td/table[2]/tbody/tr/td[2]")
+                                try:
+                                    guia=pd.read_html(guia[0].get_attribute('outerHTML'))
+                                    guia = guia[0][3]
+                                    guia=guia.tolist()
+                                    df.at[i,'Guía']=guia
+                                except ValueError:
+                                    print('Sin guía')
+                                    
+                                finally:                                
+                               
+                                    ob=driver.find_elements_by_xpath("/html/body/table/tbody/tr[1]/td/table[2]/tbody/tr/td[1]")
+                                    ob=pd.read_html(ob[0].get_attribute('outerHTML'))
+                                    ob=ob[0]
+                                    if pd.isna(ob[ob[0]=='Observación'][2]) is not False:
+                                        ob=ob[ob[0]=='Observación'][2].values[0]
+                                        df.at[i,'Observaciones']=ob
+                                    time.sleep(1)
+                                
+                                    driver.switch_to.window(driver.window_handles[0])
+                                    time.sleep(1)
+                                    driver.switch_to.default_content()
+                                    driver.switch_to.frame('det')
+                                    driver.switch_to.frame('det')
+                                    time.sleep(0.5)
+                                    self.signals.report.emit('Se han procesado '+str(i+1)+' de '+str(len(df))+' facturas del período '+periodo)
+                             
+                            new_el=driver.find_element_by_xpath('//*[@id="recibido.btnSalir"]')
+                            driver.execute_script("arguments[0].click();", new_el)
+                            wait.until(ec.alert_is_present())
+                            alert = driver.switch_to.alert
+                            time.sleep(2)
+                            alert.accept()
+                            time.sleep(1)
+                            
+                            consolidado=pd.concat([consolidado,df],ignore_index=True)
+                            self.signals.report.emit('Se ha procesado el período '+periodo)
+                        
+                    driver.quit()
+                    
+                    #===============================END OF WEB-SCRAPPING=======================================#
+                    if self.is_killed:
+                        pass  
+                    elif consolidado.empty:
+                        self.signals.finished.emit('Done')
+                        self.signals.report.emit('No se encontraron FE emitidas en favor del contribuyente.')
+                    else:
+                        self.signals.report.emit('Generando el archivo Excel...')
+                        ruc=[]
+                        rs=[]
+                        serie=[]
+                        numero=[]
+                        moneda=[]
+                        monto=[]
+                        
+                        for i in range(len(consolidado)):
+                            if pd.isna(consolidado['Guía'][i]) is True:
+                                pass
+                            else:
+                                rem=''
+                                for j in range(len(consolidado['Guía'][i])):
+                                    if j==len(consolidado['Guía'][i])-1:
+                                        rem+=consolidado['Guía'][i][j]
+                                    else:
+                                        rem+=consolidado['Guía'][i][j]+', '
+                                consolidado['Guía'][i]=rem
+                        
+                        for i in range(len(consolidado)):
+                            if len(consolidado.Emisor[i].split('-')[0].strip())==11:
+                                ruc.append(consolidado.Emisor[i].split('-')[0].strip())
+                                rs.append(consolidado.Emisor[i][14:].strip())
+                            else:
+                                ruc.append(npnan)
+                                rs.append(consolidado.Emisor[i].strip())
+                            serie.append(consolidado['Nro. Factura Electrónica'][i].split('-')[0].strip())
+                            numero.append(consolidado['Nro. Factura Electrónica'][i].split('-')[1].strip())
+                            if '$' in consolidado['Importe Total'][i]:
+                                monto.append(consolidado['Importe Total'][i][1:])
+                                moneda.append('USD')
+                            elif 'S/' in consolidado['Importe Total'][i]:
+                                monto.append(consolidado['Importe Total'][i][2:])
+                                moneda.append('PEN')
+                            elif '€' in consolidado['Importe Total'][i]:
+                                monto.append(consolidado['Importe Total'][i][1:])
+                                moneda.append('EUR')
+                            elif 'C$' in consolidado['Importe Total'][i]:
+                                monto.append(consolidado['Importe Total'][i][2:])
+                                moneda.append('CAD')
+                            elif '£' in consolidado['Importe Total'][i]:
+                                monto.append(consolidado['Importe Total'][i][1:])
+                                moneda.append('GBP')
+                            elif '¥' in consolidado['Importe Total'][i]:
+                                monto.append(consolidado['Importe Total'][i][1:])
+                                moneda.append('JPY')
+                            elif 'SEK' in consolidado['Importe Total'][i]:
+                                monto.append(consolidado['Importe Total'][i][3:])
+                                moneda.append('SEK')
+                                #CORONA SUECA
+                            elif 'SwF' in consolidado['Importe Total'][i]:
+                                monto.append(consolidado['Importe Total'][i][3:])
+                                moneda.append('CHF')
+                                #FRANCO SUIZO
+            
+                        ten=[]
+                        ten_sub=''
+                        for i in range(len(consolidado)):
+                            ten_sub=''
+                            for j in range(len(consolidado['detalle'][i])):
+                                if j<len(consolidado['detalle'][i])-1:
+                                    ten_sub+=str(consolidado['detalle'][i][j])+'\n'
+                                else:
+                                    ten_sub+=str(consolidado['detalle'][i][j])
+                                
+                            ten.append(str(ten_sub))
+                        
+                        
+                        
+                        for i in range(len(monto)):
+                            monto[i]=monto[i].replace(',','')
+                            
+                        nombre_detalle="Detalle: [Cantidad','Unidad Medida','Código','Descripción','Valor Unitario', 'ICBPER']"
+                        
+                        outcome=pd.DataFrame(list(zip(consolidado['Periodo'],
+                                               consolidado['Fecha de Emisión'],
+                                               serie,
+                                               numero,
+                                               ruc,
+                                               rs,
+                                               monto,
+                                               moneda,
+                                               consolidado['Comprobante Anulado'],
+                                               ten,
+                                               consolidado['Guía'],
+                                               consolidado['Observaciones'])),
+                                       columns =['Período',
+                                                 'Fecha de emisión',
+                                                 'Serie',
+                                                 'Número',
+                                                 'RUC',
+                                                 'Razón social',
+                                                 'Monto total',
+                                                 'Moneda',
+                                                 'Comprobante anulado',
+                                                 nombre_detalle,
+                                                 'Guías de remisión',
+                                                 'Observaciones'])
+                        
+                        outcome['Fecha de emisión']=pd.to_datetime(outcome['Fecha de emisión'],format='%d/%m/%Y')
+                        outcome['Período']=outcome['Período'].astype(int)
+                        outcome['Número']=outcome['Número'].astype(int)
+                        outcome['Monto total']=outcome['Monto total'].astype(float)
+                            
+                            
+                        with pd.ExcelWriter(self.SaveAs, 
+                                            engine='xlsxwriter',
+                                            datetime_format='d/mm/yyyy') as writer: 
+                             outcome.to_excel(writer,sheet_name='FE Recibidas',index = False) 
+                             workbook  = writer.book
+                             format1 = workbook.add_format({'num_format': '#,##0.00'})
+                             format2 = workbook.add_format({'num_format': 'd/mm/yyyy'})
+                             worksheet = writer.sheets['FE Recibidas']
+                             worksheet.set_column('B:B',18, format2)
+                             worksheet.set_column('G:G',15, format1)
+                             
+                        self.signals.finished.emit('Done')
+                        self.signals.report.emit('Proceso completado satisfactoriamente.')
+                        #============================================END============================================#   
+                            
+        except Exception as e:
+            self.signals.alert.emit(str(e))                        
+                
+    def kill(self):
+        self.is_killed = True
+           
+class ActionsEight(QWidget):
+
+ 
+    def __init__(self):
+        super().__init__()
+        self.runner=None
+        self.title = 'LuftMensch'
+        self.var1=None
+        self.var2=None
+        self.var4=None
+        self.var7=None
+        self.initUI()
+        self.msg1='Verifica los datos ingresados.' 
+        
+    def initUI(self):
+ 
+        self.v1=QVBoxLayout()
+        self.h1=QHBoxLayout()
+        self.h2=QHBoxLayout()
+        self.h4=QHBoxLayout()
+        self.h5=QHBoxLayout()
+        self.h6=QHBoxLayout()
+        self.h7=QHBoxLayout()
+        self.h8=QHBoxLayout()
+        self.h9=QHBoxLayout()
+        self.v2=QVBoxLayout()
+
+    
+        self.buttonOne = QPushButton('Usuario', self)
+        self.buttonOne.setMinimumHeight(buttonMinHeight)
+        # self.buttonOne.setMaximumWidth(200)
+        self.buttonOne.setStyleSheet(buttonStyle02)
+        self.buttonOne.setFont(fontTwo)
+        self.buttonOne.setEnabled(False)
+        self.buttonOne.setCursor(QCursor(Qt.PointingHandCursor))
+        self.h1.addWidget(self.buttonOne,1)
+        
+        self.buttonTwo = QPushButton('Contraseña', self)
+        self.buttonTwo.setMinimumHeight(buttonMinHeight)
+        # self.buttonTwo.setMaximumWidth(200)
+        self.buttonTwo.setStyleSheet(buttonStyle02)
+        self.buttonTwo.setFont(fontTwo)
+        self.buttonTwo.setEnabled(False)
+        self.buttonTwo.setCursor(QCursor(Qt.PointingHandCursor)) 
+        self.h2.addWidget(self.buttonTwo,1)
+        
+        self.buttonFour = QPushButton('RUC', self)
+        self.buttonFour.setMinimumHeight(buttonMinHeight)
+        # self.buttonFour.setMaximumWidth(200)
+        self.buttonFour.setStyleSheet(buttonStyle02)
+        self.buttonFour.setFont(fontTwo)
+        self.buttonFour.setEnabled(False)
+        self.buttonFour.setCursor(QCursor(Qt.PointingHandCursor))
+        self.h4.addWidget(self.buttonFour,1)
+        
+        self.buttonFive = QPushButton('Período', self)
+        self.buttonFive.setMinimumHeight(buttonMinHeight)
+        # self.buttonFive.setMaximumWidth(200)
+        self.buttonFive.setStyleSheet(buttonStyle02)
+        self.buttonFive.setFont(fontTwo)
+        self.buttonFive.setEnabled(False)
+        self.buttonFive.setCursor(QCursor(Qt.PointingHandCursor))
+        self.h6.addWidget(self.buttonFive,1)
+        
+        self.buttonSix = QPushButton('Guardar como', self)      
+        self.buttonSix.clicked.connect(self.openFileNameDialogTwo)
+        self.buttonSix.setMinimumHeight(buttonMinHeight)
+        self.buttonSix.setStyleSheet(buttonStyle02)
+        self.buttonSix.setFont(fontTwo)
+        self.buttonSix.setCursor(QCursor(Qt.PointingHandCursor))
+        self.h8.addWidget(self.buttonSix,1)
+        
+        self.myTextBoxOne = QLineEdit(self)      
+        self.myTextBoxOne.setEchoMode(QLineEdit.Password)
+        self.myTextBoxOne.setMinimumHeight(buttonMinHeight)  
+        self.myTextBoxOne.setStyleSheet(textboxStyle)
+        self.myTextBoxOne.setFont(fontTwo)
+        self.myTextBoxOne.setPlaceholderText('Usuario de intranet')
+        self.h1.addWidget(self.myTextBoxOne,4)
+        
+        self.myTextBoxTwo = QLineEdit(self)
+        self.myTextBoxTwo.setEchoMode(QLineEdit.Password)
+        self.myTextBoxTwo.setMinimumHeight(buttonMinHeight)  
+        self.myTextBoxTwo.setStyleSheet(textboxStyle)  
+        self.myTextBoxTwo.setFont(fontTwo)
+        self.myTextBoxTwo.setPlaceholderText('Contraseña de intranet')
+        self.h2.addWidget(self.myTextBoxTwo,4)
+         
+        self.myTextBoxFour = QLineEdit(self)
+        self.myTextBoxFour.setMinimumHeight(buttonMinHeight)  
+        self.myTextBoxFour.setStyleSheet(textboxStyle)  
+        self.myTextBoxFour.setFont(fontTwo)
+        self.myTextBoxFour.setPlaceholderText('Número de RUC')
+        self.h4.addWidget(self.myTextBoxFour,4)
+        
+        self.myTextBoxFive = QLineEdit(self)
+        self.myTextBoxFive.setMinimumHeight(buttonMinHeight)  
+        self.myTextBoxFive.setStyleSheet(textboxStyle)  
+        self.myTextBoxFive.setFont(fontTwo)
+        self.myTextBoxFive.setPlaceholderText('Elige el destino')      
+        self.myTextBoxFive.setReadOnly(True)
+        self.h8.addWidget(self.myTextBoxFive,4)
+        
+        self.comboOne=QComboBox(self)
+        self.comboOne.addItems(years)
+        self.comboOne.setMinimumHeight(buttonMinHeight) 
+        self.comboOne.setFont(fontTwo)
+        self.comboOne.setStyleSheet(comboStyle)
+        self.listview=QListView()
+        self.listview.setFont(fontTwo)
+        self.listview.setCursor(QCursor(Qt.PointingHandCursor))
+        self.comboOne.setView(self.listview)
+        self.comboOne.setCursor(QCursor(Qt.PointingHandCursor))
+        self.h7.addWidget(self.comboOne,2)
+        
+        self.comboTwo=QComboBox(self)
+        self.comboTwo.addItems(months)
+        self.comboTwo.setMinimumHeight(buttonMinHeight) 
+        self.comboTwo.setFont(fontTwo)
+        self.comboTwo.setStyleSheet(comboStyle)
+        self.listview=QListView()
+        self.listview.setFont(fontTwo)
+        self.listview.setCursor(QCursor(Qt.PointingHandCursor))
+        self.comboTwo.setView(self.listview)
+        self.comboTwo.setCursor(QCursor(Qt.PointingHandCursor))
+        self.h7.addWidget(self.comboTwo,2)
+        
+        
+        self.sep = QLabel(' - ', self)
+        self.sep.setFont(fontTwo)
+        self.sep.setStyleSheet('color: white')  
+        self.sep.setAlignment(Qt.AlignCenter)
+        self.h7.addWidget(self.sep)
+       
+        
+        self.comboThree=QComboBox(self)
+        self.comboThree.addItems(years)
+        self.comboThree.setMinimumHeight(buttonMinHeight) 
+        self.comboThree.setFont(fontTwo)
+        self.comboThree.setStyleSheet(comboStyle)
+        self.listview=QListView()
+        self.listview.setFont(fontTwo)
+        self.listview.setCursor(QCursor(Qt.PointingHandCursor))
+        self.comboThree.setView(self.listview)
+        self.comboThree.setCursor(QCursor(Qt.PointingHandCursor))
+        self.h7.addWidget(self.comboThree,2)
+        
+        self.comboFour=QComboBox(self)
+        self.comboFour.addItems(months)
+        self.comboFour.setMinimumHeight(buttonMinHeight) 
+        self.comboFour.setFont(fontTwo)
+        self.comboFour.setStyleSheet(comboStyle)
+        self.listview=QListView()
+        self.listview.setFont(fontTwo)
+        self.listview.setCursor(QCursor(Qt.PointingHandCursor))
+        self.comboFour.setView(self.listview)
+        self.comboFour.setCursor(QCursor(Qt.PointingHandCursor))
+        self.h7.addWidget(self.comboFour,2)               
+  
+        
+        self.h9.addStretch()                   
+        self.start = QPushButton('Ejecutar', self)
+        self.start.setStyleSheet(buttonStyle01)
+        # self.start.setFocus()
+        self.start.setFont(fontOne)
+        self.start.setMinimumHeight(buttonMinHeight)
+        # self.start.setMaximumWidth(200)
+        self.start.setEnabled(True)
+        self.start.setCursor(QCursor(Qt.PointingHandCursor))
+        self.start.clicked.connect(self.started) 
+        self.h9.addWidget(self.start)
+    
+        self.button = QPushButton('Limpiar', self)
+        self.button.setStyleSheet(buttonStyle01)
+        self.button.setFont(fontOne)
+        self.button.setMinimumHeight(buttonMinHeight)
+        # self.button.setMaximumWidth(200)
+        self.button.setEnabled(True)
+        self.button.setCursor(QCursor(Qt.PointingHandCursor))
+        self.button.clicked.connect(self.clean) 
+        self.h9.addWidget(self.button)
+        
+        self.progress = QProgressBar(self)
+        self.progress.setFormat("")
+        self.progress.setStyleSheet(progressStyle)    
+        self.progress.setFont(fontOne)
+        # self.progress.setMaximumWidth(800)
+        self.progress.setAlignment(Qt.AlignCenter) 
+        self.progress.setValue(0)
+        self.progress.setMaximum(0)
+        self.progress.hide()
+        
+        self.labelOne = QLabel('', self)
+        self.labelOne.setFont(fontThree)
+        self.labelOne.setAlignment(Qt.AlignCenter)
+        self.labelOne.hide()
+        
+        self.labelTwo = QLabel('', self)
+        self.labelTwo.setFont(fontThree)
+        self.labelTwo.setStyleSheet("color: ForestGreen")
+        self.labelTwo.setAlignment(Qt.AlignCenter)
+        # self.labelTwo.hide()      
+
+        self.effect = QGraphicsOpacityEffect(self)
+        self.pixmap = QPixmap(pic)
+        self.pixmap = self.pixmap.scaled(50, 50, Qt.KeepAspectRatio,Qt.SmoothTransformation)
+        self.labelThree = QLabel('', self)
+        self.labelThree.setAlignment(Qt.AlignCenter)
+       
+        self.report=QTextEdit(self)   
+        self.report.setFont(fontTwo)
+        self.report.setPlaceholderText('Recuerda desactivar momentáneamente el Proxy para ejecutar esta opción...') 
+        # self.report.setText('Acá se generará el reporte del proceso...') 
+        self.report.setStyleSheet("background-color: rgb(22, 23, 24);color: Gainsboro;border: 1px solid DarkGray")
+        self.report.setReadOnly(True)
+        self.v2.addWidget(self.report)
+        
+        self.mainLayout = QHBoxLayout()
+        self.mainLayout.setAlignment(Qt.AlignCenter)
+        self.v1.setAlignment(Qt.AlignCenter)
+        # self.mainLayout.setSpacing(30)
+        self.v1.addLayout(self.h1)
+        self.v1.addLayout(self.h2)
+        self.v1.addLayout(self.h4)
+        self.h5.addLayout(self.h6,1)
+        self.h5.addLayout(self.h7,4)
+        self.v1.addLayout(self.h5)
+        self.v1.addLayout(self.h8)       
+        self.v1.addLayout(self.h9) 
+        self.v1.addWidget(self.progress)
+        self.v1.addWidget(self.labelOne)
+        self.v1.addWidget(self.labelTwo)
+        self.v1.addWidget(self.labelThree)    
+        self.mainLayout.addLayout(self.v1)
+        self.mainLayout.addLayout(self.v2)
+        self.setLayout(self.mainLayout)
+        
+        # quit = QAction("Quit", self)
+        # quit.triggered.connect(self.closeEvent)
+   
+    def started(self):
+        
+        if self.runner is None:
+            self.start.setEnabled(False)
+            self.var1=self.myTextBoxOne.text().strip()
+            self.var2=self.myTextBoxTwo.text().strip()
+            self.var4=self.myTextBoxFour.text().strip()
+            self.var5=years[self.comboOne.currentIndex()]+months[self.comboTwo.currentIndex()]
+            self.var6=years[self.comboThree.currentIndex()]+months[self.comboFour.currentIndex()]
+            if (self.var1 and self.var2 and self.var4 and self.var7) is not None and len(self.var4)==11:
+                self.button.setEnabled(False)
+                self.labelTwo.setText('')
+                self.labelThree.hide()
+                self.progress.show()
+                self.threadpool = QThreadPool()
+                self.runner = JobRunnerEight(self.var1,self.var2,
+                                             self.var4,self.var5,self.var6,self.var7)   
+                self.threadpool.start(self.runner)                                         
+                try:
+                    self.runner.signals.alert.disconnect(self.alert)
+                    self.runner.signals.finished.disconnect(self.finished)
+                    self.runner.signals.report.disconnect(self.report_msg)
+                except TypeError:     
+                    self.runner.signals.alert.connect(self.alert)
+                    self.runner.signals.finished.connect(self.finished)
+                    self.runner.signals.report.connect(self.report_msg)
+                else:
+                    self.runner.signals.alert.connect(self.alert)
+                    self.runner.signals.finished.connect(self.finished)
+                    self.runner.signals.report.connect(self.report_msg)
+            else:
+                self.start.setEnabled(True)
+                self.labelTwo.setText('Intenta de nuevo.')
+                self.error(self.msg1)
+                self.progress.hide()
+                
+    def clean(self):
+        
+        self.myTextBoxOne.setText(None)
+        self.myTextBoxTwo.setText(None)
+        self.myTextBoxFour.setText(None)
+        self.myTextBoxFive.setText(None)
+        self.var1=None
+        self.var2=None
+        self.var4=None
+        self.comboOne.setCurrentIndex(0)
+        self.comboTwo.setCurrentIndex(0)
+        self.comboThree.setCurrentIndex(0)
+        self.comboFour.setCurrentIndex(0)
+        self.runner=None
+        self.labelTwo.setText('')
+        self.labelOne.setText('')
+        self.labelThree.hide()
+        self.report.setText(None)
+        self.progress.hide()
+    
+    def openFileNameDialogTwo(self):
+        
+        fileName = QFileDialog.getSaveFileName(self,"Guardar como",'',filter="Excel (*.xlsx)")
+        
+        if len(fileName[0])!=0:        
+            if '.xlsx' not in fileName[0]:
+                fileName[0]=fileName[0]+'.xlsx'
+            self.myTextBoxFive.setText(fileName[0])
+            self.var7=os.path.abspath(fileName[0])
+    
+    def alert(self, msg):
+        if msg=='Error1':
+            self.error('El período final no puede ser menor que el período inicial')
+        elif msg=='Error2':
+            self.error('El archivo Excel sobre el cual intentas guardar el resultado se encuentra abierto')
+        elif msg=='Error3':
+            self.error('Usuario y/o contraseña incorrectos')
+        else:
+            self.error('Ocurrió un error inesperado: '+msg)
+        self.clean()
+    def report_msg(self,msg):
+        self.report.append(msg)
+    def finished(self, msg):
+        if msg=='Done':
+            self.runner=None
+            self.myTextBoxOne.setText(None)
+            self.myTextBoxTwo.setText(None)
+            self.myTextBoxFour.setText(None)
+            self.myTextBoxFive.setText(None)
+            self.var1=None
+            self.var2=None
+            self.var4=None
+            self.comboOne.setCurrentIndex(0)
+            self.comboTwo.setCurrentIndex(0)
+            self.comboThree.setCurrentIndex(0)
+            self.comboFour.setCurrentIndex(0)
+            self.start.setEnabled(True)   
+            self.labelTwo.setText('¡Listo, ya puedes visualizar tus documentos!')
+            self.labelThree.show()
+            self.labelThree.setPixmap(self.pixmap) 
+            self.progress.hide()
+            self.button.setEnabled(True)
+
+    
+    def error(self,errorMsg):
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Critical)
+        msg.setWindowTitle(self.title)
+        msg.setWindowIcon(QIcon(icon))
+        msg.setText("Error")
+        msg.setFont(fontTwo)
+        msg.setStandardButtons(QMessageBox.Ok)
+        buttonOk = msg.button(QMessageBox.Ok)
+        buttonOk.setCursor(QCursor(Qt.PointingHandCursor))
+        buttonOk.setFont(fontOne)
+        msg.setStyleSheet(msg_window_style)
+        msg.setInformativeText(errorMsg)
+        msg.exec_()
+        self.start.setEnabled(True)
+        self.button.setEnabled(True)
+        self.runner=None
+
+    def instructions(self):
+        info = QMessageBox()
+        info.setWindowTitle(choices[7][3:])
+        
+        info.setWindowIcon(QIcon(icon))
+        info.setText('''Automatiza la revisión de FE emitidas en favor del contribuyente por aquellos a través del PORTAL SOL de SUNAT.
+
+La aplicación extrae información relevante de cada FE, como la cantidad, descripción, valor unitario, monto total y fecha de emisión, entre otras cosas, consolidando la información en un archivo Excel.
+
+Para ejecutar el programa necesitas estar conectado a la VPN y desactivar momentáneamente el Proxy.
+
+Si en el cuadro de reporte aparece un mensaje de la forma "Ocurrió un error...", quiere decir que la página presenta problemas. Detén el programa e intenta de nuevo más tarde.
+
+Si algún período aparece sin facturas, verifíca nuevamente, ya que es probable que la página haya tenido problemas al cargar la información.''')
+        info.setFont(fontTwo)
+        info.setStyleSheet(msg_window_style)
+        info.setWindowModality(0)
+        # info.setModal(True)
+        info.activateWindow()
+        info.setStandardButtons(QMessageBox.Cancel)
+        
+        buttonCancel = info.button(QMessageBox.Cancel)
+        buttonCancel.setCursor(QCursor(Qt.PointingHandCursor))
+        buttonCancel.setText('Entendido')
+        buttonCancel.setFont(fontOne)
+        info.setDefaultButton(QMessageBox.Cancel)
+        info.show()
+        retval = info.exec_()        
+        
+# <codecell>  
+class WorkerSignalsNine(QObject):
+    alert=pyqtSignal(str)
+    finished=pyqtSignal(str)
+    report=pyqtSignal(str)
+    
+class JobRunnerNine(QRunnable):    
+    signals = WorkerSignalsNine()
+    
+    def __init__(self,username,password,ruc,start,end,SaveAs):
+        super().__init__()
+
+        self.is_killed = False 
+        self.username=username
+        self.password=password
+        self.ruc=ruc
+        self.start=start
+        self.end=end
+        self.SaveAs=SaveAs
+        
+    @pyqtSlot()
+    
+        
+    def is_opened(self):
+        temp_filename=self.SaveAs[:-4]+' temp.xlsx'
+        if os.path.exists(self.SaveAs) == True:
+            try:              
+                os.rename(self.SaveAs,temp_filename)
+                os.rename(temp_filename,self.SaveAs)               
+                return False
+            except PermissionError:
+                return True
+        else:
+            return False
+    def run(self):
+        try:
+            start=self.start
+            end=self.end
+            start_num=int(start)
+            end_num=int(end)      
+            if start_num>end_num:
+                self.signals.alert.emit('Error1')
+            if self.is_opened() == True:
+                self.signals.alert.emit('Error2')
+            else:
+                self.signals.report.emit('Procesando...')
+                periodos=[start]
+                while start_num<end_num:
+                    if int(start[-2:])<12:
+                        start_num+=1
+                        start=str(start_num)
+                        periodos.append(start)
+                    else:
+                        start_num=int(start[:-2])+1
+                        start=str(start_num)+'01'
+                        start_num=int(start)
+                        periodos.append(start)
+                   
+                
+                
+                self.signals.report.emit('Iniciando la consulta... no olvides deshabilitar momentáneamente el Proxy.')
+                consolidado=pd.DataFrame()
+                args = ["hide_console", ]
+                options=Options()
+                options.headless=True
+                driver = webdriver.Chrome(ChromeDriverManager().install(),options=options,service_args=args)
+                self.signals.report.emit('Estableciendo conexión...')
+                driver.get("http://intranet/cl-at-iamenu/menuS01Alias")
+                
+                driver.find_element_by_name('cuenta').send_keys(self.username)
+                driver.find_element_by_name('password').send_keys(self.password)
+                driver.find_element_by_class_name('form-button').click()
+                time.sleep(1)           
+                driver.get('http://intranet/cl-at-iamenu/menuS03Alias?accion=invocarPrograma&programa=5:5.68.1')
+                time.sleep(2)        
+                try:
+                    driver.switch_to.frame('menu')
+                except Exception:
+                    self.signals.alert.emit('Error3')
+                    self.signals.report.emit('Usuario y/o contraseña incorrectos. Intenta de nuevo.')
+                    driver.quit()
+                else:
+                    time.sleep(2)
+                    driver.find_element_by_xpath('/html/body/div/ul/li/a').click()
+                    time.sleep(2)
+                    driver.find_element_by_xpath('/html/body/div/ul/li/ul/li[1]/a').click()           
+                    wait = WebDriverWait(driver, 30)     
+                    self.signals.report.emit('Conexión exitosa...')
+
+                    for periodo in periodos:         
+                        if self.is_killed:
+                            break 
+                        driver.switch_to.default_content()
+                        driver.switch_to.frame('det')
+                        driver.switch_to.frame('det')
+                        wait.until(ec.visibility_of_element_located((By.ID, "criterio.nroRUC")))
+                        driver.find_element_by_id('criterio.nroRUC').send_keys(self.ruc)
+                        time.sleep(1)
+                        
+                        driver.find_element_by_xpath('//*[@id="criterio.periodo"]').clear()
+                        time.sleep(1)
+                        driver.find_element_by_xpath('//*[@id="criterio.periodo"]').send_keys(periodo)
+                        time.sleep(1)
+                        # driver.find_element_by_xpath('/html/body/div[1]/table/tbody/tr/td/div/div/form/table/tbody/tr/td/table/tbody/tr/td/table[2]/tbody/tr[3]/td[3]/div/div[1]').click()
+                        # wait.until(ec.element_to_be_clickable((By.XPATH, "/html/body/div[8]/div/div[3]")))
+                        # driver.find_element_by_xpath('/html/body/div[8]/div/div[3]').click()
+                        # time.sleep(1)
+                        
+                        driver.find_element_by_xpath('/html/body/div[1]/table/tbody/tr/td/div/div/form/table/tbody/tr/td/table/tbody/tr/td/table[3]/tbody/tr/td[1]/span').click()  
+                        try:
+                            wait.until(ec.visibility_of_element_located((By.ID, "listadoFacturas")))
+                        except UnexpectedAlertPresentException as e: 
+                            time.sleep(1)
+                            self.signals.report.emit(e.alert_text+' período: '+periodo)
+                            time.sleep(1)
+                        else:        
+                            driver.switch_to.default_content()
+                            driver.switch_to.frame('det')
+                            driver.switch_to.frame('det')
+                            
+                            done=False
+                            d=1
+                            while not done:
+                                try:
+                                    divi=driver.find_element_by_xpath('//*[@id="dojox_grid__View_'+str(d)+'"]/div')
+                                    done=True
+                                except NoSuchElementException:
+                                    d+=1
+                                    
+                            imprimir=driver.find_element_by_id('emitido.btnImprimir_label')    
+                            driver.execute_script("arguments[0].click();", imprimir)
+                            driver.switch_to.window(driver.window_handles[-1])
+                            time.sleep(1)       
+                            
+                            df=driver.find_element_by_xpath('/html/body/table/tbody/tr[2]/td/table')
+                            df=pd.read_html(df.get_attribute('outerHTML'))
+                            df=df[0][1:].reset_index(drop=True)
+                            driver.close()
+                            driver.switch_to.window(driver.window_handles[0])
+                            time.sleep(1)  
+                            
+                            driver.switch_to.default_content()
+                            driver.switch_to.frame('det')
+                            driver.switch_to.frame('det')
+                            headers=['Nro. Factura Electrónica','Receptor','Importe Total',
+                                     'Fecha de Emisión','Fecha de Rechazo','Comprobante Anulado']
+                            df.columns=headers 
+                            df['detalle']=npnan
+                            df['detalle'] = df['detalle'].astype('object')
+                            df['Periodo']=str(periodo)
+                            df['Guía']=npnan
+                            df['Guía'] = df['Guía'].astype('object')
+                            df['Observaciones']=npnan
+                            df['Observaciones'] = df['Observaciones'].astype('object')
+                            
+                            self.signals.report.emit('El número de FE emitidas en el período '+periodo+' es: '+str(len(df)))
+                            
+                            for i in range(len(df)):   
+                                if self.is_killed:
+                                    break  
+                                done=False
+                                number=str(i)
+                                
+                                while not done:
+                                    try:
+                                        element=driver.find_element_by_css_selector('a[onclick="consultaFactura.view(\''+str(i)+'\')"]') 
+                                        done=True
+                                    except NoSuchElementException:                           
+                                        driver.execute_script('arguments[0].scrollTop = arguments[0].scrollTop + arguments[0].offsetHeight;',
+                                                             divi)
+                                        time.sleep(1)
+                                
+                                driver.execute_script("arguments[0].click();", element)
+                                driver.switch_to.window(driver.window_handles[-1])
+                                time.sleep(1)
+                                eso=driver.find_elements_by_class_name("detalle")
+                                tabla=pd.read_html(eso[0].get_attribute('outerHTML'))
+                                detalle = tabla[0].dropna(axis=0, thresh=4)
+                                detalle=detalle[1:].values.tolist()
+                                df.at[i,'detalle']=detalle
+                                
+                                guia=driver.find_elements_by_xpath("/html/body/table/tbody/tr[1]/td/table[2]/tbody/tr/td[2]")
+                                try:
+                                    guia=pd.read_html(guia[0].get_attribute('outerHTML'))
+                                    guia = guia[0][3]
+                                    guia=guia.tolist()
+                                    df.at[i,'Guía']=guia
+                                except ValueError:
+                                    print('Sin guía')    
+                                                                
+                                finally:
+                                    ob=driver.find_elements_by_xpath("/html/body/table/tbody/tr[1]/td/table[2]/tbody/tr/td[1]")
+                                    ob=pd.read_html(ob[0].get_attribute('outerHTML'))
+                                    ob=ob[0]
+                                    if pd.isna(ob[ob[0]=='Observación'][2]) is not False:
+                                        ob=ob[ob[0]=='Observación'][2].values[0]
+                                        df.at[i,'Observaciones']=ob
+                                    time.sleep(1)
+                                
+                                    driver.switch_to.window(driver.window_handles[0])
+                                    time.sleep(1)
+                                    driver.switch_to.default_content()
+                                    driver.switch_to.frame('det')
+                                    driver.switch_to.frame('det')
+                                    time.sleep(0.5)
+                                    self.signals.report.emit('Se han procesado '+str(i+1)+' de '+str(len(df))+' facturas del período '+periodo)
+                             
+                            new_el=driver.find_element_by_xpath('//*[@id="emitido.btnSalir"]')
+                            driver.execute_script("arguments[0].click();", new_el)
+                            wait.until(ec.alert_is_present())
+                            alert = driver.switch_to.alert
+                            time.sleep(2)
+                            alert.accept()
+                            time.sleep(1)
+                            
+                            consolidado=pd.concat([consolidado,df],ignore_index=True)
+                            self.signals.report.emit('Se ha procesado el período '+periodo)
+                        
+                    driver.quit()
+                    #===============================END OF WEB-SCRAPPING=======================================#
+                    if self.is_killed:
+                        pass  
+                    elif consolidado.empty:
+                        self.signals.finished.emit('Done')
+                        self.signals.report.emit('No se encontraron FE emitidas por el contribuyente.')
+                    else:
+                        self.signals.report.emit('Generando el archivo Excel...')
+                        ruc=[]
+                        rs=[]
+                        serie=[]
+                        numero=[]
+                        moneda=[]
+                        monto=[]
+                        
+                        for i in range(len(consolidado)):
+                            if pd.isna(consolidado['Guía'][i]) is True:
+                                pass
+                            else:
+                                rem=''
+                                for j in range(len(consolidado['Guía'][i])):
+                                    if j==len(consolidado['Guía'][i])-1:
+                                        rem+=consolidado['Guía'][i][j]
+                                    else:
+                                        rem+=consolidado['Guía'][i][j]+', '
+                                consolidado['Guía'][i]=rem
+                        
+                        for i in range(len(consolidado)):
+                            if len(consolidado.Receptor[i].split('-')[0].strip())==11:
+                                ruc.append(consolidado.Receptor[i].split('-')[0].strip())
+                                rs.append(consolidado.Receptor[i][14:].strip())
+                            else:
+                                ruc.append(npnan)
+                                rs.append(consolidado.Receptor[i].strip())
+                            serie.append(consolidado['Nro. Factura Electrónica'][i].split('-')[0].strip())
+                            numero.append(consolidado['Nro. Factura Electrónica'][i].split('-')[1].strip())
+                            if '$' in consolidado['Importe Total'][i]:
+                                monto.append(consolidado['Importe Total'][i][1:])
+                                moneda.append('USD')
+                            elif 'S/' in consolidado['Importe Total'][i]:
+                                monto.append(consolidado['Importe Total'][i][2:])
+                                moneda.append('PEN')
+                            elif '€' in consolidado['Importe Total'][i]:
+                                monto.append(consolidado['Importe Total'][i][1:])
+                                moneda.append('EUR')
+                            elif 'C$' in consolidado['Importe Total'][i]:
+                                monto.append(consolidado['Importe Total'][i][2:])
+                                moneda.append('CAD')
+                            elif '£' in consolidado['Importe Total'][i]:
+                                monto.append(consolidado['Importe Total'][i][1:])
+                                moneda.append('GBP')
+                            elif '¥' in consolidado['Importe Total'][i]:
+                                monto.append(consolidado['Importe Total'][i][1:])
+                                moneda.append('JPY')
+                            elif 'SEK' in consolidado['Importe Total'][i]:
+                                monto.append(consolidado['Importe Total'][i][3:])
+                                moneda.append('SEK')
+                                #CORONA SUECA
+                            elif 'SwF' in consolidado['Importe Total'][i]:
+                                monto.append(consolidado['Importe Total'][i][3:])
+                                moneda.append('CHF')
+                                #FRANCO SUIZO
+            
+                        ten=[]
+                        ten_sub=''
+                        for i in range(len(consolidado)):
+                            ten_sub=''
+                            for j in range(len(consolidado['detalle'][i])):
+                                if j<len(consolidado['detalle'][i])-1:
+                                    ten_sub+=str(consolidado['detalle'][i][j])+'\n'
+                                else:
+                                    ten_sub+=str(consolidado['detalle'][i][j])
+                                
+                            ten.append(str(ten_sub))
+                        
+                        
+                        
+                        for i in range(len(monto)):
+                            monto[i]=monto[i].replace(',','')
+                            
+                        nombre_detalle="Detalle: [Cantidad','Unidad Medida','Código','Descripción','Valor Unitario', 'ICBPER']"
+                        
+                        outcome=pd.DataFrame(list(zip(consolidado['Periodo'],
+                                               consolidado['Fecha de Emisión'],
+                                               consolidado['Fecha de Rechazo'],
+                                               serie,
+                                               numero,
+                                               ruc,
+                                               rs,
+                                               monto,
+                                               moneda,
+                                               consolidado['Comprobante Anulado'],
+                                               ten,
+                                               consolidado['Guía'],
+                                               consolidado['Observaciones'])),
+                                       columns =['Período',
+                                                 'Fecha de emisión',
+                                                 'Fecha de rechazo',
+                                                 'Serie',
+                                                 'Número',
+                                                 'RUC',
+                                                 'Razón social',
+                                                 'Monto total',
+                                                 'Moneda',
+                                                 'Comprobante anulado',
+                                                 nombre_detalle,
+                                                 'Guías de remisión',
+                                                 'Observaciones'])
+                        
+                        outcome['Fecha de emisión']=pd.to_datetime(outcome['Fecha de emisión'],format='%d/%m/%Y')
+                        outcome['Fecha de rechazo']=pd.to_datetime(outcome['Fecha de rechazo'],format='%d/%m/%Y')
+                        outcome['Período']=outcome['Período'].astype(int)
+                        outcome['Número']=outcome['Número'].astype(int)
+                        outcome['Monto total']=outcome['Monto total'].astype(float)
+                            
+                            
+                        with pd.ExcelWriter(self.SaveAs, 
+                                            engine='xlsxwriter',
+                                            datetime_format='d/mm/yyyy') as writer: 
+                             outcome.to_excel(writer,sheet_name='FE Emitidas',index = False) 
+                             workbook  = writer.book
+                             format1 = workbook.add_format({'num_format': '#,##0.00'})
+                             format2 = workbook.add_format({'num_format': 'd/mm/yyyy'})
+                             worksheet = writer.sheets['FE Emitidas']
+                             worksheet.set_column('B:B',18, format2)
+                             worksheet.set_column('C:C',18, format2)
+                             worksheet.set_column('H:H',15, format1)
+                             
+                        self.signals.finished.emit('Done')
+                        self.signals.report.emit('Proceso completado satisfactoriamente.')
+                        #============================================END============================================#   
+                            
+        except Exception as e:
+            self.signals.alert.emit(str(e))                           
+               # self.signals.alert.emit(str(type(e)))                        
+                
+    def kill(self):
+        self.is_killed = True
+           
+class ActionsNine(QWidget):
+
+ 
+    def __init__(self):
+        super().__init__()
+        self.runner=None
+        self.title = 'LuftMensch'
+        self.var1=None
+        self.var2=None
+        self.var4=None
+        self.var7=None
+        self.initUI()
+        self.msg1='Verifica los datos ingresados.' 
+        
+    def initUI(self):
+ 
+        
+        self.v1=QVBoxLayout()
+        self.h1=QHBoxLayout()
+        self.h2=QHBoxLayout()
+        self.h4=QHBoxLayout()
+        self.h5=QHBoxLayout()
+        self.h6=QHBoxLayout()
+        self.h7=QHBoxLayout()
+        self.h8=QHBoxLayout()
+        self.h9=QHBoxLayout()
+        self.v2=QVBoxLayout()
+
+    
+        self.buttonOne = QPushButton('Usuario', self)
+        self.buttonOne.setMinimumHeight(buttonMinHeight)
+        # self.buttonOne.setMaximumWidth(200)
+        self.buttonOne.setStyleSheet(buttonStyle02)
+        self.buttonOne.setFont(fontTwo)
+        self.buttonOne.setEnabled(False)
+        self.buttonOne.setCursor(QCursor(Qt.PointingHandCursor))
+        self.h1.addWidget(self.buttonOne,1)
+        
+        self.buttonTwo = QPushButton('Contraseña', self)
+        self.buttonTwo.setMinimumHeight(buttonMinHeight)
+        # self.buttonTwo.setMaximumWidth(200)
+        self.buttonTwo.setStyleSheet(buttonStyle02)
+        self.buttonTwo.setFont(fontTwo)
+        self.buttonTwo.setEnabled(False)
+        self.buttonTwo.setCursor(QCursor(Qt.PointingHandCursor)) 
+        self.h2.addWidget(self.buttonTwo,1)
+        
+        self.buttonFour = QPushButton('RUC', self)
+        self.buttonFour.setMinimumHeight(buttonMinHeight)
+        # self.buttonFour.setMaximumWidth(200)
+        self.buttonFour.setStyleSheet(buttonStyle02)
+        self.buttonFour.setFont(fontTwo)
+        self.buttonFour.setEnabled(False)
+        self.buttonFour.setCursor(QCursor(Qt.PointingHandCursor))
+        self.h4.addWidget(self.buttonFour,1)
+        
+        self.buttonFive = QPushButton('Período', self)
+        self.buttonFive.setMinimumHeight(buttonMinHeight)
+        # self.buttonFive.setMaximumWidth(200)
+        self.buttonFive.setStyleSheet(buttonStyle02)
+        self.buttonFive.setFont(fontTwo)
+        self.buttonFive.setEnabled(False)
+        self.buttonFive.setCursor(QCursor(Qt.PointingHandCursor))
+        self.h6.addWidget(self.buttonFive,1)
+        
+        self.buttonSix = QPushButton('Guardar como', self)      
+        self.buttonSix.clicked.connect(self.openFileNameDialogTwo)
+        self.buttonSix.setMinimumHeight(buttonMinHeight)
+        self.buttonSix.setStyleSheet(buttonStyle02)
+        self.buttonSix.setFont(fontTwo)
+        self.buttonSix.setCursor(QCursor(Qt.PointingHandCursor))
+        self.h8.addWidget(self.buttonSix,1)
+        
+        self.myTextBoxOne = QLineEdit(self)      
+        self.myTextBoxOne.setEchoMode(QLineEdit.Password)
+        self.myTextBoxOne.setMinimumHeight(buttonMinHeight)  
+        self.myTextBoxOne.setStyleSheet(textboxStyle)
+        self.myTextBoxOne.setFont(fontTwo)
+        self.myTextBoxOne.setPlaceholderText('Usuario de intranet')
+        self.h1.addWidget(self.myTextBoxOne,4)
+        
+        self.myTextBoxTwo = QLineEdit(self)
+        self.myTextBoxTwo.setEchoMode(QLineEdit.Password)
+        self.myTextBoxTwo.setMinimumHeight(buttonMinHeight)  
+        self.myTextBoxTwo.setStyleSheet(textboxStyle)  
+        self.myTextBoxTwo.setFont(fontTwo)
+        self.myTextBoxTwo.setPlaceholderText('Contraseña de intranet')
+        self.h2.addWidget(self.myTextBoxTwo,4)
+         
+        self.myTextBoxFour = QLineEdit(self)
+        self.myTextBoxFour.setMinimumHeight(buttonMinHeight)  
+        self.myTextBoxFour.setStyleSheet(textboxStyle)  
+        self.myTextBoxFour.setFont(fontTwo)
+        self.myTextBoxFour.setPlaceholderText('Número de RUC')
+        self.h4.addWidget(self.myTextBoxFour,4)
+        
+        self.myTextBoxFive = QLineEdit(self)
+        self.myTextBoxFive.setMinimumHeight(buttonMinHeight)  
+        self.myTextBoxFive.setStyleSheet(textboxStyle)  
+        self.myTextBoxFive.setFont(fontTwo)
+        self.myTextBoxFive.setPlaceholderText('Elige el destino')      
+        self.myTextBoxFive.setReadOnly(True)
+        self.h8.addWidget(self.myTextBoxFive,4)
+        
+        self.comboOne=QComboBox(self)
+        self.comboOne.addItems(years)
+        self.comboOne.setMinimumHeight(buttonMinHeight) 
+        self.comboOne.setFont(fontTwo)
+        self.comboOne.setStyleSheet(comboStyle)
+        self.listview=QListView()
+        self.listview.setFont(fontTwo)
+        self.listview.setCursor(QCursor(Qt.PointingHandCursor))
+        self.comboOne.setView(self.listview)
+        self.comboOne.setCursor(QCursor(Qt.PointingHandCursor))
+        self.h7.addWidget(self.comboOne,2)
+        
+        self.comboTwo=QComboBox(self)
+        self.comboTwo.addItems(months)
+        self.comboTwo.setMinimumHeight(buttonMinHeight) 
+        self.comboTwo.setFont(fontTwo)
+        self.comboTwo.setStyleSheet(comboStyle)
+        self.listview=QListView()
+        self.listview.setFont(fontTwo)
+        self.listview.setCursor(QCursor(Qt.PointingHandCursor))
+        self.comboTwo.setView(self.listview)
+        self.comboTwo.setCursor(QCursor(Qt.PointingHandCursor))
+        self.h7.addWidget(self.comboTwo,2)
+        
+        
+        self.sep = QLabel(' - ', self)
+        self.sep.setFont(fontTwo)
+        self.sep.setStyleSheet('color: white')  
+        self.sep.setAlignment(Qt.AlignCenter)
+        self.h7.addWidget(self.sep)
+       
+        
+        self.comboThree=QComboBox(self)
+        self.comboThree.addItems(years)
+        self.comboThree.setMinimumHeight(buttonMinHeight) 
+        self.comboThree.setFont(fontTwo)
+        self.comboThree.setStyleSheet(comboStyle)
+        self.listview=QListView()
+        self.listview.setFont(fontTwo)
+        self.listview.setCursor(QCursor(Qt.PointingHandCursor))
+        self.comboThree.setView(self.listview)
+        self.comboThree.setCursor(QCursor(Qt.PointingHandCursor))
+        self.h7.addWidget(self.comboThree,2)
+        
+        self.comboFour=QComboBox(self)
+        self.comboFour.addItems(months)
+        self.comboFour.setMinimumHeight(buttonMinHeight) 
+        self.comboFour.setFont(fontTwo)
+        self.comboFour.setStyleSheet(comboStyle)
+        self.listview=QListView()
+        self.listview.setFont(fontTwo)
+        self.listview.setCursor(QCursor(Qt.PointingHandCursor))
+        self.comboFour.setView(self.listview)
+        self.comboFour.setCursor(QCursor(Qt.PointingHandCursor))
+        self.h7.addWidget(self.comboFour,2)               
+        
+        
+        
+        self.h9.addStretch()                   
+        self.start = QPushButton('Ejecutar', self)
+        self.start.setStyleSheet(buttonStyle01)
+        # self.start.setFocus()
+        self.start.setFont(fontOne)
+        self.start.setMinimumHeight(buttonMinHeight)
+        # self.start.setMaximumWidth(200)
+        self.start.setEnabled(True)
+        self.start.setCursor(QCursor(Qt.PointingHandCursor))
+        self.start.clicked.connect(self.started) 
+        self.h9.addWidget(self.start)
+    
+        self.button = QPushButton('Limpiar', self)
+        self.button.setStyleSheet(buttonStyle01)
+        self.button.setFont(fontOne)
+        self.button.setMinimumHeight(buttonMinHeight)
+        # self.button.setMaximumWidth(200)
+        self.button.setEnabled(True)
+        self.button.setCursor(QCursor(Qt.PointingHandCursor))
+        self.button.clicked.connect(self.clean) 
+        self.h9.addWidget(self.button)
+        
+        self.progress = QProgressBar(self)
+        self.progress.setFormat("")
+        self.progress.setStyleSheet(progressStyle)    
+        self.progress.setFont(fontOne)
+        # self.progress.setMaximumWidth(800)
+        self.progress.setAlignment(Qt.AlignCenter) 
+        self.progress.setValue(0)
+        self.progress.setMaximum(0)
+        self.progress.hide()
+        
+        self.labelOne = QLabel('', self)
+        self.labelOne.setFont(fontThree)
+        self.labelOne.setAlignment(Qt.AlignCenter)
+        self.labelOne.hide()
+        
+        self.labelTwo = QLabel('', self)
+        self.labelTwo.setFont(fontThree)
+        self.labelTwo.setStyleSheet("color: ForestGreen")
+        self.labelTwo.setAlignment(Qt.AlignCenter)
+        # self.labelTwo.hide()      
+
+        self.effect = QGraphicsOpacityEffect(self)
+        self.pixmap = QPixmap(pic)
+        self.pixmap = self.pixmap.scaled(50, 50, Qt.KeepAspectRatio,Qt.SmoothTransformation)
+        self.labelThree = QLabel('', self)
+        self.labelThree.setAlignment(Qt.AlignCenter)
+       
+        self.report=QTextEdit(self)   
+        self.report.setFont(fontTwo)
+        self.report.setPlaceholderText('Recuerda desactivar momentáneamente el Proxy para ejecutar esta opción...') 
+        # self.report.setText('Acá se generará el reporte del proceso...') 
+        self.report.setStyleSheet("background-color: rgb(22, 23, 24);color: Gainsboro;border: 1px solid DarkGray")
+        self.report.setReadOnly(True)
+        self.v2.addWidget(self.report)
+        
+        self.mainLayout = QHBoxLayout()
+        self.mainLayout.setAlignment(Qt.AlignCenter)
+        self.v1.setAlignment(Qt.AlignCenter)
+        # self.mainLayout.setSpacing(30)
+        self.v1.addLayout(self.h1)
+        self.v1.addLayout(self.h2)
+        self.v1.addLayout(self.h4)
+        self.h5.addLayout(self.h6,1)
+        self.h5.addLayout(self.h7,4)
+        self.v1.addLayout(self.h5)
+        self.v1.addLayout(self.h8)       
+        self.v1.addLayout(self.h9) 
+        self.v1.addWidget(self.progress)
+        self.v1.addWidget(self.labelOne)
+        self.v1.addWidget(self.labelTwo)
+        self.v1.addWidget(self.labelThree) 
+        self.mainLayout.addLayout(self.v2)   
+        self.mainLayout.addLayout(self.v1)
+        self.setLayout(self.mainLayout)
+        
+        # quit = QAction("Quit", self)
+        # quit.triggered.connect(self.closeEvent)
+   
+    def started(self):
+        
+        if self.runner is None:
+            self.start.setEnabled(False)
+            self.var1=self.myTextBoxOne.text().strip()
+            self.var2=self.myTextBoxTwo.text().strip()
+            self.var4=self.myTextBoxFour.text().strip()
+            self.var5=years[self.comboOne.currentIndex()]+months[self.comboTwo.currentIndex()]
+            self.var6=years[self.comboThree.currentIndex()]+months[self.comboFour.currentIndex()]
+            if (self.var1 and self.var2 and self.var4 and self.var7) is not None and len(self.var4)==11:
+                self.button.setEnabled(False)
+                self.labelTwo.setText('')
+                self.labelThree.hide()
+                self.progress.show()
+                self.threadpool = QThreadPool()
+                self.runner = JobRunnerNine(self.var1,self.var2,
+                                             self.var4,self.var5,self.var6,self.var7)   
+                self.threadpool.start(self.runner)                                         
+                try:
+                    self.runner.signals.alert.disconnect(self.alert)
+                    self.runner.signals.finished.disconnect(self.finished)
+                    self.runner.signals.report.disconnect(self.report_msg)
+                except TypeError:     
+                    self.runner.signals.alert.connect(self.alert)
+                    self.runner.signals.finished.connect(self.finished)
+                    self.runner.signals.report.connect(self.report_msg)
+                else:
+                    self.runner.signals.alert.connect(self.alert)
+                    self.runner.signals.finished.connect(self.finished)
+                    self.runner.signals.report.connect(self.report_msg)
+            else:
+                self.start.setEnabled(True)
+                self.labelTwo.setText('Intenta de nuevo.')
+                self.error(self.msg1)
+                self.progress.hide()
+                
+    def clean(self):
+        
+        self.myTextBoxOne.setText(None)
+        self.myTextBoxTwo.setText(None)
+        self.myTextBoxFour.setText(None)
+        self.myTextBoxFive.setText(None)
+        self.var1=None
+        self.var2=None
+        self.var4=None
+        self.comboOne.setCurrentIndex(0)
+        self.comboTwo.setCurrentIndex(0)
+        self.comboThree.setCurrentIndex(0)
+        self.comboFour.setCurrentIndex(0)
+        self.runner=None
+        self.labelTwo.setText('')
+        self.labelOne.setText('')
+        self.labelThree.hide()
+        self.report.setText(None)
+        self.progress.hide()
+    
+    def openFileNameDialogTwo(self):
+        
+        fileName = QFileDialog.getSaveFileName(self,"Guardar como",'',filter="Excel (*.xlsx)")
+        
+        if len(fileName[0])!=0:        
+            if '.xlsx' not in fileName[0]:
+                fileName[0]=fileName[0]+'.xlsx'
+            self.myTextBoxFive.setText(fileName[0])
+            self.var7=os.path.abspath(fileName[0])
+    
+    def alert(self, msg):
+        if msg=='Error1':
+            self.error('El período final no puede ser menor que el período inicial')
+        elif msg=='Error2':
+            self.error('El archivo Excel sobre el cual intentas guardar el resultado se encuentra abierto')
+        elif msg=='Error3':
+            self.error('Usuario y/o contraseña incorrectos')
+        else:
+            self.error('Ocurrió un error inesperado: '+msg)
+        self.clean()
+    def report_msg(self,msg):
+        self.report.append(msg)
+    def finished(self, msg):
+        if msg=='Done':
+            self.runner=None
+            self.myTextBoxOne.setText(None)
+            self.myTextBoxTwo.setText(None)
+            self.myTextBoxFour.setText(None)
+            self.myTextBoxFive.setText(None)
+            self.var1=None
+            self.var2=None
+            self.var4=None
+            self.comboOne.setCurrentIndex(0)
+            self.comboTwo.setCurrentIndex(0)
+            self.comboThree.setCurrentIndex(0)
+            self.comboFour.setCurrentIndex(0)
+            self.start.setEnabled(True)   
+            self.labelTwo.setText('¡Listo, ya puedes visualizar tus documentos!')
+            self.labelThree.show()
+            self.labelThree.setPixmap(self.pixmap) 
+            self.progress.hide()
+            self.button.setEnabled(True)
+
+    
+    def error(self,errorMsg):
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Critical)
+        msg.setWindowTitle(self.title)
+        msg.setWindowIcon(QIcon(icon))
+        msg.setText("Error")
+        msg.setFont(fontTwo)
+        msg.setStandardButtons(QMessageBox.Ok)
+        buttonOk = msg.button(QMessageBox.Ok)
+        buttonOk.setCursor(QCursor(Qt.PointingHandCursor))
+        buttonOk.setFont(fontOne)
+        msg.setStyleSheet(msg_window_style)
+        msg.setInformativeText(errorMsg)
+        msg.exec_()
+        self.start.setEnabled(True)
+        self.button.setEnabled(True)
+        self.runner=None
+
+    def instructions(self):
+        info = QMessageBox()
+        info.setWindowTitle(choices[8][3:])
+        
+        info.setWindowIcon(QIcon(icon))
+        info.setText('''Automatiza la revisión de FE emitidas por el contribuyente a través del PORTAL SOL de SUNAT.
+
+La aplicación extrae información relevante de cada FE, como la cantidad, descripción, valor unitario, monto total y fecha de emisión, entre otras cosas, consolidando la información en un archivo Excel.
+
+Para ejecutar el programa necesitas estar conectado a la VPN y desactivar momentáneamente el Proxy.
+
+Si en el cuadro de reporte aparece un mensaje de la forma "Ocurrió un error...", quiere decir que la página presenta problemas. Detén el programa e intenta de nuevo más tarde.
+
+Si algún período aparece sin facturas, verifíca nuevamente, ya que es probable que la página haya tenido problemas al cargar la información.''')
+        info.setFont(fontTwo)
+        info.setStyleSheet(msg_window_style)
+        info.setWindowModality(0)
+        # info.setModal(True)
+        info.activateWindow()
+        info.setStandardButtons(QMessageBox.Cancel)
+        
+        buttonCancel = info.button(QMessageBox.Cancel)
+        buttonCancel.setCursor(QCursor(Qt.PointingHandCursor))
+        buttonCancel.setText('Entendido')
+        buttonCancel.setFont(fontOne)
+        info.setDefaultButton(QMessageBox.Cancel)
+        info.show()
+        retval = info.exec_()        
+
+# <codecell>
+class WorkerSignalsTen(QObject):
     alert=pyqtSignal(str)
     finished=pyqtSignal(str)
     reportMsg=pyqtSignal(str)
  
-class JobRunnerFive(QRunnable):    
-    signals = WorkerSignalsFive()
+class JobRunnerTen(QRunnable):    
+    signals = WorkerSignalsTen()
     
     def __init__(self,SaveAs,state,choice):
         super().__init__()
@@ -1422,6 +4112,8 @@ class JobRunnerFive(QRunnable):
         self.SaveAs=SaveAs
         self.state=state
         self.choice=choice
+        self.bar=None
+        self.out=None
         
     @pyqtSlot()
     def is_opened(self):
@@ -1443,11 +4135,12 @@ class JobRunnerFive(QRunnable):
                 self.signals.alert.emit('Error2')
             else:          
                 size_before=os.path.getsize(self.SaveAs)
-                size_before/=1000000                           
-                import subprocess
+                size_before/=1000                           
+                
                 file_name=os.path.basename(self.SaveAs)
                 print(file_name)
                 output_file=file_name[:-4]+' sehr witzig.pdf'
+                go_back=os.getcwd()
                 os.chdir(os.path.dirname(self.SaveAs))
                 quality=''
                 if self.choice==0:
@@ -1461,13 +4154,41 @@ class JobRunnerFive(QRunnable):
                     startupinfo = subprocess.STARTUPINFO()
                     startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
                 start=time.time()
-                subprocess.run([gs,'-sDEVICE=pdfwrite','-q',
+                self.bar=subprocess.Popen([gs,'-sDEVICE=pdfwrite','-q',
                                         '-dCompatibilityLevel=1.4', 
                                         '-dPDFSETTINGS='+quality,'-dNOSAFER',
                                         '-dNOPAUSE','-dQUIET','-dBATCH',
-                                        '-sOutputFile='+'.'+output_file, 
+                                        '-sOutputFile='+output_file, 
                                         file_name], startupinfo=startupinfo)
-                holder=os.path.join(os.path.dirname(self.SaveAs),'.'+output_file)
+                                        
+                time.sleep(1)
+                holder=os.path.join(os.path.dirname(self.SaveAs),output_file)   
+                self.out=holder             
+                subprocess.check_call(["attrib","+H",holder])    
+                
+                finished=False
+                while not finished:
+                    if self.bar.poll() is not None:
+                        finished=True
+                        print('compressed!')
+                        """ elif self.is_killed:
+                        self.bar.kill()
+                        done=False
+                        count=0
+                        print('process killed')
+                        while not done:
+                            try:
+                                os.remove(self.out)
+                                finished=True
+                                done=True
+                                print('sucess!')
+                            except PermissionError:
+                                print('Permission denied')
+                                count+=1 
+                                time.sleep(count) """
+                    else:
+                        time.sleep(1)
+                        
                 if self.is_killed:
                     pass
                 else:
@@ -1475,45 +4196,34 @@ class JobRunnerFive(QRunnable):
                     count=0
                     while not done:
                         try:
-                            shutil.copy(holder,self.SaveAs)
-                            # shutil.copy(self.SaveAs[:-4]+' sehr witzig.pdf',self.SaveAs)
+                            print('maybe here')
+                            shutil.move(holder,self.SaveAs)
                             done=True
                         except PermissionError:
                             print('Permission denied')
                             count+=1 
                             time.sleep(count)          
                     time.sleep(1)
-                done=False
-                count=0
-                while not done:
-                    try:
-                        os.remove(holder)
-                        # os.remove(self.SaveAs[:-4]+' sehr witzig.pdf')
-                        done=True
-                    except PermissionError:
-                        print('Permission denied')
-                        count+=1 
-                        time.sleep(count)
-                if self.is_killed:
-                    pass
-                else:
+                
                     if self.state==2:
-                        from subprocess import Popen 
-                        Popen([self.SaveAs],shell=True)
+                            
+                        subprocess.Popen([self.SaveAs],shell=True)
                     time.sleep(1)
                     size_after=os.path.getsize(self.SaveAs)
-                    size_after/=1000000
+                    size_after/=1000
                     if (size_before-size_after)<=1:
-                        self.signals.reportMsg.emit('Cannot further shrink your document with chosen parameter.')
+                        self.signals.reportMsg.emit('No se puede reducir más el tamaño del documento con la opción escogida.')
                     else:
-                        self.signals.reportMsg.emit("Your PDF went from %.2f MB to %.2f MB in %.2f sec." % (size_before, size_after,time.time()-start))
+                        self.signals.reportMsg.emit("De %.2f KB se redujo a %.2f KB y tomó %.2f segundos" % (size_before, size_after,time.time()-start))
+                    os.chdir(go_back)
                     self.signals.finished.emit('Done')
         except Exception as e:      
             self.signals.alert.emit(str(e))
     def kill(self):
+        
         self.is_killed = True
-          
-class ActionsFive(QWidget):
+                  
+class ActionsTen(QWidget):
 
     def __init__(self):
         super().__init__()
@@ -1524,21 +4234,8 @@ class ActionsFive(QWidget):
         self.msg1='Ingresa un archivo PDF.'
         
     def initUI(self):
-        
-        self.style = QApplication.style()
-        
-        
-        self.style1=("QPushButton { background-color: rgb(155, 61, 61 ); color: rgb(255, 255, 255 );}")
-        self.style2=("QPushButton { background-color: rgb(69, 70, 77); color: rgb(255, 255, 255);}")             
-        self.style3 = ("QProgressBar {border: 2px solid grey;border-radius: 5px;text-align: center}"
-                         "QProgressBar::chunk {background-color: IndianRed;width: 10px;margin: 1px;}")
-        self.style4=("QComboBox {selection-background-color: rgb(69, 70, 77);background-color: rgb(69, 70, 77); color: rgb(255, 255, 255);padding-left:10px}"
-                     "QComboBox QAbstractItemView::item { min-height: 35px; min-width: 50px;}"
-                     "QListView::item { color: white; background-color: rgb(69, 70, 77)}"
-                     "QListView::item:selected { color: white; background-color: IndianRed}") 
-        self.style5=("QPushButton { background-color: rgb(69, 70, 77); color: rgb(255, 255, 255);}")    
 
-        self.setWindowTitle(self.title)
+        
 
         self.h4=QHBoxLayout()     
         self.h1=QHBoxLayout()
@@ -1547,24 +4244,24 @@ class ActionsFive(QWidget):
         self.v2=QVBoxLayout()
                                
         # self.setStyleSheet("background-color: rgb(255, 255, 255); color: rgb(86, 88, 110)")
-        self.setWindowIcon(QIcon(icon))
+        
 
-        self.buttonFour = QPushButton('Type', self)  
-        self.buttonFour.setMinimumHeight(35)  
+        self.buttonFour = QPushButton('Tipo de compresión', self)  
+        self.buttonFour.setMinimumHeight(buttonMinHeight)  
         # self.buttonFour.setMaximumWidth(200)
         self.buttonFour.setFont(fontTwo)
-        self.buttonFour.setStyleSheet(self.style5)
+        self.buttonFour.setStyleSheet(buttonStyle02)
         self.buttonFour.setEnabled(False)
         self.h4.addWidget(self.buttonFour,1)
         
         self.combo=QComboBox(self)
-        self.combo.addItems(['Low',
-       'Medium',
-       'High'])
-        self.combo.setMinimumHeight(35)  
+        self.combo.addItems(['Baja',
+       'Media',
+       'Alta'])
+        self.combo.setMinimumHeight(buttonMinHeight)  
         # self.combo.setMaximumWidth(600)
         self.combo.setFont(fontTwo)
-        self.combo.setStyleSheet(self.style4)
+        self.combo.setStyleSheet(comboStyle)
         self.listview=QListView()
         self.listview.setFont(fontTwo)
         self.listview.setCursor(QCursor(Qt.PointingHandCursor))
@@ -1572,18 +4269,18 @@ class ActionsFive(QWidget):
         self.combo.setCursor(QCursor(Qt.PointingHandCursor))
         self.h4.addWidget(self.combo,4)
         
-        self.buttonTwo = QPushButton('Load PDF', self)   
+        self.buttonTwo = QPushButton('Cargar PDF', self)   
         self.buttonTwo.clicked.connect(self.openFileNameDialogOne)
-        self.buttonTwo.setMinimumHeight(35)
+        self.buttonTwo.setMinimumHeight(buttonMinHeight)
         # self.buttonTwo.setMaximumWidth(200)
-        self.buttonTwo.setStyleSheet(self.style2)
+        self.buttonTwo.setStyleSheet(buttonStyle02)
         self.buttonTwo.setFont(fontTwo)
         self.buttonTwo.setCursor(QCursor(Qt.PointingHandCursor))
         self.h1.addWidget(self.buttonTwo,1)
         
         self.myTextBoxOne = QLineEdit(self)
-        self.myTextBoxOne.setMinimumHeight(35)  
-        self.myTextBoxOne.setStyleSheet('background-color: rgb(69, 70, 77); color: white')
+        self.myTextBoxOne.setMinimumHeight(buttonMinHeight)  
+        self.myTextBoxOne.setStyleSheet(textboxStyle)
         # self.myTextBoxOne.setMaximumWidth(600)
         self.myTextBoxOne.setFont(fontTwo)
         self.myTextBoxOne.setReadOnly(True)
@@ -1593,32 +4290,32 @@ class ActionsFive(QWidget):
         # self.lineOne.setMaximumWidth(800)
         # self.v1.addWidget(self.lineOne)
         
-        self.CheckOne = QCheckBox('Open immediately', self)  
+        self.CheckOne = QCheckBox('Abrir de inmediato el documento generado', self)  
         self.CheckOne.setFont(fontTwo)
-        self.CheckOne.setMinimumHeight(35)
+        self.CheckOne.setMinimumHeight(buttonMinHeight)
         # self.CheckOne.setMaximumWidth(800)
-        self.CheckOne.setStyleSheet("QCheckBox {background-color: rgb(155, 61, 61); color: rgb(255, 255, 255);padding-left:10px;}") 
-        self.CheckOne.setChecked(False)
+        self.CheckOne.setStyleSheet(checkboxStyle) 
+        self.CheckOne.setChecked(prev_prefs["7"])
         self.v1.addWidget(self.CheckOne)
              
         # self.lineTwo = QLabel('/'*250, self)
         # self.lineTwo.setMaximumWidth(800)
         # self.v1.addWidget(self.lineTwo)     
         self.h2.addStretch()
-        self.start = QPushButton('Run', self)
-        self.start.setStyleSheet(self.style1)
+        self.start = QPushButton('Ejecutar', self)
+        self.start.setStyleSheet(buttonStyle01)
         # self.start.setFocus()
         self.start.setFont(fontOne)
-        self.start.setMinimumHeight(35)
+        self.start.setMinimumHeight(buttonMinHeight)
         self.start.setEnabled(True)
         self.start.setCursor(QCursor(Qt.PointingHandCursor))
         self.start.clicked.connect(self.started) 
         self.h2.addWidget(self.start)
         # self.h2.addStretch()
-        self.button = QPushButton('Clean', self)
-        self.button.setStyleSheet(self.style1)
+        self.button = QPushButton('Limpiar', self)
+        self.button.setStyleSheet(buttonStyle01)
         self.button.setFont(fontOne)
-        self.button.setMinimumHeight(35)
+        self.button.setMinimumHeight(buttonMinHeight)
         # self.button.setMinimumWidth(200)
         self.button.setEnabled(True)
         self.button.setCursor(QCursor(Qt.PointingHandCursor))
@@ -1627,7 +4324,7 @@ class ActionsFive(QWidget):
         # self.h2.addStretch()
         self.progress = QProgressBar(self)
         self.progress.setFormat("")
-        self.progress.setStyleSheet(self.style3)    
+        self.progress.setStyleSheet(progressStyle)    
         self.progress.setFont(fontOne)
         # self.progress.setMaximumWidth(800)
         self.progress.setAlignment(Qt.AlignCenter) 
@@ -1637,7 +4334,7 @@ class ActionsFive(QWidget):
              
         self.labelTwo = QLabel('', self)
         self.labelTwo.setFont(fontThree)
-        self.labelTwo.setStyleSheet("color:LightGreen")
+        self.labelTwo.setStyleSheet("color: ForestGreen")
         self.labelTwo.setAlignment(Qt.AlignCenter)
         # self.labelTwo.hide()
         self.labelOne = QLabel('', self)
@@ -1680,8 +4377,9 @@ class ActionsFive(QWidget):
                 self.progress.show()
                 self.choice = self.combo.currentIndex()
                 self.state = self.CheckOne.checkState()
+                # prev_prefs["7"]=self.state
                 self.threadpool = QThreadPool()
-                self.runner = JobRunnerFive(self.var1,self.state,self.choice)   
+                self.runner = JobRunnerTen(self.var1,self.state,self.choice)   
                 self.threadpool.start(self.runner)                                         
                 try:
                     self.runner.signals.alert.disconnect(self.alert)
@@ -1697,7 +4395,7 @@ class ActionsFive(QWidget):
                     self.runner.signals.reportMsg.connect(self.report)
             else:
                 self.start.setEnabled(True)
-                self.labelTwo.setText('Try again')
+                self.labelTwo.setText('Intenta de nuevo.')
                 self.error(self.msg1)
                 
     def clean(self):
@@ -1712,21 +4410,17 @@ class ActionsFive(QWidget):
       
     def openFileNameDialogOne(self):
         
-        fileName, _ = QFileDialog.getOpenFileName(self,"Choose your document",'',filter="PDF (*.pdf)")
+        fileName = QFileDialog.getOpenFileName(self,"Selecciona tu documento",'',filter="PDF (*.pdf)")
         
-        if fileName:        
-            if '.pdf' not in fileName:
-                fileName=fileName+'.pdf'
-            fileName=os.path.abspath(fileName)         
-            self.myTextBoxOne.setText(fileName)
-            self.var1=self.myTextBoxOne.text()
-        return fileName
+        if len(fileName[0])!=0:        
+            self.myTextBoxOne.setText(fileName[0])
+            self.var1=os.path.abspath(fileName[0])
   
     def alert(self, msg):
         if msg=='Error2':
-            self.error('The PDF you are trying to overwrite is currently open. Close it and try again.')
+            self.error('Cierra el PDF sobre el cual deseas guardar el resultado.')
         else:
-            self.error('Unexpected error found: '+msg)
+            self.error('Ocurrió un error inesperado: '+msg)
         self.clean()
     def report(self,msg):
         self.labelOne.setText(msg)
@@ -1737,31 +4431,13 @@ class ActionsFive(QWidget):
             self.myTextBoxOne.setText(None)
             self.var1=None
             self.start.setEnabled(True)   
-            self.labelTwo.setText('ALL DONE! You can check your document now!')
+            self.labelTwo.setText('¡Listo, ya puedes visualizar tus documentos!')
             self.labelThree.show()
             
             self.labelThree.setPixmap(self.pixmap) 
             self.labelThree.show()
             self.progress.hide()
 
-    # def closeEvent(self, event):
-    #     close = QMessageBox()
-    #     # close.setWindowTitle(self.title)
-    #     close.setWindowTitle("¿Seguro?")
-    #     close.setWindowIcon(QIcon(icon))
-    #     close.setFont(fontTwo)
-    #     close.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
-    #     # close.setText("¿Estás seguro?")
-    #     # close.setInformativeText('Se detendrá la función si se está ejecutando, pero no te preocupes ya que se guardará el avance.')
-    #     close.setText("¿Estás seguro que deseas salir?")
-    #     close.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
-    #     close = close.exec()
-
-    #     if close == QMessageBox.Yes:           
-    #         event.accept()     
-    #         self.clean()
-    #     else:
-    #         event.ignore()
      
     def error(self,errorMsg):
         msg = QMessageBox()
@@ -1774,7 +4450,7 @@ class ActionsFive(QWidget):
         buttonOk = msg.button(QMessageBox.Ok)
         buttonOk.setCursor(QCursor(Qt.PointingHandCursor))
         buttonOk.setFont(fontOne)
-        msg.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
+        msg.setStyleSheet(msg_window_style)
         msg.setInformativeText(errorMsg)
         msg.exec_()
         self.start.setEnabled(True)
@@ -1785,41 +4461,32 @@ class ActionsFive(QWidget):
         info.setWindowTitle(choices[9][3:])
         
         info.setWindowIcon(QIcon(icon))
-        info.setText('''Low: 300 dpi
-Medium: 150 dpi
-High: 72 dpi
+        info.setText('''Compresión baja: 300 dpi
+Compresión media: 150 dpi
+Compresión alta: 72 dpi
 
-It can take a couple of minutes to shrink you document, depending on its size and the number of images in it.
+El proceso puede tomar varios minutos dependiendo del tamaño del documento y de la cantidad de imágenes que contenga. 
 
-As a reference, LuftMensch can shrink 600 MB into a 47 MB document in about 10 minutes.
+Como referencia, se puede reducir un documento de 600 MB a uno de 47 MB en 10 minutos usando una compresión "Alta".
 
-Do not open your document while is being processed or else all changes will be lost.''')
+1 MB = 1000 KB
+
+No abras el documento mientras el programa lo está procesando.''')
 
         info.setFont(fontTwo)
-        info.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
+        info.setStyleSheet(msg_window_style)
         info.setWindowModality(0)
         # info.setModal(True)
         info.activateWindow()
         info.setStandardButtons(QMessageBox.Ok)
         buttonOk = info.button(QMessageBox.Ok)
         buttonOk.setCursor(QCursor(Qt.PointingHandCursor))
-        buttonOk.setText('OK')
+        buttonOk.setText('Entendido')
         buttonOk.setFont(fontOne)
         info.setDefaultButton(QMessageBox.Ok)
         info.show()
         retval = info.exec_()
-
-class PicButton(QAbstractButton):
-    def __init__(self, pixmap, parent=None):
-        super(PicButton, self).__init__(parent)
-        self.pixmap = pixmap
-
-    def paintEvent(self, event):
-        painter = QPainter(self)
-        painter.drawPixmap(event.rect(), self.pixmap)
-
-    def sizeHint(self):
-        return self.pixmap.size()             
+     
 # <codecell>  
     
 class MainWindow(QMainWindow):
@@ -1831,56 +4498,75 @@ class MainWindow(QMainWindow):
         self.window3 = ActionsThree()
         self.window4 = ActionsFour()
         self.window5 = ActionsFive()
+        self.window6 = ActionsSix()
+        self.window7 = ActionsSeven()   
+        self.window8 = ActionsEight() 
+        self.window9 = ActionsNine()
+        self.window10 = ActionsTen()
         self.title = 'LuftMensch'
         self.initUI()
         
     def initUI(self):  
 
-        self.style1=("QPushButton { background-color: rgb(155, 61, 61 ); color: rgb(255, 255, 255 );}"
-                     "QPushButton:hover { background-color: rgba(155, 61, 61,230) ;color: white;}"
-                      "QPushButton:pressed { background-color: rgb(69, 70, 77) ;color: rgb(255, 255, 255 );}")
-        self.style2=("QPushButton { background-color: rgb(69, 70, 77); color: rgb(255, 255, 255);}"
-                      "QPushButton:hover { background-color: rgba(69, 70, 77,230) ;color: white;}"
-                      "QPushButton:pressed { background-color: rgb(155, 61, 61 ); color: rgb(255, 255, 255 );}")
-        self.style4=("QComboBox {selection-background-color: rgb(69, 70, 77);background-color: rgb(69, 70, 77); color: rgb(255, 255, 255);padding-left:10px}"
-                     "QComboBox QAbstractItemView::item { min-height: 35px; min-width: 50px;}"
-                     "QListView::item { color: white; background-color: rgb(69, 70, 77)}"
-                     "QListView::item:selected { color: white; background-color: IndianRed}") 
-        
         self.style = QApplication.style()
-       
-        self.setWindowTitle(self.title)       
-        # self.setMinimumSize(750,500)
-        self.setMinimumSize(530,530)
-        # self.resize(500,600)
-        # self.move(500, 2)
-        # self.setWindowState(Qt.WindowMaximized)
-        self.setStyleSheet("background-color: rgb(22, 23, 24); color:CornflowerBlue")
+        
+        self.setWindowTitle(self.title)
         self.setWindowIcon(QIcon(icon))
+
+        self.dark="background-color: rgb(22, 23, 24); color:CornflowerBlue"
+        self.light="background-color: White; color:RoyalBlue"
+        
+        self.version='1.4.7'
+               
+        # self.setMinimumSize(750,500)
+        # self.setMinimumSize(650,540)
+        # self.resize(500,600)
+        # self.setWindowState(Qt.WindowMaximized)
+        self.setStyleSheet(self.dark if prev_prefs["8"]=='dark' else self.light)
+        
         
         self.menuBar = self.menuBar()
         self.menuBar.setCursor(QCursor(Qt.PointingHandCursor))
         self.menuBar.setStyleSheet("QMenuBar {background-color: rgb(155, 61, 61); color: rgb(255, 255, 255)}"
                                    "QMenuBar:item:selected {background-color: white ;color: black}") 
-        self.menuBar.addAction('&About', self.about)
-        self.menuBar.addAction('&Update', self.update)
-        # self.menuBar.addAction('&Ayuda', self.need_help)
+     
         
-        self.visitRepo=QMenu("Repository")
-        self.visitRepo.setStyleSheet("QMenu {background-color: white; color: black}"
+        self.aboutApp=QMenu("&Acerca de")
+        self.aboutApp.setStyleSheet("QMenu {background-color: white; color: black}"
                                    "QMenu:item:selected {background-color: white ;color: rgb(155, 61, 61)}") 
-        self.menuBar.addMenu(self.visitRepo)
-        self.visitRepo.setCursor(QCursor(Qt.PointingHandCursor))
-        self.visitRepo.addAction('&Visit repository', self.repo)
+        self.menuBar.addMenu(self.aboutApp)
+        self.aboutApp.setCursor(QCursor(Qt.PointingHandCursor))
+        self.aboutApp.addAction('&Acerca de LuftMensch', self.about)
+        self.aboutApp.addAction('&Ir al repositorio', self.repo)
+
         
-        self.help=QMenu("&Instructions")
+        self.updateApp=QMenu("&Actualizar")
+        self.updateApp.setStyleSheet("QMenu {background-color: white; color: black}"
+                                   "QMenu:item:selected {background-color: white ;color: rgb(155, 61, 61)}") 
+        self.menuBar.addMenu(self.updateApp)
+        self.updateApp.setCursor(QCursor(Qt.PointingHandCursor))
+        self.updateApp.addAction('&Buscar actualización...', self.update)
+
+        self.help=QMenu("&Instrucciones")
         self.help.setStyleSheet("QMenu {background-color: white; color: black}"
                                    "QMenu:item:selected {background-color: white ;color: rgb(155, 61, 61)}") 
         self.menuBar.addMenu(self.help)
         self.help.setCursor(QCursor(Qt.PointingHandCursor))
         self.help.addAction(choices[0], self.window1.instructions)
-        self.help.addAction(choices[4], self.window5.instructions)
+        self.help.addAction(choices[4], self.window5.instructions) 
+        self.help.addAction(choices[5], self.window6.instructions)     
+        self.help.addAction(choices[7], self.window8.instructions) 
+        self.help.addAction(choices[8], self.window9.instructions) 
+        self.help.addAction(choices[9], self.window10.instructions) 
    
+        self.theme=QMenu("&Elegir tema de fondo")
+        self.theme.setStyleSheet("QMenu {background-color: white; color: black}"
+                                   "QMenu:item:selected {background-color: white ;color: rgb(155, 61, 61)}") 
+        self.menuBar.addMenu(self.theme)
+        self.theme.setCursor(QCursor(Qt.PointingHandCursor))
+        self.theme.addAction('&Dark', self.dark_theme)
+        self.theme.addAction('&Light', self.light_theme)
+
         self.stackedLayout = QStackedLayout()
               
         self.mainLayout = QVBoxLayout()
@@ -1896,21 +4582,25 @@ class MainWindow(QMainWindow):
         self.h3=QHBoxLayout()
         self.h4=QHBoxLayout()       
         self.h5=QHBoxLayout()
-        self.h10=QVBoxLayout()
-
+        
         windows=[self.window1,
                  self.window2,
                  self.window3,
                  self.window4,
-                 self.window5]    
+                 self.window5,
+                 self.window6,
+                 self.window7,
+                 self.window8,
+                 self.window9,
+                 self.window10]    
         
         for window in windows:
             self.stackedLayout.addWidget(window)
             
         self.pageCombo = QComboBox()   
         self.pageCombo.addItems(choices)
-        self.pageCombo.setMinimumHeight(35)
-        self.pageCombo.setStyleSheet(self.style4)
+        self.pageCombo.setMinimumHeight(buttonMinHeight)
+        self.pageCombo.setStyleSheet(comboStyle)
         self.listview=QListView()
         self.listview.setFont(fontTwo)
         self.listview.setCursor(QCursor(Qt.PointingHandCursor))
@@ -1925,13 +4615,15 @@ class MainWindow(QMainWindow):
         self.h.addLayout(self.v)
         self.h.addLayout(self.v2)   
 
+        self.h.addLayout(self.v3) 
+
         self.stackedLayout.setAlignment(Qt.AlignCenter)
         self.h.setAlignment(Qt.AlignCenter)
                
         self.mainLayout.addLayout(self.h,1)   
         self.mainLayout.addLayout(self.v0,0)   
         
-        self.mainLayout.addLayout(self.stackedLayout,6)        
+        self.mainLayout.addLayout(self.stackedLayout,4)        
       
         self.pixmap = QPixmap(icon)
         self.pixmap = self.pixmap.scaled(70, 70, Qt.KeepAspectRatio,Qt.SmoothTransformation)
@@ -1947,28 +4639,20 @@ class MainWindow(QMainWindow):
         self.labelFour.setAlignment(Qt.AlignCenter) 
         self.v.addWidget(self.labelFour)
         
-        self.titleOne = QLabel('Version 1.4.3', self)
+        self.titleOne = QLabel('Versión '+self.version, self)
         self.titleOne.setFont(fontFive)
         self.titleOne.setStyleSheet("color:	IndianRed")
         self.titleOne.setAlignment(Qt.AlignRight | Qt.AlignBottom)  
         self.v2.addWidget(self.titleOne)
         
-        self.labelOne = QLabel('Hi there, '+username, self)
+        self.labelOne = QLabel('Hola, '+username, self)
         self.labelOne.setFont(fontFive)
         self.labelOne.setAlignment(Qt.AlignRight)  
-        self.v2.addWidget(self.labelOne)        
+        self.v2.addWidget(self.labelOne)   
         
         self.status_label = QLabel()
         self.statusBar().addPermanentWidget(self.status_label)
-        self.status_label.setText('Version 1.4.3 released in September 2021')
-        
-        self.btn = PicButton(QPixmap(donate_pic).scaled(150,50))
-        self.btn.setCursor(QCursor(Qt.PointingHandCursor))
-        self.btn.clicked.connect(self.donate)
-        self.h10.addWidget(self.btn)  
-        self.h10.addStretch(0)  
-        self.h10.setAlignment(Qt.AlignCenter)
-        self.mainLayout.addLayout(self.h10)
+        self.status_label.setText('Versión '+self.version+' lanzada en octubre del 2021.')
 
         self.w = QWidget(self)
         self.w.setLayout(self.mainLayout)
@@ -1976,9 +4660,20 @@ class MainWindow(QMainWindow):
         
         quit = QAction("Quit", self)
         quit.triggered.connect(self.closeEvent)
-    def donate(self):
-        op('https://www.paypal.com/donate?token=Au3wVcTk2LBobTkSfVdJmlH15ru5nygT6tVW_0o-PoCn-klgwrE6sfVuzTtMKn5dMHbDEXdUSEZq8ypN')
- 
+        
+    def dark_theme(self):
+        if prev_prefs["8"]=='light':
+            prev_prefs["8"]='dark'
+            self.setStyleSheet(self.dark)
+        else:
+            pass
+    def light_theme(self):
+        if prev_prefs["8"]=='dark':
+            prev_prefs["8"]='light'
+            self.setStyleSheet(self.light)
+        else:
+            pass           
+
     def toggle_window(self):
         self.stackedLayout.setCurrentIndex(self.pageCombo.currentIndex())
     def error(self,errorMsg):
@@ -1992,25 +4687,32 @@ class MainWindow(QMainWindow):
         buttonOk = msg.button(QMessageBox.Ok)
         buttonOk.setCursor(QCursor(Qt.PointingHandCursor))
         buttonOk.setFont(fontOne)
-        msg.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
+        msg.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77)")
         msg.setInformativeText(errorMsg)
         msg.exec_()
 
     def closeEvent(self, event):
         close = QMessageBox()
-        close.setWindowTitle("Are you sure?")
+        close.setWindowTitle("¿Estás seguro?")
         close.setWindowIcon(QIcon(icon))
         close.setFont(fontTwo)
-        close.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
-        if self.window5.runner: 
-            close.setText("LuftMensch is shrinking your document. If you quit now, all progress will be lost.")
-        else:          
-            close.setText("You are about to quit LuftMensch.")           
+        close.setStyleSheet(msg_window_style)
+        if self.window8.runner: 
+            close.setText("La aplicación está consolidando el detalle de FE recibidas. Si sales, se detendrá por completo el proceso y no se guardarán los resultados.")
+            # QMessageBox.information(self,'Finalizando...','El proceso se detendrá por completo en unos instantes.')
+        elif self.window9.runner: 
+            close.setText("La aplicación está consolidando el detalle de FE emitidas. Si sales, se detendrá por completo el proceso y no se guardarán los resultados.")
+            # QMessageBox.information(self,'Finalizando...','El proceso se detendrá por completo en unos instantes.')
+        elif self.window10.runner: 
+            close.setText("La aplicación está comprimiendo un documento. Si sales, no se completará el proceso.")
+            # QMessageBox.information(self,'Finalizando...','El proceso se detendrá por completo en unos instantes.')
+        else:
+            close.setText("Se abandonará por completo la aplicación.")           
         close.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
         buttonYes = close.button(QMessageBox.Yes)
         buttonYes.setCursor(QCursor(Qt.PointingHandCursor))
         buttonYes.setFont(fontOne)
-        buttonYes.setText('Yes')
+        buttonYes.setText('Sí')
         buttonCancel = close.button(QMessageBox.Cancel)
         buttonCancel.setText('No')
         buttonCancel.setCursor(QCursor(Qt.PointingHandCursor))
@@ -2018,8 +4720,31 @@ class MainWindow(QMainWindow):
         close = close.exec()
 
         if close == QMessageBox.Yes:  
-            if self.window5.runner: 
-                self.window5.runner.kill()                
+            if self.window8.runner: 
+                self.window8.runner.kill()  
+            elif self.window9.runner: 
+                self.window9.runner.kill()
+            elif self.window10.runner: 
+                self.window10.runner.kill()
+                self.window10.runner.bar.kill() 
+                done=False
+                while not done:
+                    try:
+                        os.remove(self.window10.runner.out)
+                        done=True
+                    except PermissionError:
+                        print('Permission denied')                          
+            prefs={'1':self.window1.CheckOne.checkState(),
+                '2':self.window2.CheckOne.checkState(),
+                '3':self.window2.CheckTwo.checkState(),
+                '4':self.window3.CheckOne.checkState(),
+                '5':self.window3.CheckTwo.checkState(),
+                '6':self.window4.CheckOne.checkState(),
+                '7':self.window10.CheckOne.checkState(),
+                '8':prev_prefs["8"]}
+            json_object = json.dumps(prefs, indent = 4)
+            with open(preferences, "w") as outfile:
+                outfile.write(json_object)
             event.accept() 
         else:
             event.ignore()
@@ -2027,60 +4752,92 @@ class MainWindow(QMainWindow):
         op('https://github.com/lheredias/Luftmensch')
     def about(self):
         info = QMessageBox()
-        info.setWindowTitle("About LuftMensch")
+        info.setWindowTitle("Acerca de LuftMensch")
         
         info.setWindowIcon(QIcon(icon))
-        info.setText('''LuftMensch is a free, open source application aimed at dealing with common PDF-related tasks not easily available without a license purchase or paid subscription.''')
+        info.setText('''LuftMensch es una aplicación de código abierto pensada en automatizar ciertas tareas administrativas.''')
 
         info.setFont(fontTwo)
-        info.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
+        info.setStyleSheet(msg_window_style)
         info.setWindowModality(0)
         # info.setModal(True)
         info.activateWindow()
         info.setStandardButtons(QMessageBox.Ok)
         buttonOk = info.button(QMessageBox.Ok)
-        buttonOk.setText('Understood')
+        buttonOk.setText('Entendido')
         buttonOk.setCursor(QCursor(Qt.PointingHandCursor))
         buttonOk.setFont(fontOne)
         info.setDefaultButton(QMessageBox.Ok)
         info.show()
-        retval = info.exec_()    
+        info.exec_()    
      
     def update(self):
-        info = QMessageBox()
-        info.setWindowTitle("¿How to update LuftMensch?")
+        link='https://github.com/lheredias/Luftmensch/releases/tag/v1.4.8'
         
-        info.setWindowIcon(QIcon(icon))
-        info.setText('''Download the latest version (in English) and overwrite the current one.''')
-
-        info.setFont(fontTwo)
-        info.setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(69, 70, 77  )")
-        info.setWindowModality(0)
-        info.activateWindow()
-        info.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
-        buttonYes = info.button(QMessageBox.Yes)
-        buttonYes.setCursor(QCursor(Qt.PointingHandCursor))
-        buttonYes.setText('Releases')
-        buttonYes.setFont(fontOne)
-        buttonCancel = info.button(QMessageBox.Cancel)
-        buttonCancel.setCursor(QCursor(Qt.PointingHandCursor))
-        buttonCancel.setText('Understood')
-        buttonCancel.setFont(fontOne)
-        info.setDefaultButton(QMessageBox.Cancel)
-        info.show()
-        retval = info.exec_()
-        print(retval)
-        if retval==16384:
-            op('https://github.com/lheredias/Luftmensch/releases')
-    
+        try:
+            response=requests.get(link)
+        except requests.exceptions.ProxyError:
+            self.error('Deshabilita el Proxy.')
+        else:
+            if response.status_code==200:
+                info = QMessageBox()
+                info.setWindowTitle(self.title) 
+                info.setWindowIcon(QIcon(icon))
+                info.setText('Hay una actualización disponible.') 
+                info.setInformativeText('Descarga el instalador de la nueva versión, cierra la aplicación y ejecútalo.')
+                info.setFont(fontTwo)
+                info.setStyleSheet(msg_window_style)
+                info.setWindowModality(0)
+                info.activateWindow()
+                info.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
+                buttonYes = info.button(QMessageBox.Yes)
+                buttonYes.setCursor(QCursor(Qt.PointingHandCursor))
+                buttonYes.setText('Descargar')
+                buttonYes.setFont(fontOne)
+                buttonCancel = info.button(QMessageBox.Cancel)
+                buttonCancel.setCursor(QCursor(Qt.PointingHandCursor))
+                buttonCancel.setText('Ahora no')
+                buttonCancel.setFont(fontOne)
+                info.setDefaultButton(QMessageBox.Cancel)
+                info.show()
+                retval = info.exec_()
+                if retval==16384:
+                    op('https://github.com/lheredias/Luftmensch/releases/download/v1.4.8/LuftMensch_installer.exe')
+            elif response.status_code==404:
+                info = QMessageBox()
+                info.setWindowTitle(self.title) 
+                info.setText('Estás usando la versión más reciente.')
+                info.setWindowIcon(QIcon(icon))
+                info.setFont(fontTwo)
+                info.setStyleSheet(msg_window_style)
+                info.setWindowModality(0)
+                # info.setModal(True)
+                info.activateWindow()
+                info.setStandardButtons(QMessageBox.Ok)
+                buttonOk = info.button(QMessageBox.Ok)
+                buttonOk.setText('Entendido.')
+                buttonOk.setCursor(QCursor(Qt.PointingHandCursor))
+                buttonOk.setFont(fontOne)
+                info.setDefaultButton(QMessageBox.Ok)
+                info.show()
+                info.exec_()      
+     
 if __name__ == '__main__':
     os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
     app = QApplication(sys.argv)
     app.setStyle('Fusion')
-    app.setAttribute(Qt.AA_EnableHighDpiScaling,True)
-    app.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
+    screen_rect = app.desktop().screenGeometry()
+    width, height = screen_rect.width(), screen_rect.height()
+    # print(width,height)
+    #app.setAttribute(Qt.AA_EnableHighDpiScaling,True)
+    #app.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
     app.setWindowIcon(QIcon(icon))
     w = MainWindow()
-    w.show() 
+    if height<900:
+        w.move(0, 0)
+        w.setMinimumSize(660,520)
+        w.showMaximized()
+    else:
+        w.setMinimumSize(660,580)
+        w.show() 
     sys.exit(app.exec_())
-    
